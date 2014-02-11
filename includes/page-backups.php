@@ -1,7 +1,5 @@
 <?php
-		$out   = '';
-		$note  = '';
-		$error = 0;
+		$notes = array();
 		$nonce_field = 'backup';
 
 		if (isset($_POST['remove_backup'])) {
@@ -18,89 +16,85 @@
 					}
 				}
 				if ($count > 0) {
-					$note .= "<strong>".__('Delete Backup Files!', $this->textdomain)."</strong>";
+					$notes[] = "<strong>".__('ERROR: Failed to delete backup Files!', $this->textdomain)."</strong>";
 				}
 			}
 		}
 
+		// Output
+		foreach( $notes as $note ) {
+			echo '<div id="message" class="updated fade"><p>' . $note . '</p></div>';
+			echo "\n";
+		}
+
+		
 		$nonces =
 			( $this->wp_version_check('2.5') && function_exists('wp_nonce_field') )
 			? wp_nonce_field($nonce_field, self::NONCE_NAME, true, false)
 			: '';
+?>
+<div class="wrap">
 
-		$out .= '<div class="wrap">'."\n";
+	<div id="icon-options-cyan-backup" class="icon32"><br /></div>
 
-		$out .= '<div id="icon-options-cyan-backup" class="icon32"><br /></div>';
-		$out .= '<h2>';
-		$out .= __('CYAN Backup', $this->textdomain);
-		$out .= '</h2>'."\n";
+	<h2><?php _e('CYAN Backup', $this->textdomain);?></h2>
 
-		$out .= '<h3>';
-		$out .= __('Run Backup', $this->textdomain);
-		$out .= '</h3>'."\n";
+	<h3><?php _e('Run Backup', $this->textdomain);?></h3>
 
-		$out .= '<form method="post" id="backup_site" action="'.$this->admin_action.'">'."\n";
-		$out .= $nonces;
-		$out .= '<input type="hidden" name="backup_site" class="button-primary sites_backup" value="'.__('Backup Now!', $this->textdomain).'" class="button" style="margin-left:1em;" />';
-		$out .= '<p style="margin-top:1em">';
-		$out .= '<input type="submit" name="backup_site" class="button-primary sites_backup" value="'.__('Backup Now!', $this->textdomain).'" class="button" style="margin-left:1em;" />';
-		$out .= '</p>';
-		$out .= '</form>'."\n";
+	<form method="post" id="backup_site" action="'.$this->admin_action.'">
+		<?php echo $nonces;?>
+		<input type="hidden" name="backup_site" class="button-primary sites_backup" value="<?php _e('Backup Now!', $this->textdomain)?>" class="button" style="margin-left:1em;" />
+		<p style="margin-top:1em">
+			<input type="submit" name="backup_site" class="button-primary sites_backup" value="<?php _e('Backup Now!', $this->textdomain)?>" class="button" style="margin-left:1em;" />
+		</p>
+	</form>
 
 
-		$out .= '<h3>';
-		$out .= __('Backup Files', $this->textdomain);
-		$out .= '</h3>'."\n";
+	<h3><?php _e('Backup Files', $this->textdomain);?></h3>
 
-		$out .= '<form method="post" action="'.$this->admin_action.'">'."\n";
-		$out .= $nonces;
+	<form method="post" action="'.$this->admin_action.'">
+		<?php echo $nonces;?>
 
-		$out .= '<table id="backuplist" class="wp-list-table widefat fixed" style="margin-top:0;">'."\n";
+		<table id="backuplist" class="wp-list-table widefat fixed" style="margin-top:0;">
 
-		$out .= '<thead><tr>';
-		$out .= '<th>' . __('File Name', $this->textdomain) . '</th>';
-		$out .= '<th>' . __('Date and Time', $this->textdomain) . '</th>';
-		$out .= '<th>' . __('Size', $this->textdomain) . '</th>';
-		$out .= '<th style="text-align: center;"><input type="checkbox" id="switch_checkboxes" name="switch_checkboxes" style="margin: 0px 4px 0px 0px;" /></th>';
-		$out .= '</tr></thead>' . "\n";
+			<thead>
+				<tr>
+					<th><?php _e('File Name', $this->textdomain);?></th>
+					<th><?php _e('Date and Time', $this->textdomain);?></th>
+					<th><?php _e('Size', $this->textdomain);?></th>
+					<th style="text-align: center;"><input type="checkbox" id="switch_checkboxes" name="switch_checkboxes" style="margin: 0px 4px 0px 0px;" /></th>
+				</tr>
+			</thead>
 
-		$out .= '<tfoot><tr>';
-		$out .= '<th colspan="3">';
-		$out .= '</th>';
-		$out .= '<th style="width: 75px; text-align: center;"><input type="submit" name="remove_backup" class="button-primary" value="'.__('Delete', $this->textdomain).'" class="button" /></th>';
-		$out .= '</tr></tfoot>' . "\n";
+			<tfoot>
+				<tr>
+					<th colspan="3"></th>
+					<th style="width: 75px; text-align: center;"><input type="submit" name="remove_backup" class="button-primary" value="<?php _e('Delete', $this->textdomain);?>" class="button" /></th>
+				</tr>
+			</tfoot>
 
-		$out .= '<tbody>';
-
+			<tbody>
+<?php
 		$backup_files = $this->backup_files_info($this->get_backup_files());
 		$alternate = ' class="alternate"';
 		if (count($backup_files) > 0) {
 			$i = 0;
 			foreach ($backup_files as $backup_file) {
-				$out .= "<tr{$alternate}>";
-				$out .= sprintf('<td>%s</td>', $backup_file['url']);
+				echo "\t\t\t\t<tr{$alternate}>\n";
+				printf("\t\t\t\t\t<td>%s</td>\n", $backup_file['url']);
 
 				$temp_time = strtotime( $backup_file['filemtime'] );
 
-				$out .= sprintf('<td>%s</td>', date( get_option('date_format'), $temp_time ) . ' @ ' . date( get_option('time_format'), $temp_time ));
-				$out .= sprintf('<td>%s MB</td>', number_format($backup_file['filesize'], 2));
-				$out .= "<td style='text-align: center;'><input type=\"checkbox\" id=\"removefiles[{$i}]\" name=\"remove[{$i}]\" value=\"{$backup_file['filename']}\" /></td>";
-				$out .= '</tr>' . "\n";
+				printf("\t\t\t\t\t<td>%s</td>\n", date( get_option('date_format'), $temp_time ) . ' @ ' . date( get_option('time_format'), $temp_time ));
+				printf("\t\t\t\t\t<td>%s MB</td>\n", number_format($backup_file['filesize'], 2));
+				echo "\t\t\t\t\t<td style='text-align: center;'><input type=\"checkbox\" id=\"removefiles[{$i}]\" name=\"remove[{$i}]\" value=\"{$backup_file['filename']}\" /></td>\n";
+				echo "\t\t\t\t</tr>\n";
 				$i++;
 				$alternate = empty($alternate) ? ' class="alternate"' : '';
 			}
 		}
-
-		$out .= '</tbody>' . "\n";
-		$out .= '</table>' . "\n";
-		$out .= '</form>'."\n";
-
-		$out .= '</div>'."\n";
-
-		// Output
-		echo ( !empty($note) ? '<div id="message" class="updated fade"><p>'.$note.'</p></div>'  : '' );
-		echo "\n";
-
-		echo ( $error <= 0 ? $out : '' );
-		echo "\n";
 ?>
+			</tbody>
+		</table>
+	</form>
+</div>

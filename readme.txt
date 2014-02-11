@@ -34,7 +34,6 @@ Configure the excluded paths which specify the directories you don't want to bac
 * wp-content/cache/ : the directory for the cache files used by WP super cache and so on.
 * wp-content/tmp/ : the directory for the cache files used by DB Cache Reloaded Fix so on.
 * wp-content/upgrade/ : the directory for the temp files used by the WordPress upgrade function.
-* wp-content/uploads/ : the directory for the uploaded files like images.
 
 If you have configured your archive path below the main WordPress directory you MUST add it to the list of excluded directories as well.
 

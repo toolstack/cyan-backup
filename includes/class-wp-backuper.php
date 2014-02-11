@@ -10,7 +10,6 @@ class WP_Backuper {
 	    'wp-content/cache/',
 	    'wp-content/tmp/',
 	    'wp-content/upgrade/',
-	    'wp-content/uploads/',
 		);
 
 	private $dump_file;

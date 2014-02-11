@@ -1,6 +1,5 @@
 <?php
-		$out   = '';
-		$notes  = array();
+		$notes = array();
 		$error = 0;
 		$nonce_field = 'option_update';
 
@@ -310,222 +309,216 @@
 										);
 		}
 		
-		$out .= '<script type="text/javascript">//<![CDATA[' . "\n";
+		echo '<script type="text/javascript">//<![CDATA[' . "\n";
 		
-		$out .= 'function set_schedule_display() {' . "\n";
-		$out .= 'var display_type_settings = new Array() ' . "\n\n";
+		echo 'function set_schedule_display() {' . "\n";
+		echo 'var display_type_settings = new Array() ' . "\n\n";
 
 		foreach( $display_type_settings as $key => $value ) {
-			$out .= 'display_type_settings[\'' . $key . '\'] = new Array();' . "\n";
+			echo 'display_type_settings[\'' . $key . '\'] = new Array();' . "\n";
 		}
 		
 		foreach( $display_type_settings as $key => $value ) {
 			foreach( $value as $subkey => $subvalue ) {
-				$out .= 'display_type_settings[\'' . $key . '\'][\'' . $subkey . '\'] = \'';
-				if( $subvalue == "display: none;" ) { $out .= '0'; } else { $out .= '1'; }
-				$out .= '\';' . "\n";
+				echo 'display_type_settings[\'' . $key . '\'][\'' . $subkey . '\'] = \'';
+				if( $subvalue == "display: none;" ) { echo '0'; } else { echo '1'; }
+				echo '\';' . "\n";
 			}
 		}
 		
-		$out .= "\n";
+		echo "\n";
 		
-		$out .= 'var type = jQuery("#schedule_type").val();' . "\n";
-		$out .= "\n";
-		$out .= 'for( var i in display_type_settings[type] ) {' . "\n";
-		$out .= 'if( display_type_settings[type][i] == 0 ) { jQuery("#" + i).css( "display", "none" ); } else { jQuery("#" + i).css( "display", "" ); }' . "\n";
-		$out .= '}' . "\n";
+		echo 'var type = jQuery("#schedule_type").val();' . "\n";
+		echo "\n";
+		echo 'for( var i in display_type_settings[type] ) {' . "\n";
+		echo 'if( display_type_settings[type][i] == 0 ) { jQuery("#" + i).css( "display", "none" ); } else { jQuery("#" + i).css( "display", "" ); }' . "\n";
+		echo '}' . "\n";
 		
-		$out .= '}' . "\n";
+		echo '}' . "\n";
 		
-		$out .= '//]]></script>' . "\n";
-		
-		$out .= '<div class="wrap">'."\n";
-
-		$out .= '<div id="icon-options-general" class="icon32"><br /></div>';
-		$out .= '<h2>';
-		$out .= __('CYAN Backup Options', $this->textdomain);
-		$out .= '</h2>'."\n";
-
-		$out .= '<h3>';
-		$out .= __('Directory Options', $this->textdomain);
-		$out .= '</h3>'."\n";
-
-		$out .= '<form method="post" id="option_update" action="'.$this->admin_action.'-options">'."\n";
-		if ($this->wp_version_check('2.5') && function_exists('wp_nonce_field') )
-			$out .= wp_nonce_field($nonce_field, self::NONCE_NAME, true, false);
-
-		$out .= "<table class=\"optiontable form-table\" style=\"margin-top:0;\"><tbody>\n";
-
-		$out .= '<tr>';
-		$out .= '<th>'.__('Archive path', $this->textdomain).'</th>';
-		$out .= '<td>';
-		$out .= '<input type="text" name="archive_path" id="archive_path" size="100" value="'.htmlentities($archive_path).'" /><br><br>';
-		$out .= '<input class="button" id="Createhtaccess" name="Createhtaccess" type="submit" value="' . __('Create .htaccess File', $this->textdomain) . '">&nbsp;';
-		$out .= '<input class="button" id="CreateWebConfig" name="CreateWebConfig" type="submit" value="' . __('Create WebConfig File', $this->textdomain) . '">';
-		$out .= '</td>';
-		$out .= '</tr>'."\n";
-
-		$out .= '<tr>';
-		$out .= '<th>'.__('Excluded dir', $this->textdomain).'</th>';
-		$out .= '<td><textarea name="excluded" id="excluded" rows="5" cols="100">';
-		$abspath  = $this->chg_directory_separator(ABSPATH, FALSE);
-		foreach ($excluded_dir as $dir) {
-			$out .= htmlentities($this->chg_directory_separator($abspath.$dir,FALSE)) . "\n";
-		}
-		$out .= '</textarea><br><br>';
-		$out .= '<input class="button" id="AddArchiveDir" name="AddArchiveDir" type="button" value="' . __('Add Archive Dir', $this->textdomain) . '" onClick="excluded.value = jQuery.trim( excluded.value ) + \'\n'. addslashes( $archive_path ) . '\';">&nbsp;';
-		$out .= '<input class="button" id="AddWPContentDir" name="AddWPContentDir" type="button" value="' . __('Add WP-Content Dir', $this->textdomain) . '" onClick="excluded.value = jQuery.trim( excluded.value ) + \'\n'. addslashes( WP_CONTENT_DIR ) . '\';">&nbsp;';
-		$out .= '<input class="button" id="AddWPContentDir" name="AddWPUpgradeDir" type="button" value="' . __('Add WP-Upgrade Dir', $this->textdomain) . '" onClick="excluded.value = jQuery.trim( excluded.value ) + \'\n'. addslashes( WP_CONTENT_DIR ) . '/upgrade\';">&nbsp;';
-		$out .= '<input class="button" id="AddWPAdminDir" name="AddWPAdminDir" type="button" value="' . __('Add WP-Admin Dir', $this->textdomain) . '" onClick="excluded.value = jQuery.trim( excluded.value ) + \'\n'. addslashes( $abspath ) . 'wp-admin\';">&nbsp;';
-		$out .= '<input class="button" id="AddWPIncludesDir" name="AddWPIncludesDir" type="button" value="' . __('Add WP-Includes Dir', $this->textdomain) . '" onClick="excluded.value = jQuery.trim( excluded.value ) + \'\n'. addslashes($abspath) . 'wp-includes\';">&nbsp;';
-		$out .= '</td>';
-		$out .= '</tr>'."\n";
-
-		$out .= '</tbody></table>' . "\n";
-
-		$out .= '<h3>';
-		$out .= __('Schedule Options', $this->textdomain);
-		$out .= '</h3>'."\n";
-
-		$out .= "<table style=\"margin-top:0; width: auto;\"><tbody>\n";
-		$out .= '<tr>';
-		$out .= '<td class="description" style="width: auto; text-align: right; vertical-align: top;"><span class="description">' . __('Current server time', $this->textdomain) .'</span>:</td><td style="width: auto; text-align: left; vertical-align: top;"><code>';
-
-		$next_schedule = time();
-		$out .= date( get_option('date_format'), $next_schedule ) . ' @ ' . date( get_option('time_format'), $next_schedule );
-
-		$out .= '</code></td>';
-		$out .= '</tr>';
-	
-		if( $option['schedule']['enabled'] == 'on' ) { 
-			$out .= '<tr>';
-		
-			$out .= '<td style="width: auto; text-align: right; vertical-align: top;"><span class="description">' . __('Next backup scheduled for', $this->textdomain) .'</span>:</td><td style="width: auto; text-align: left; vertical-align: top;"><code>';
-
-			$next_schedule = wp_next_scheduled('cyan_backup_hook');
-
-			if( $next_schedule ) {
-				$out .= date( get_option('date_format'), $next_schedule ) . ' @ ' . date( get_option('time_format'), $next_schedule );
-			}
-			else {
-				$out .= __('None', $this->textdomain );
-			}
-
-			$out .= '</code></td>';
-			$out .= '</tr>';
-		}
-
-		$out .= '</tbody></table>' . "\n";
-		
-		$out .= "<table class=\"optiontable form-table\" style=\"margin-top:0;\"><tbody>\n";
-
-		$out .= '<tr>';
-		$out .= '<th>'.__('Enable', $this->textdomain).'</th>';
-		$out .= '<td><input type=checkbox id="schedule_enabled" name="schedule[enabled]"';
-		if( $option['schedule']['enabled'] == 'on' ) { $out .= ' CHECKED'; }
-		$out .=	'></td>';
-		$out .= '</tr>'."\n";
-
-		$out .= '<tr>';
-		$out .= '<th>'.__('Type', $this->textdomain).'</th>';
-		$out .= '<td><select id="schedule_type" onChange="set_schedule_display();" name="schedule[type]">';
-		
-		foreach( $schedule_types as $type ) {
-			$out .= '<option value="' . $type . '"';
-
-			if( $option['schedule']['type'] == $type ) { $out .= ' SELECTED'; $display_settings = $display_type_settings[$type];}
-			
-			$out .= '>' . __($type, $this->textdomain) . '</option>';
-		}
-		
-		$out .= '</select></td>';
-		$out .= '</tr>'."\n";
-
-		$out .= '<tr>';
-		$out .= '<th>'.__('Schedule', $this->textdomain).'</th>';
-		$out .= '<td>';
-		
-		if( self::DEBUG_MODE == TRUE ) {
-			$out .= '<span id="schedule_debug" style="' . $display_settings['schedule_debug'] . '">' . __('Every minute, for debugging only', $this->textdomain) . '</span>';
-		}
-		
-		$out .= '<span id="schedule_once" style="' . $display_settings['schedule_once'] . '">' . __('Only once', $this->textdomain) . '</span>';
-		$out .= '<span id="schedule_before" style="' . $display_settings['schedule_before'] . '">' . __('Run backup every', $this->textdomain) . ' </span>';
-		$out .= '<input type="text" id="schedule_interval" name="schedule[interval]" size="3" value="'. $option['schedule']['interval'] . '" style="' . $display_settings['schedule_interval'] . '">';
-		$out .= '<span id="schedule_hours" style="' . $display_settings['schedule_hours'] . '"> ' . __('hour(s)', $this->textdomain) . '</span><span id="schedule_days" style="' . $display_settings['schedule_days'] . '"> ' . __('day(s)', $this->textdomain) . '</span><span id="schedule_weeks" style="' . $display_settings['schedule_weeks'] . '"> ' . __('week(s)', $this->textdomain) . '</span><span id="schedule_months" style="' . $display_settings['schedule_months'] . '"> ' . __('month(s)', $this->textdomain) . '</span>';
-		$out .= '<span id="schedule_on" style="' . $display_settings['schedule_on'] . '"> ' . __('on', $this->textdomain) . '</span>';
-
-		$out .= '<select id="schedule_dow" name="schedule[dow]" style="' . $display_settings['schedule_dow'] . '">';
-		$out .= '<option value=""></option>';
-		
-		$weekdays = array( 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday' );
-		foreach( $weekdays as $day ) {
-			$out .= '<option value="' . $day . '"';
-
-			if( $option['schedule']['dow'] == $day ) { $out .= ' SELECTED'; }
-			
-			$out .= '>' . __($day, $this->textdomain) . '</option>';
-		}
-		
-		$out .= '</select>';
-
-		$out .= '<span id="schedule_the" style="' . $display_settings['schedule_the'] . '"> ' . __('the', $this->textdomain) . '</span>';
-		
-		$out .= '<select id="schedule_dom" name="schedule[dom]" style="' . $display_settings['schedule_dom'] . '">';
-		$out .= '<option value=""></option>';
-		
-		for( $i = 1; $i < 28; $i++ ) {
-			$out .= '<option value="' . $i . '"';
-
-			if( $option['schedule']['dom'] == $i ) { $out .= ' SELECTED'; }
-			
-			$out .= '>' . $i . '</option>';
-		}
-
-		$out .= '</select>';
-		
-//		$out .= '<input type="text" id="schedule_dom" name="schedule[dom]" size="2" value="'. $option['schedule']['dom'] . '" style="' . $display_settings['schedule_dom'] . '">';
-		$out .= '<span id="schedule_at" style="' . $display_settings['schedule_at'] . '"> ' . __('at', $this->textdomain) . '</span>';
-		$out .= '<input type="text" id="schedule_tod" name="schedule[tod]" size="8" value="'. $option['schedule']['tod'] . '" style="' . $display_settings['schedule_tod'] . '">';
-		$out .= '.</td>';
-		$out .= '</tr>'."\n";
-
-		$out .= '</tbody></table>' . "\n";
-
-		$out .= '<h3>';
-		$out .= __('Storage Maintenance', $this->textdomain);
-		$out .= '</h3>'."\n";
-
-		$out .= "<table class=\"optiontable form-table\" style=\"margin-top:0;\"><tbody>\n";
-
-		$out .= '<tr>';
-		$out .= '<th>'.__('Enable backup pruning', $this->textdomain).'</th>';
-		$out .= '<td><input type=checkbox name="prune[enabled]"';
-		if( $option['prune']['enabled'] == 'on' ) { $out .= ' CHECKED'; }
-		$out .=	'></td>';
-		$out .= '</tr>'."\n";
-
-		$out .= '<tr>';
-		$out .= '<th>'.__('Number of backups to keep', $this->textdomain).'</th>';
-		$out .= '<td><input type="text" name="prune[number]" size="5" value="'. $option['prune']['number'] . '"></td>';
-		$out .= '</tr>'."\n";
-		
-		$out .= '</tbody></table>' . "\n";
-
-		$out .= '<p style="margin-top:1em;">';
-		$out .= '<input type="submit" name="options_update" class="button-primary" value="'.__('Update Options', $this->textdomain).'" class="button" />';
-		$out .= '</p>';
-
-		$out .= '</form>'."\n";
-
-		$out .= '</div>'."\n";
+		echo '//]]></script>' . "\n";
 
 		// Output
 		foreach( $notes as $note ) {
 			echo '<div id="message" class="updated fade"><p>' . $note . '</p></div>';
 			echo "\n";
 		}
-
-		echo $out;
-		echo "\n";
 ?>
+
+<div class="wrap">
+
+<div id="icon-options-general" class="icon32"><br /></div>
+<h2>
+<?php _e('CYAN Backup Options', $this->textdomain);?>
+</h2>
+
+<h3>
+<?php _e('Directory Options', $this->textdomain);?>
+</h3>
+
+<form method="post" id="option_update" action="<?php echo $this->admin_action; ?>-options">
+<?php if ($this->wp_version_check('2.5') && function_exists('wp_nonce_field') )
+		echo wp_nonce_field($nonce_field, self::NONCE_NAME, true, false);
+?>
+
+<table class=\"optiontable form-table\" style=\"margin-top:0;\"><tbody>
+
+<tr>
+<th><?php _e('Archive path', $this->textdomain);?></th>
+<td>
+<input type="text" name="archive_path" id="archive_path" size="100" value="<?php echo htmlentities($archive_path);?>" /><br><br>
+<input class="button" id="Createhtaccess" name="Createhtaccess" type="submit" value="<?php _e('Create .htaccess File', $this->textdomain);?>">&nbsp;
+<input class="button" id="CreateWebConfig" name="CreateWebConfig" type="submit" value="<?php _e('Create WebConfig File', $this->textdomain);?>">
+</td>
+</tr>
+
+<tr>
+<th><?php _e('Excluded dir', $this->textdomain);?></th>
+<td><textarea name="excluded" id="excluded" rows="5" cols="100">
+<?php
+	$abspath  = $this->chg_directory_separator(ABSPATH, FALSE);
+	foreach ($excluded_dir as $dir) {
+		echo htmlentities($this->chg_directory_separator($abspath.$dir,FALSE)) . "\n";
+	}
+?>
+</textarea><br><br>
+<input class="button" id="AddArchiveDir" name="AddArchiveDir" type="button" value="<?php _e('Add Archive Dir', $this->textdomain);?>" onClick="excluded.value = jQuery.trim( excluded.value ) + \'\n'. addslashes( $archive_path ) . '\">&nbsp;
+<input class="button" id="AddWPContentDir" name="AddWPContentDir" type="button" value="<?php _e('Add WP-Content Dir', $this->textdomain);?>" onClick="excluded.value = jQuery.trim( excluded.value ) + \'\n'. addslashes( WP_CONTENT_DIR ) . '\">&nbsp;
+<input class="button" id="AddWPContentDir" name="AddWPUpgradeDir" type="button" value="<?php _e('Add WP-Upgrade Dir', $this->textdomain);?>" onClick="excluded.value = jQuery.trim( excluded.value ) + \'\n'. addslashes( WP_CONTENT_DIR ) . '/upgrade\">&nbsp;
+<input class="button" id="AddWPAdminDir" name="AddWPAdminDir" type="button" value="<?php _e('Add WP-Admin Dir', $this->textdomain);?>" onClick="excluded.value = jQuery.trim( excluded.value ) + \'\n'. addslashes( $abspath ) . 'wp-admin\">&nbsp;
+<input class="button" id="AddWPIncludesDir" name="AddWPIncludesDir" type="button" value="<?php _e('Add WP-Includes Dir', $this->textdomain);?>" onClick="excluded.value = jQuery.trim( excluded.value ) + \'\n'. addslashes($abspath) . 'wp-includes\">&nbsp;
+</td>
+</tr>
+
+</tbody></table>
+
+<h3>
+<?php _e('Schedule Options', $this->textdomain);?>
+</h3>
+
+<table style=\"margin-top:0; width: auto;\"><tbody>
+<tr>
+<td class="description" style="width: auto; text-align: right; vertical-align: top;"><span class="description"><?php _e('Current server time', $this->textdomain);?></span>:</td><td style="width: auto; text-align: left; vertical-align: top;"><code>
+<?php
+	$next_schedule = time();
+	echo date( get_option('date_format'), $next_schedule ) . ' @ ' . date( get_option('time_format'), $next_schedule );
+?>
+</code></td>
+</tr>
+<?php if( $option['schedule']['enabled'] == 'on' ) { ?>
+	<tr>
+		
+	<td style="width: auto; text-align: right; vertical-align: top;"><span class="description"><?php _e('Next backup scheduled for', $this->textdomain);?></span>:</td><td style="width: auto; text-align: left; vertical-align: top;"><code>
+<?php
+			$next_schedule = wp_next_scheduled('cyan_backup_hook');
+
+			if( $next_schedule ) {
+				echo date( get_option('date_format'), $next_schedule ) . ' @ ' . date( get_option('time_format'), $next_schedule );
+			}
+			else {
+				_e('None', $this->textdomain );
+			}
+?>
+	</code></td>
+	</tr>
+<?php	}?>
+
+</tbody></table>
+		
+<table class="optiontable form-table" style="margin-top:0;"><tbody>
+
+<tr>
+<th><?php _e('Enable', $this->textdomain);?></th>
+<td><input type=checkbox id="schedule_enabled" name="schedule[enabled]"<?php if( $option['schedule']['enabled'] == 'on' ) { echo ' CHECKED'; }?>></td>
+</tr>
+
+<tr>
+<th><?php _e('Type', $this->textdomain);?></th>
+<td><select id="schedule_type" onChange="set_schedule_display();" name="schedule[type]">
+<?php		
+		foreach( $schedule_types as $type ) {
+			echo '<option value="' . $type . '"';
+
+			if( $option['schedule']['type'] == $type ) { echo ' SELECTED'; $display_settings = $display_type_settings[$type]; }
+			
+			echo '>' . __($type, $this->textdomain) . '</option>';
+		}
+?>		
+</select></td>
+</tr>
+
+<tr>
+<th><?php _e('Schedule', $this->textdomain);?></th>
+<td>
+<?php		
+		if( self::DEBUG_MODE == TRUE ) {
+			echo '<span id="schedule_debug" style="' . $display_settings['schedule_debug'] . '">' . __('Every minute, for debugging only', $this->textdomain) . '</span>';
+		}
+?>		
+<span id="schedule_once" style="<?php echo $display_settings['schedule_once'];?>"><?php _e('Only once', $this->textdomain);?></span>
+<span id="schedule_before" style="<?php echo $display_settings['schedule_before'];?>"><?php _e('Run backup every', $this->textdomain);?> </span>
+<input type="text" id="schedule_interval" name="schedule[interval]" size="3" value="<?php echo $option['schedule']['interval'];?>" style="<?php echo $display_settings['schedule_interval'];?>">
+<span id="schedule_hours" style="<?php echo $display_settings['schedule_hours'];?>"> <?php _e('hour(s)', $this->textdomain);?></span><span id="schedule_days" style="<?php echo $display_settings['schedule_days'];?>"> <?php _e('day(s)', $this->textdomain);?></span><span id="schedule_weeks" style="<?php echo $display_settings['schedule_weeks'];?>"> <?php _e('week(s)', $this->textdomain);?></span><span id="schedule_months" style="<?php echo $display_settings['schedule_months'];?>"> <?php _e('month(s)', $this->textdomain);?></span>
+<span id="schedule_on" style="<?php echo $display_settings['schedule_on'];?>"> <?php _e('on', $this->textdomain);?></span>
+
+<select id="schedule_dow" name="schedule[dow]" style="<?php echo $display_settings['schedule_dow'];?>">
+<option value=""></option>
+<?php		
+		$weekdays = array( 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday' );
+		foreach( $weekdays as $day ) {
+			echo '<option value="' . $day . '"';
+
+			if( $option['schedule']['dow'] == $day ) { echo' SELECTED'; }
+			
+			echo '>' . __($day, $this->textdomain) . '</option>';
+		}
+?>		
+</select>
+
+<span id="schedule_the" style="<?php echo $display_settings['schedule_the'];?>"> <?php _e('the', $this->textdomain);?></span>
+		
+<select id="schedule_dom" name="schedule[dom]" style="<?php echo $display_settings['schedule_dom'];?>">
+<option value=""></option>
+<?php		
+		for( $i = 1; $i < 28; $i++ ) {
+			echo '<option value="' . $i . '"';
+
+			if( $option['schedule']['dom'] == $i ) { echo' SELECTED'; }
+			
+			echo '>' . $i . '</option>';
+		}
+?>
+</select>
+		
+<span id="schedule_at" style="<?php echo $display_settings['schedule_at'];?>"> <?php _e('at', $this->textdomain);?></span>
+<input type="text" id="schedule_tod" name="schedule[tod]" size="8" value="<?php echo $option['schedule']['tod'];?>" style="<?php echo $display_settings['schedule_tod'];?>">
+.</td>
+</tr>
+
+</tbody></table>
+
+<h3>
+<?php _e('Storage Maintenance', $this->textdomain);?>
+</h3>
+
+<table class="optiontable form-table" style="margin-top:0;"><tbody>
+
+<tr>
+<th><?php _e('Enable backup pruning', $this->textdomain);?></th>
+<td><input type=checkbox name="prune[enabled]"<?php	if( $option['prune']['enabled'] == 'on' ) { echo' CHECKED'; }?>></td>
+</tr>
+
+<tr>
+<th><?php _e('Number of backups to keep', $this->textdomain);?></th>
+<td><input type="text" name="prune[number]" size="5" value="<?php echo $option['prune']['number'];?>"></td>
+</tr>
+		
+</tbody></table>
+
+<p style="margin-top:1em;">
+<input type="submit" name="options_update" class="button-primary" value="<?php _e('Update Options', $this->textdomain);?>" class="button" />
+</p>
+
+</form>
+
+</div>

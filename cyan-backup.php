@@ -43,7 +43,6 @@ class CYANBackup {
 	    'wp-content/cache/',
 	    'wp-content/tmp/',
 	    'wp-content/upgrade/',
-	    'wp-content/uploads/',
 		);
 
 	const   ACCESS_LEVEL = 'manage_options';
