@@ -1,191 +1,336 @@
+# Copyright (C) 2014 CYAN Backup
+# This file is distributed under the same license as the CYAN Backup package.
 msgid ""
 msgstr ""
-"Project-Id-Version: cyan-backup\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-10-03 10:26+0900\n"
-"Last-Translator: wokamoto <wokamoto1973@gmail.com>\n"
+"Project-Id-Version: CYAN Backup 0.5\n"
+"Report-Msgid-Bugs-To: http://wordpress.org/tag/cyan-backup\n"
+"POT-Creation-Date: 2014-02-10 22:21:24+00:00\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"PO-Revision-Date: 2014-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
 
-# Description
-msgid "This plugin backs up a whole WordPress site and its database into a zip file."
-msgstr ""
-
-#: ../cyan-backup.php:465
+#: cyan-backup.php:492
 msgid "not logged in!"
 msgstr ""
 
-#: ../cyan-backup.php:486
+#: cyan-backup.php:516
 msgid "Method not found!"
 msgstr ""
 
-#: ../cyan-backup.php:531
+#: cyan-backup.php:571
 msgid "Settings"
 msgstr ""
 
-#: ../cyan-backup.php:671
-#: ../cyan-backup.php:672
-#: ../cyan-backup.php:732
+#. #-#-#-#-#  plugin.pot (CYAN Backup 0.5)  #-#-#-#-#
+#. Plugin Name of the plugin/theme
+#: cyan-backup.php:728 cyan-backup.php:729 cyan-backup.php:843
 msgid "CYAN Backup"
 msgstr ""
 
-#: ../cyan-backup.php:685
-#: ../cyan-backup.php:867
-msgid "Option &gt; CYAN Backup"
+#: cyan-backup.php:742 cyan-backup.php:743
+msgid "Backups"
 msgstr ""
 
-#: ../cyan-backup.php:686
-msgid "Option"
+#: cyan-backup.php:751
+msgid "Options &gt; CYAN Backup"
 msgstr ""
 
-#: ../cyan-backup.php:718
+#: cyan-backup.php:752
+msgid "Options"
+msgstr ""
+
+#: cyan-backup.php:765
+msgid "About &gt; CYAN Backup"
+msgstr ""
+
+#: cyan-backup.php:766
+msgid "About"
+msgstr ""
+
+#: cyan-backup.php:787
+msgid "About CYAN Backup"
+msgstr ""
+
+#: cyan-backup.php:789
+msgid "CYAN Backup Version %s"
+msgstr ""
+
+#: cyan-backup.php:790
+msgid "by"
+msgstr ""
+
+#: cyan-backup.php:792
+msgid "A fork of the great %sTotal Backup%s by %swokamoto%s."
+msgstr ""
+
+#: cyan-backup.php:794
+msgid "Licenced under the %sGPL Version 2%s"
+msgstr ""
+
+#: cyan-backup.php:795
+msgid ""
+"To find out more, please visit the %sWordPress Plugin Directory page%s or "
+"the plugin home page on %sToolStack.com%s"
+msgstr ""
+
+#: cyan-backup.php:797
+msgid "Don't forget to %srate and review%s it too!"
+msgstr ""
+
+#: cyan-backup.php:829
 msgid "Delete Backup Files!"
 msgstr ""
 
-#: ../cyan-backup.php:736
-msgid "Site backup."
+#: cyan-backup.php:847
+msgid "Run Backup"
 msgstr ""
 
-#: ../cyan-backup.php:741
-#: ../cyan-backup.php:743
-msgid "Site Backup"
+#: cyan-backup.php:852 cyan-backup.php:854
+msgid "Backup Now!"
 msgstr ""
 
-#: ../cyan-backup.php:749
-msgid "Backup Files."
+#: cyan-backup.php:860
+msgid "Backup Files"
 msgstr ""
 
-#: ../cyan-backup.php:758
+#: cyan-backup.php:869
 msgid "Backup file name"
 msgstr ""
 
-#: ../cyan-backup.php:759
+#: cyan-backup.php:870
 msgid "Datetime"
 msgstr ""
 
-#: ../cyan-backup.php:760
+#: cyan-backup.php:871
 msgid "Size"
 msgstr ""
 
-#: ../cyan-backup.php:761
-#: ../cyan-backup.php:767
+#: cyan-backup.php:878
 msgid "Delete"
 msgstr ""
 
-#: ../cyan-backup.php:823
-msgid "Failure!: Archive path is not writable."
+#: cyan-backup.php:1060
+msgid ""
+"WARNING: Archive directory (\"%s\") is a subdirectory in the WordPress root "
+"and may be accessible via the web, this could be an insecure configuration!"
 msgstr ""
 
-#: ../cyan-backup.php:827
-msgid "Failure!: Archive path is not found."
+#: cyan-backup.php:1061
+msgid ""
+"WARNING: If you keep this configuration also make sure to exclude this "
+"directory from the backup."
 msgstr ""
 
-#: ../cyan-backup.php:848
-#, php-format
+#: cyan-backup.php:1065
+msgid "Failure!: Archive directory (\"%s\") is not found."
+msgstr ""
+
+#: cyan-backup.php:1084
 msgid "Failure!: Excluded dir(\"%s\") is not found."
 msgstr ""
 
-#: ../cyan-backup.php:860
-msgid "Done!"
+#: cyan-backup.php:1131
+msgid "Configuration saved!"
 msgstr ""
 
-#: ../cyan-backup.php:871
-msgid "Options update."
+#: cyan-backup.php:1276
+msgid "CYAN Backup Options"
 msgstr ""
 
-#: ../cyan-backup.php:881
+#: cyan-backup.php:1280
+msgid "Directory Options"
+msgstr ""
+
+#: cyan-backup.php:1290
 msgid "Archive path"
 msgstr ""
 
-#: ../cyan-backup.php:886
+#: cyan-backup.php:1295
 msgid "Excluded dir"
 msgstr ""
 
-#: ../cyan-backup.php:898
+#: cyan-backup.php:1313
+msgid "Schedule Options"
+msgstr ""
+
+#: cyan-backup.php:1318
+msgid "Current server time"
+msgstr ""
+
+#: cyan-backup.php:1329
+msgid "Next backup scheduled for"
+msgstr ""
+
+#: cyan-backup.php:1337
+msgid "None"
+msgstr ""
+
+#: cyan-backup.php:1349
+msgid "Enable"
+msgstr ""
+
+#: cyan-backup.php:1356
+msgid "Type"
+msgstr ""
+
+#: cyan-backup.php:1371
+msgid "Schedule"
+msgstr ""
+
+#: cyan-backup.php:1375
+msgid "Every minute, for debugging only"
+msgstr ""
+
+#: cyan-backup.php:1378
+msgid "Only once"
+msgstr ""
+
+#: cyan-backup.php:1379
+msgid "Run backup every"
+msgstr ""
+
+#: cyan-backup.php:1381
+msgid "hour(s)"
+msgstr ""
+
+#: cyan-backup.php:1381
+msgid "day(s)"
+msgstr ""
+
+#: cyan-backup.php:1381
+msgid "week(s)"
+msgstr ""
+
+#: cyan-backup.php:1381
+msgid "month(s)"
+msgstr ""
+
+#: cyan-backup.php:1382
+msgid "on"
+msgstr ""
+
+#: cyan-backup.php:1398
+msgid "the"
+msgstr ""
+
+#: cyan-backup.php:1414
+msgid "at"
+msgstr ""
+
+#: cyan-backup.php:1422
+msgid "Storage Maintenance"
+msgstr ""
+
+#: cyan-backup.php:1428
+msgid "Enable backup pruning"
+msgstr ""
+
+#: cyan-backup.php:1435
+msgid "Number of backups to keep"
+msgstr ""
+
+#: cyan-backup.php:1442
 msgid "Update Options"
 msgstr ""
 
-#: ../cyan-backup.php:933
-msgid "File not Found"
+#: includes/class-wp-backuper.php:248
+msgid "Could not set transient!"
 msgstr ""
 
-#: ../includes/class-wp-backuper.php:205
-#: ../includes/class-wp-backuper.php:210
+#: includes/class-wp-backuper.php:256
+msgid "User does not have rights to backup!"
+msgstr ""
+
+#: includes/class-wp-backuper.php:379 includes/class-wp-backuper.php:432
 msgid "Could not backup!"
 msgstr ""
 
-#: ../includes/class-wp-backuper.php:321
+#: includes/class-wp-backuper.php:385 includes/class-wp-backuper.php:396
+#: includes/class-wp-backuper.php:474 includes/class-wp-backuper.php:508
 msgid "Could not open the backup file for writing!"
 msgstr ""
 
-#: ../includes/class-wp-backuper.php:353
-msgid "Could not open the ZIP file for writing!"
-msgstr ""
-
-#: ../includes/class-wp-backuper.php:470
+#: includes/class-wp-backuper.php:591
 msgid "WordPress MySQL database backup"
 msgstr ""
 
-#: ../includes/class-wp-backuper.php:472
-#, php-format
+#: includes/class-wp-backuper.php:593
 msgid "Generated: %s"
 msgstr ""
 
-#: ../includes/class-wp-backuper.php:473
-#, php-format
+#: includes/class-wp-backuper.php:594
 msgid "Hostname: %s"
 msgstr ""
 
-#: ../includes/class-wp-backuper.php:474
-#, php-format
+#: includes/class-wp-backuper.php:595
 msgid "Database: %s"
 msgstr ""
 
-#: ../includes/class-wp-backuper.php:483
+#: includes/class-wp-backuper.php:604
 msgid "Could not open the db dump file for writing!"
 msgstr ""
 
-#: ../includes/class-wp-backuper.php:499
+#: includes/class-wp-backuper.php:620
 msgid "There was an error writing a line to the backup script:"
 msgstr ""
 
-#: ../includes/class-wp-backuper.php:517
-#, php-format
+#: includes/class-wp-backuper.php:638
 msgid "Table: %s"
 msgstr ""
 
-#: ../includes/class-wp-backuper.php:523
+#: includes/class-wp-backuper.php:644
 msgid "Error getting table details"
 msgstr ""
 
-#: ../includes/class-wp-backuper.php:530
-#, php-format
+#: includes/class-wp-backuper.php:651
 msgid "Delete any existing table %s"
 msgstr ""
 
-#: ../includes/class-wp-backuper.php:538
-#, php-format
+#: includes/class-wp-backuper.php:659
 msgid "Table structure of table %s"
 msgstr ""
 
-#: ../includes/class-wp-backuper.php:547
-#, php-format
+#: includes/class-wp-backuper.php:669
 msgid "Data contents of table %s"
 msgstr ""
 
-#: ../includes/class-wp-backuper.php:550
-#, php-format
+#: includes/class-wp-backuper.php:675
 msgid "Error with SHOW CREATE TABLE for %s."
 msgstr ""
 
-#: ../includes/class-wp-backuper.php:553
-#, php-format
+#: includes/class-wp-backuper.php:678
 msgid "Error getting table structure of %s"
 msgstr ""
 
-#: ../includes/class-wp-backuper.php:613
-#, php-format
+#: includes/class-wp-backuper.php:744
 msgid "End of data contents of table %s"
 msgstr ""
 
+#: includes/class-wp-backuper.php:812
+msgid "Forbidden"
+msgstr ""
+
+#: includes/class-wp-backuper.php:821
+msgid "File not Found"
+msgstr ""
+
+#. Plugin URI of the plugin/theme
+msgid "http://toolstack.com/cyan-backup"
+msgstr ""
+
+#. Description of the plugin/theme
+msgid ""
+"Backup your entire WordPress site and its database into a zip file on a "
+"schedule."
+msgstr ""
+
+#. Author of the plugin/theme
+msgid "Greg Ross"
+msgstr ""
+
+#. Author URI of the plugin/theme
+msgid "http://toolstack.com/"
+msgstr ""
