@@ -173,8 +173,13 @@
 			// Add the backup schedule if it doesn't exist and is enabled.
 			if( !wp_next_scheduled('cyan_backup_hook') && $options['schedule']['enabled'] ) {
 				$next_backup_time = $this->calculate_next_backup( $options['schedule'] );
-			
-				 wp_schedule_single_event($next_backup_time, 'cyan_backup_hook');
+
+				if( $next_backup_time > time() ) {
+					wp_schedule_single_event($next_backup_time, 'cyan_backup_hook');
+				} else {
+					$notes[] = __('ERROR: Schedule not set, failed to determine the next scheduled time to backup!', $this->textdomain);
+					$error++;
+				}
 			}
 
 			// Remove the backup schedule if it does exist and is disabled.
