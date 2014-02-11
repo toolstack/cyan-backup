@@ -1039,6 +1039,70 @@ jQuery(function($){
 		$archive_path = $this->get_archive_path($option);
 		$excluded_dir = $this->get_excluded_dir($option, array());
 
+		// Create the .htaccess or WebConfig files
+		if (isset($_POST['CreateWebConfig']) || isset($_POST['Createhtaccess'])) {
+			if ( $this->wp_version_check('2.5') && function_exists('check_admin_referer') )
+				check_admin_referer($nonce_field, self::NONCE_NAME);
+
+			if( isset($_POST['CreateWebConfig']) )
+				{
+				$access_filename = $archive_path . 'Web.config';
+				
+				if( !file_exists( $access_filename ) )
+					{
+					$access_file = fopen( $access_filename, 'w' );
+					
+					fwrite( $access_file, '<?xml version="1.0" encoding="utf-8" ?>' . "\n");
+					fwrite( $access_file, '<configuration>' . "\n");
+					fwrite( $access_file, '	<system.webServer>' . "\n");
+					fwrite( $access_file, '		<security>' . "\n");
+					fwrite( $access_file, '			<authorization>' . "\n");
+					fwrite( $access_file, '				<remove users="*" roles="" verbs="" />' . "\n");
+					fwrite( $access_file, '				<add accessType="Allow" roles="Administrators" />' . "\n");
+					fwrite( $access_file, '			</authorization>' . "\n");
+					fwrite( $access_file, '		</security>' . "\n");
+					fwrite( $access_file, '	</system.webServer>' . "\n");
+					fwrite( $access_file, '</configuration>' . "\n");
+					
+					fclose( $access_file );
+					
+					$notes[] = "<strong>". __('Web.Config written!', $this->textdomain)."</strong>";
+					$errors++;
+					}
+				else 
+					{
+					$notes[] = "<strong>". __('WARNING: Web.Config already exists, please edit it manually!', $this->textdomain)."</strong>";
+					$error++;
+					}
+				
+				}
+			
+			if( isset($_POST['Createhtaccess']) )
+				{
+				$access_filename = $archive_path . '.htaccess';
+				
+				if( !file_exists( $access_filename ) )
+					{
+					$access_file = fopen( $access_filename, 'w' );
+
+					fwrite( $access_file, '<FilesMatch ".*">' . "\n" );
+					fwrite( $access_file, '  Order Allow,Deny' . "\n" );
+					fwrite( $access_file, '  Deny from all' . "\n" );
+					fwrite( $access_file, '</FilesMatch>' . "\n" );
+					
+					fclose( $access_file );
+
+					$notes[] = "<strong>". __('.htaccess written!', $this->textdomain)."</strong>";
+					$errors++;
+					}
+				else 
+					{
+					$notes[] = "<strong>". __('WARNING: .htaccess already exists, please edit it manually!', $this->textdomain)."</strong>";
+					$error++;
+					}
+				}
+		}
+		
 		// option update
 		if (isset($_POST['options_update'])) {
 			if ( $this->wp_version_check('2.5') && function_exists('check_admin_referer') )
@@ -1057,12 +1121,31 @@ jQuery(function($){
 					$options['archive_path'] = $realpath;
 					
 					if( substr( $realpath, 0, strlen( $abspath) ) == $abspath ) {
-						$notes[] = "<strong>". sprintf(__('WARNING: Archive directory ("%s") is a subdirectory in the WordPress root and may be accessible via the web, this could be an insecure configuration!', $this->textdomain), $realpath)."</strong>";
-						$notes[] = "<strong>". __('WARNING: If you keep this configuration also make sure to exclude this directory from the backup.', $this->textdomain)."</strong>";
-						$error++;
+						$test_name = $realpath . "test.zip";
+						$test_text = "This is a test file\n";
+						$test_file = fopen( $test_name, 'w' );
+						
+						if( $test_file ) {
+							fwrite($test_file, $test_text);
+							fclose( $test_file );
+					
+							$test_url = $this->wp_site_url( substr( $realpath, strlen( $abspath ) ) . 'test.zip' );
+					
+							$test_read = @file_get_contents($test_url);
+							
+							unlink( $test_name );
+							
+							if( $test_read == $test_text ) {
+								$notes[] = "<strong>". sprintf(__('WARNING: Archive directory ("%s") is a subdirectory in the WordPress root and is accessible via the web, this is an insecure configuration!', $this->textdomain), $realpath)."</strong>";
+								$error++;
+							}
+						} else {
+							$notes[] = "<strong>". __('ERROR: Archive directory ("%s") is not writable!', $this->textdomain)."</strong>";
+							$error++;
+						}
 					}
 				} else {
-					$notes[] = "<strong>". sprintf(__('Failure!: Archive directory ("%s") is not found.', $this->textdomain), $realpath)."</strong>";
+					$notes[] = "<strong>". sprintf(__('ERROR: Archive directory ("%s") does not exist!', $this->textdomain), $realpath)."</strong>";
 					$error++;
 				}
 			}
@@ -1070,6 +1153,11 @@ jQuery(function($){
 			if ( isset($postdata['excluded']) ) {
 				$excluded = $excluded_dir = array();
 				$abspath  = $this->chg_directory_separator(ABSPATH, FALSE);
+				$check_archive_excluded = FALSE;
+				$archive_path_found = FALSE;
+				
+				if( substr( $archive_path, 0, strlen( $abspath) ) == $abspath ) { $check_archive_excluded = TRUE; }
+
 				foreach ( explode("\n", $postdata['excluded']) as $dir ) {
 					$dir = trim($dir);
 					if ( !empty($dir) ) {
@@ -1080,12 +1168,25 @@ jQuery(function($){
 								$dir = $this->trailingslashit($dir, FALSE);
 							$excluded[] = $dir;
 							$excluded_dir[] = str_replace($abspath, '', $dir);
+
+							$realpath = $this->trailingslashit($realpath, FALSE);
+							if( $check_archive_excluded && $realpath == $archive_path ) { $archive_path_found = TRUE; }
 						} else {
-							$notes[] = "<strong>". sprintf(__('Failure!: Excluded dir("%s") is not found.', $this->textdomain), $dir)."</strong>";
+							$notes[] = "<strong>". sprintf(__('WARNING: Excluded directory ("%s") is not found, removed from exclusions.', $this->textdomain), $dir)."</strong>";
 							$error++;
 						}
 					}
 				}
+
+				if( $check_archive_excluded == TRUE && $archive_path_found == FALSE ) {
+					$archive_dir = str_replace($abspath, '', $archive_path);
+					$excluded[] = $archive_dir;
+					$excluded_dir[] = $archive_dir;
+
+					$notes[] = "<strong>". __('INFO: Archive path is in the WordPress directory tree but was not found in the exclusions, it has automatically been added.', $this->textdomain)."</strong>";
+					$error++;
+				}
+				
 				$options['excluded'] = $excluded;
 			}
 
@@ -1288,7 +1389,11 @@ jQuery(function($){
 
 		$out .= '<tr>';
 		$out .= '<th>'.__('Archive path', $this->textdomain).'</th>';
-		$out .= '<td><input type="text" name="archive_path" id="archive_path" size="100" value="'.htmlentities($archive_path).'" /></td>';
+		$out .= '<td>';
+		$out .= '<input type="text" name="archive_path" id="archive_path" size="100" value="'.htmlentities($archive_path).'" /><br><br>';
+		$out .= '<input class="button" id="Createhtaccess" name="Createhtaccess" type="submit" value="' . __('Create .htaccess File', $this->textdomain) . '">&nbsp;';
+		$out .= '<input class="button" id="CreateWebConfig" name="CreateWebConfig" type="submit" value="' . __('Create WebConfig File', $this->textdomain) . '">';
+		$out .= '</td>';
 		$out .= '</tr>'."\n";
 
 		$out .= '<tr>';
@@ -1299,11 +1404,11 @@ jQuery(function($){
 			$out .= htmlentities($this->chg_directory_separator($abspath.$dir,FALSE)) . "\n";
 		}
 		$out .= '</textarea><br><br>';
-		$out .= '<input class="button" id="AddArchiveDir" name="AddArchiveDir" type="button" value="Add Archive Dir" onClick="excluded.value = jQuery.trim( excluded.value ) + \'\n'. addslashes( $archive_path ) . '\';">&nbsp;';
-		$out .= '<input class="button" id="AddWPContentDir" name="AddWPContentDir" type="button" value="Add WP-Content Dir" onClick="excluded.value = jQuery.trim( excluded.value ) + \'\n'. addslashes( WP_CONTENT_DIR ) . '\';">&nbsp;';
-		$out .= '<input class="button" id="AddWPContentDir" name="AddWPUpgradeDir" type="button" value="Add WP-Upgrade Dir" onClick="excluded.value = jQuery.trim( excluded.value ) + \'\n'. addslashes( WP_CONTENT_DIR ) . '/upgrade\';">&nbsp;';
-		$out .= '<input class="button" id="AddWPAdminDir" name="AddWPAdminDir" type="button" value="Add WP-Admin Dir" onClick="excluded.value = jQuery.trim( excluded.value ) + \'\n'. addslashes( $abspath ) . 'wp-admin\';">&nbsp;';
-		$out .= '<input class="button" id="AddWPIncludesDir" name="AddWPIncludesDir" type="button" value="Add WP-Includes Dir" onClick="excluded.value = jQuery.trim( excluded.value ) + \'\n'. addslashes($abspath) . 'wp-includes\';">&nbsp;';
+		$out .= '<input class="button" id="AddArchiveDir" name="AddArchiveDir" type="button" value="' . __('Add Archive Dir', $this->textdomain) . '" onClick="excluded.value = jQuery.trim( excluded.value ) + \'\n'. addslashes( $archive_path ) . '\';">&nbsp;';
+		$out .= '<input class="button" id="AddWPContentDir" name="AddWPContentDir" type="button" value="' . __('Add WP-Content Dir', $this->textdomain) . '" onClick="excluded.value = jQuery.trim( excluded.value ) + \'\n'. addslashes( WP_CONTENT_DIR ) . '\';">&nbsp;';
+		$out .= '<input class="button" id="AddWPContentDir" name="AddWPUpgradeDir" type="button" value="' . __('Add WP-Upgrade Dir', $this->textdomain) . '" onClick="excluded.value = jQuery.trim( excluded.value ) + \'\n'. addslashes( WP_CONTENT_DIR ) . '/upgrade\';">&nbsp;';
+		$out .= '<input class="button" id="AddWPAdminDir" name="AddWPAdminDir" type="button" value="' . __('Add WP-Admin Dir', $this->textdomain) . '" onClick="excluded.value = jQuery.trim( excluded.value ) + \'\n'. addslashes( $abspath ) . 'wp-admin\';">&nbsp;';
+		$out .= '<input class="button" id="AddWPIncludesDir" name="AddWPIncludesDir" type="button" value="' . __('Add WP-Includes Dir', $this->textdomain) . '" onClick="excluded.value = jQuery.trim( excluded.value ) + \'\n'. addslashes($abspath) . 'wp-includes\';">&nbsp;';
 		$out .= '</td>';
 		$out .= '</tr>'."\n";
 
