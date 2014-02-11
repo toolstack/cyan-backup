@@ -1,3 +1,7 @@
+<?php 
+	if( !is_admin() )
+		wp_die(__('Access denied!', $this->textdomain));
+?>
 <div class="wrap">
 
 	<div id="icon-options-cyan-backup" class="icon32"><br /></div>

@@ -1,353 +1,357 @@
 <?php
-		$notes = array();
-		$nonce_field = 'option_update';
 
-		$option = (array)get_option($this->option_name);
+	if( !is_admin() )
+		wp_die(__('Access denied!', $this->textdomain));
+		
+	$notes = array();
+	$nonce_field = 'option_update';
+
+	$option = (array)get_option($this->option_name);
+	$archive_path = $this->get_archive_path($option);
+	$excluded_dir = $this->get_excluded_dir($option, array());
+
+	// Create the .htaccess or WebConfig files
+	if (isset($_POST['CreateWebConfig']) || isset($_POST['Createhtaccess'])) {
+		if ( $this->wp_version_check('2.5') && function_exists('check_admin_referer') )
+			check_admin_referer($nonce_field, self::NONCE_NAME);
+
+		if( isset($_POST['CreateWebConfig']) )
+			{
+			$access_filename = $archive_path . 'Web.config';
+			
+			if( !file_exists( $access_filename ) )
+				{
+				$access_file = fopen( $access_filename, 'w' );
+				
+				fwrite( $access_file, '<?xml version="1.0" encoding="utf-8" ?>' . "\n");
+				fwrite( $access_file, '<configuration>' . "\n");
+				fwrite( $access_file, '	<system.webServer>' . "\n");
+				fwrite( $access_file, '		<security>' . "\n");
+				fwrite( $access_file, '			<authorization>' . "\n");
+				fwrite( $access_file, '				<remove users="*" roles="" verbs="" />' . "\n");
+				fwrite( $access_file, '				<add accessType="Allow" roles="Administrators" />' . "\n");
+				fwrite( $access_file, '			</authorization>' . "\n");
+				fwrite( $access_file, '		</security>' . "\n");
+				fwrite( $access_file, '	</system.webServer>' . "\n");
+				fwrite( $access_file, '</configuration>' . "\n");
+				
+				fclose( $access_file );
+				
+				$notes[] = array( "<strong>". __('Web.Config written!', $this->textdomain)."</strong>", 0);
+				}
+			else 
+				{
+				$notes[] = array( "<strong>". __('WARNING: Web.Config already exists, please edit it manually!', $this->textdomain)."</strong>", 1);
+				}
+			
+			}
+		
+		if( isset($_POST['Createhtaccess']) )
+			{
+			$access_filename = $archive_path . '.htaccess';
+			
+			if( !file_exists( $access_filename ) )
+				{
+				$access_file = fopen( $access_filename, 'w' );
+
+				fwrite( $access_file, '<FilesMatch ".*">' . "\n" );
+				fwrite( $access_file, '  Order Allow,Deny' . "\n" );
+				fwrite( $access_file, '  Deny from all' . "\n" );
+				fwrite( $access_file, '</FilesMatch>' . "\n" );
+				
+				fclose( $access_file );
+
+				$notes[] = array( "<strong>". __('.htaccess written!', $this->textdomain)."</strong>", 0);
+				}
+			else 
+				{
+				$notes[] = array( "<strong>". __('WARNING: .htaccess already exists, please edit it manually!', $this->textdomain)."</strong>", 1);
+				}
+			}
+	}
+	
+	// option update
+	if (isset($_POST['options_update'])) {
+		if ( $this->wp_version_check('2.5') && function_exists('check_admin_referer') )
+			check_admin_referer($nonce_field, self::NONCE_NAME);
+
+		$postdata = $this->get_real_post_data();
+
+		if ( isset($postdata['archive_path']) ) {
+			$abspath  = $this->chg_directory_separator(ABSPATH, FALSE);
+			$dir = trim($postdata['archive_path']);
+
+			if ( ($realpath = realpath($dir)) !== FALSE) {
+				$realpath = $this->chg_directory_separator($realpath, FALSE);
+				if ( is_dir($realpath) )
+					$realpath = $this->trailingslashit($realpath, FALSE);
+				$options['archive_path'] = $realpath;
+				
+				if( substr( $realpath, 0, strlen( $abspath) ) == $abspath ) {
+					$test_name = $realpath . "test.zip";
+					$test_text = "This is a test file\n";
+					$test_file = fopen( $test_name, 'w' );
+					
+					if( $test_file ) {
+						fwrite($test_file, $test_text);
+						fclose( $test_file );
+				
+						$test_url = $this->wp_site_url( substr( $realpath, strlen( $abspath ) ) . 'test.zip' );
+				
+						$test_read = @file_get_contents($test_url);
+						
+						unlink( $test_name );
+						
+						if( $test_read == $test_text ) {
+							$notes[] = array( "<strong>". sprintf(__('WARNING: Archive directory ("%s") is a subdirectory in the WordPress root and is accessible via the web, this is an insecure configuration!', $this->textdomain), $realpath)."</strong>", 1);
+						}
+					} else {
+						$notes[] = array( "<strong>". __('ERROR: Archive directory ("%s") is not writable!', $this->textdomain)."</strong>", 2);
+					}
+				}
+			} else {
+				$notes[] = array( "<strong>". sprintf(__('ERROR: Archive directory ("%s") does not exist!', $this->textdomain), $realpath)."</strong>", 2);
+			}
+		}
+		
+		if ( isset($postdata['excluded']) ) {
+			$excluded = $excluded_dir = array();
+			$abspath  = $this->chg_directory_separator(ABSPATH, FALSE);
+			$check_archive_excluded = FALSE;
+			$archive_path_found = FALSE;
+			
+			if( substr( $archive_path, 0, strlen( $abspath) ) == $abspath ) { $check_archive_excluded = TRUE; }
+
+			foreach ( explode("\n", $postdata['excluded']) as $dir ) {
+				$dir = trim($dir);
+				if ( !empty($dir) ) {
+					if ( ($realpath = realpath($dir)) !== FALSE) {
+						$realpath = $this->chg_directory_separator($realpath, FALSE);
+						$dir = str_replace($abspath, '', $realpath);
+						if ( is_dir($realpath) )
+							$dir = $this->trailingslashit($dir, FALSE);
+						$excluded[] = $dir;
+						$excluded_dir[] = str_replace($abspath, '', $dir);
+
+						$realpath = $this->trailingslashit($realpath, FALSE);
+						if( $check_archive_excluded && $realpath == $archive_path ) { $archive_path_found = TRUE; }
+					} else {
+						$notes[] = array("<strong>". sprintf(__('WARNING: Excluded directory ("%s") is not found, removed from exclusions.', $this->textdomain), $dir)."</strong>", 1);
+					}
+				}
+			}
+
+			if( $check_archive_excluded == TRUE && $archive_path_found == FALSE ) {
+				$archive_dir = str_replace($abspath, '', $archive_path);
+				$excluded[] = $archive_dir;
+				$excluded_dir[] = $archive_dir;
+
+				$notes[] = array( "<strong>". __('INFO: Archive path is in the WordPress directory tree but was not found in the exclusions, it has automatically been added.', $this->textdomain)."</strong>", 0);
+			}
+			
+			$options['excluded'] = $excluded;
+		}
+
+		if ( isset($_POST['schedule']) ) {
+			if( is_array( $_POST['schedule'] ) ) {
+				$options['schedule'] = $_POST['schedule'];
+			}
+		}
+
+		// Remove the backup schedule if we've change it recurrence.
+		if( wp_next_scheduled('cyan_backup_hook') && ( $options['schedule']['type'] != $option['schedule']['type'] || $options['schedule']['interval'] != $option['schedule']['interval'] || $options['schedule']['tod'] != $option['schedule']['tod'] || $options['schedule']['dom'] != $option['schedule']['dom'] || $options['schedule']['dow'] != $option['schedule']['dow'] ) ) {
+		
+			wp_unschedule_event(wp_next_scheduled('cyan_backup_hook'), 'cyan_backup_hook');
+		}
+
+		// Add the backup schedule if it doesn't exist and is enabled.
+		if( !wp_next_scheduled('cyan_backup_hook') && $options['schedule']['enabled'] ) {
+			$next_backup_time = $this->calculate_next_backup( $options['schedule'] );
+
+			if( $next_backup_time > time() ) {
+				wp_schedule_single_event($next_backup_time, 'cyan_backup_hook');
+			} else {
+				$notes[] = array( __('ERROR: Schedule not set, failed to determine the next scheduled time to backup!', $this->textdomain), 2);
+			}
+		}
+
+		// Remove the backup schedule if it does exist and is disabled.
+		if( wp_next_scheduled('cyan_backup_hook') && !$options['schedule']['enabled'] ) {
+		
+			wp_unschedule_event(wp_next_scheduled('cyan_backup_hook'), 'cyan_backup_hook');
+		}
+
+		if ( isset($_POST['prune']) ) {
+			if( is_array( $_POST['prune'] ) ) {
+				$options['prune'] = $_POST['prune'];
+			}
+		}
+		
+		update_option($this->option_name, $options);
+
+		$option = $options;
 		$archive_path = $this->get_archive_path($option);
 		$excluded_dir = $this->get_excluded_dir($option, array());
 
-		// Create the .htaccess or WebConfig files
-		if (isset($_POST['CreateWebConfig']) || isset($_POST['Createhtaccess'])) {
-			if ( $this->wp_version_check('2.5') && function_exists('check_admin_referer') )
-				check_admin_referer($nonce_field, self::NONCE_NAME);
+		// Done!
+		$notes[] = array("<strong>".__('Configuration saved!', $this->textdomain)."</strong>", 0);
+	}
 
-			if( isset($_POST['CreateWebConfig']) )
-				{
-				$access_filename = $archive_path . 'Web.config';
-				
-				if( !file_exists( $access_filename ) )
-					{
-					$access_file = fopen( $access_filename, 'w' );
-					
-					fwrite( $access_file, '<?xml version="1.0" encoding="utf-8" ?>' . "\n");
-					fwrite( $access_file, '<configuration>' . "\n");
-					fwrite( $access_file, '	<system.webServer>' . "\n");
-					fwrite( $access_file, '		<security>' . "\n");
-					fwrite( $access_file, '			<authorization>' . "\n");
-					fwrite( $access_file, '				<remove users="*" roles="" verbs="" />' . "\n");
-					fwrite( $access_file, '				<add accessType="Allow" roles="Administrators" />' . "\n");
-					fwrite( $access_file, '			</authorization>' . "\n");
-					fwrite( $access_file, '		</security>' . "\n");
-					fwrite( $access_file, '	</system.webServer>' . "\n");
-					fwrite( $access_file, '</configuration>' . "\n");
-					
-					fclose( $access_file );
-					
-					$notes[] = array( "<strong>". __('Web.Config written!', $this->textdomain)."</strong>", 0);
-					}
-				else 
-					{
-					$notes[] = array( "<strong>". __('WARNING: Web.Config already exists, please edit it manually!', $this->textdomain)."</strong>", 1);
-					}
-				
-				}
-			
-			if( isset($_POST['Createhtaccess']) )
-				{
-				$access_filename = $archive_path . '.htaccess';
-				
-				if( !file_exists( $access_filename ) )
-					{
-					$access_file = fopen( $access_filename, 'w' );
+	$schedule_types = array( 'Once', 'Hourly', 'Daily', 'Weekly', 'Monthly' );
 
-					fwrite( $access_file, '<FilesMatch ".*">' . "\n" );
-					fwrite( $access_file, '  Order Allow,Deny' . "\n" );
-					fwrite( $access_file, '  Deny from all' . "\n" );
-					fwrite( $access_file, '</FilesMatch>' . "\n" );
-					
-					fclose( $access_file );
+	if( self::DEBUG_MODE == TRUE ) {
+		$schedule_types[] = 'debug';
+	}
 
-					$notes[] = array( "<strong>". __('.htaccess written!', $this->textdomain)."</strong>", 0);
-					}
-				else 
-					{
-					$notes[] = array( "<strong>". __('WARNING: .htaccess already exists, please edit it manually!', $this->textdomain)."</strong>", 1);
-					}
-				}
+	$display_settings = array();
+	$display_type_settings = array( 
+								'Once' => array( 
+									'schedule_debug' => 'display: none;',
+									'schedule_once' => '',
+									'schedule_before' => 'display: none;',
+									'schedule_interval' => 'display: none;',
+									'schedule_hours' => 'display: none;',
+									'schedule_days' => 'display: none;',
+									'schedule_weeks' => 'display: none;',
+									'schedule_months' => 'display: none;',
+									'schedule_on' => '',
+									'schedule_dow' => '',
+									'schedule_the' => '',
+									'schedule_dom' => '',
+									'schedule_at' => '',
+									'schedule_tod' => ''
+									),
+								'Hourly' => array( 
+									'schedule_debug' => 'display: none;',
+									'schedule_once' => 'display: none;',
+									'schedule_before' => '',
+									'schedule_interval' => '',
+									'schedule_hours' => '',
+									'schedule_days' => 'display: none;',
+									'schedule_weeks' => 'display: none;',
+									'schedule_months' => 'display: none;',
+									'schedule_on' => 'display: none;',
+									'schedule_dow' => 'display: none;',
+									'schedule_the' => 'display: none;',
+									'schedule_dom' => 'display: none;',
+									'schedule_at' => '',
+									'schedule_tod' => ''
+									),
+								'Daily' => array( 
+									'schedule_debug' => 'display: none;',
+									'schedule_once' => 'display: none;',
+									'schedule_before' => '',
+									'schedule_interval' => '',
+									'schedule_hours' => 'display: none;',
+									'schedule_days' => '',
+									'schedule_weeks' => 'display: none;',
+									'schedule_months' => 'display: none;',
+									'schedule_on' => 'display: none;',
+									'schedule_dow' => 'display: none;',
+									'schedule_the' => 'display: none;',
+									'schedule_dom' => 'display: none;',
+									'schedule_at' => '',
+									'schedule_tod' => ''
+									),
+								'Weekly' => array( 
+									'schedule_debug' => 'display: none;',
+									'schedule_once' => 'display: none;',
+									'schedule_before' => '',
+									'schedule_interval' => '',
+									'schedule_hours' => 'display: none;',
+									'schedule_days' => 'display: none;',
+									'schedule_weeks' => '',
+									'schedule_months' => 'display: none;',
+									'schedule_on' => '',
+									'schedule_dow' => '',
+									'schedule_the' => 'display: none;',
+									'schedule_dom' => 'display: none;',
+									'schedule_at' => '',
+									'schedule_tod' => ''
+									),
+								'Monthly' => array( 
+									'schedule_debug' => 'display: none;',
+									'schedule_once' => 'display: none;',
+									'schedule_before' => '',
+									'schedule_interval' => '',
+									'schedule_hours' => 'display: none;',
+									'schedule_days' => 'display: none;',
+									'schedule_weeks' => 'display: none;',
+									'schedule_months' => '',
+									'schedule_on' => '',
+									'schedule_dow' => 'display: none;',
+									'schedule_the' => '',
+									'schedule_dom' => '',
+									'schedule_at' => '',
+									'schedule_tod' => ''
+									)
+								);		
+	
+	if( self::DEBUG_MODE == TRUE ) {
+		$display_type_settings['debug'] = array( 
+									'schedule_debug' => '',
+									'schedule_once' => 'display: none;',
+									'schedule_before' => 'display: none;',
+									'schedule_interval' => 'display: none;',
+									'schedule_hours' => 'display: none;',
+									'schedule_days' => 'display: none;',
+									'schedule_weeks' => 'display: none;',
+									'schedule_months' => 'display: none;',
+									'schedule_on' => 'display: none;',
+									'schedule_dow' => 'display: none;',
+									'schedule_the' => 'display: none;',
+									'schedule_dom' => 'display: none;',
+									'schedule_at' => 'display: none;',
+									'schedule_tod' => 'display: none;'
+									);
+	}
+	
+	echo '<script type="text/javascript">//<![CDATA[' . "\n";
+	
+	echo 'function set_schedule_display() {' . "\n";
+	echo 'var display_type_settings = new Array() ' . "\n\n";
+
+	foreach( $display_type_settings as $key => $value ) {
+		echo 'display_type_settings[\'' . $key . '\'] = new Array();' . "\n";
+	}
+	
+	foreach( $display_type_settings as $key => $value ) {
+		foreach( $value as $subkey => $subvalue ) {
+			echo 'display_type_settings[\'' . $key . '\'][\'' . $subkey . '\'] = \'';
+			if( $subvalue == "display: none;" ) { echo '0'; } else { echo '1'; }
+			echo '\';' . "\n";
 		}
-		
-		// option update
-		if (isset($_POST['options_update'])) {
-			if ( $this->wp_version_check('2.5') && function_exists('check_admin_referer') )
-				check_admin_referer($nonce_field, self::NONCE_NAME);
+	}
+	
+	echo "\n";
+	
+	echo 'var type = jQuery("#schedule_type").val();' . "\n";
+	echo "\n";
+	echo 'for( var i in display_type_settings[type] ) {' . "\n";
+	echo 'if( display_type_settings[type][i] == 0 ) { jQuery("#" + i).css( "display", "none" ); } else { jQuery("#" + i).css( "display", "" ); }' . "\n";
+	echo '}' . "\n";
+	
+	echo '}' . "\n";
+	
+	echo '//]]></script>' . "\n";
 
-			$postdata = $this->get_real_post_data();
-
-			if ( isset($postdata['archive_path']) ) {
-				$abspath  = $this->chg_directory_separator(ABSPATH, FALSE);
-				$dir = trim($postdata['archive_path']);
-
-				if ( ($realpath = realpath($dir)) !== FALSE) {
-					$realpath = $this->chg_directory_separator($realpath, FALSE);
-					if ( is_dir($realpath) )
-						$realpath = $this->trailingslashit($realpath, FALSE);
-					$options['archive_path'] = $realpath;
-					
-					if( substr( $realpath, 0, strlen( $abspath) ) == $abspath ) {
-						$test_name = $realpath . "test.zip";
-						$test_text = "This is a test file\n";
-						$test_file = fopen( $test_name, 'w' );
-						
-						if( $test_file ) {
-							fwrite($test_file, $test_text);
-							fclose( $test_file );
-					
-							$test_url = $this->wp_site_url( substr( $realpath, strlen( $abspath ) ) . 'test.zip' );
-					
-							$test_read = @file_get_contents($test_url);
-							
-							unlink( $test_name );
-							
-							if( $test_read == $test_text ) {
-								$notes[] = array( "<strong>". sprintf(__('WARNING: Archive directory ("%s") is a subdirectory in the WordPress root and is accessible via the web, this is an insecure configuration!', $this->textdomain), $realpath)."</strong>", 1);
-							}
-						} else {
-							$notes[] = array( "<strong>". __('ERROR: Archive directory ("%s") is not writable!', $this->textdomain)."</strong>", 2);
-						}
-					}
-				} else {
-					$notes[] = array( "<strong>". sprintf(__('ERROR: Archive directory ("%s") does not exist!', $this->textdomain), $realpath)."</strong>", 2);
-				}
-			}
-			
-			if ( isset($postdata['excluded']) ) {
-				$excluded = $excluded_dir = array();
-				$abspath  = $this->chg_directory_separator(ABSPATH, FALSE);
-				$check_archive_excluded = FALSE;
-				$archive_path_found = FALSE;
-				
-				if( substr( $archive_path, 0, strlen( $abspath) ) == $abspath ) { $check_archive_excluded = TRUE; }
-
-				foreach ( explode("\n", $postdata['excluded']) as $dir ) {
-					$dir = trim($dir);
-					if ( !empty($dir) ) {
-						if ( ($realpath = realpath($dir)) !== FALSE) {
-							$realpath = $this->chg_directory_separator($realpath, FALSE);
-							$dir = str_replace($abspath, '', $realpath);
-							if ( is_dir($realpath) )
-								$dir = $this->trailingslashit($dir, FALSE);
-							$excluded[] = $dir;
-							$excluded_dir[] = str_replace($abspath, '', $dir);
-
-							$realpath = $this->trailingslashit($realpath, FALSE);
-							if( $check_archive_excluded && $realpath == $archive_path ) { $archive_path_found = TRUE; }
-						} else {
-							$notes[] = array("<strong>". sprintf(__('WARNING: Excluded directory ("%s") is not found, removed from exclusions.', $this->textdomain), $dir)."</strong>", 1);
-						}
-					}
-				}
-
-				if( $check_archive_excluded == TRUE && $archive_path_found == FALSE ) {
-					$archive_dir = str_replace($abspath, '', $archive_path);
-					$excluded[] = $archive_dir;
-					$excluded_dir[] = $archive_dir;
-
-					$notes[] = array( "<strong>". __('INFO: Archive path is in the WordPress directory tree but was not found in the exclusions, it has automatically been added.', $this->textdomain)."</strong>", 0);
-				}
-				
-				$options['excluded'] = $excluded;
-			}
-
-			if ( isset($_POST['schedule']) ) {
-				if( is_array( $_POST['schedule'] ) ) {
-					$options['schedule'] = $_POST['schedule'];
-				}
-			}
-
-			// Remove the backup schedule if we've change it recurrence.
-			if( wp_next_scheduled('cyan_backup_hook') && ( $options['schedule']['type'] != $option['schedule']['type'] || $options['schedule']['interval'] != $option['schedule']['interval'] || $options['schedule']['tod'] != $option['schedule']['tod'] || $options['schedule']['dom'] != $option['schedule']['dom'] || $options['schedule']['dow'] != $option['schedule']['dow'] ) ) {
-			
-				wp_unschedule_event(wp_next_scheduled('cyan_backup_hook'), 'cyan_backup_hook');
-			}
-
-			// Add the backup schedule if it doesn't exist and is enabled.
-			if( !wp_next_scheduled('cyan_backup_hook') && $options['schedule']['enabled'] ) {
-				$next_backup_time = $this->calculate_next_backup( $options['schedule'] );
-
-				if( $next_backup_time > time() ) {
-					wp_schedule_single_event($next_backup_time, 'cyan_backup_hook');
-				} else {
-					$notes[] = array( __('ERROR: Schedule not set, failed to determine the next scheduled time to backup!', $this->textdomain), 2);
-				}
-			}
-
-			// Remove the backup schedule if it does exist and is disabled.
-			if( wp_next_scheduled('cyan_backup_hook') && !$options['schedule']['enabled'] ) {
-			
-				wp_unschedule_event(wp_next_scheduled('cyan_backup_hook'), 'cyan_backup_hook');
-			}
-
-			if ( isset($_POST['prune']) ) {
-				if( is_array( $_POST['prune'] ) ) {
-					$options['prune'] = $_POST['prune'];
-				}
+	// Output
+	foreach( $notes as $note ) {
+		switch( $note[1] )
+			{
+			case 0:
+				echo '<div id="message" class="updated fade"><p>' . $note[0] . '</p></div>';
+				break;
+			case 1:
+				echo '<div id="message" class="updated fade" style="border-left: 4px solid #fbff1c;"><p>' . $note[0] . '</p></div>';
+				break;
+			case 2:
+				echo '<div id="message" class="error fade"><p>' . $note[0] . '</p></div>';
+				break;
 			}
 			
-			update_option($this->option_name, $options);
-
-			$option = $options;
-			$archive_path = $this->get_archive_path($option);
-			$excluded_dir = $this->get_excluded_dir($option, array());
-
-			// Done!
-			$notes[] = array("<strong>".__('Configuration saved!', $this->textdomain)."</strong>", 0);
-		}
-
-		$schedule_types = array( 'Once', 'Hourly', 'Daily', 'Weekly', 'Monthly' );
-
-		if( self::DEBUG_MODE == TRUE ) {
-			$schedule_types[] = 'debug';
-		}
-
-		$display_settings = array();
-		$display_type_settings = array( 
-									'Once' => array( 
-										'schedule_debug' => 'display: none;',
-										'schedule_once' => '',
-										'schedule_before' => 'display: none;',
-										'schedule_interval' => 'display: none;',
-										'schedule_hours' => 'display: none;',
-										'schedule_days' => 'display: none;',
-										'schedule_weeks' => 'display: none;',
-										'schedule_months' => 'display: none;',
-										'schedule_on' => '',
-										'schedule_dow' => '',
-										'schedule_the' => '',
-										'schedule_dom' => '',
-										'schedule_at' => '',
-										'schedule_tod' => ''
-										),
-									'Hourly' => array( 
-										'schedule_debug' => 'display: none;',
-										'schedule_once' => 'display: none;',
-										'schedule_before' => '',
-										'schedule_interval' => '',
-										'schedule_hours' => '',
-										'schedule_days' => 'display: none;',
-										'schedule_weeks' => 'display: none;',
-										'schedule_months' => 'display: none;',
-										'schedule_on' => 'display: none;',
-										'schedule_dow' => 'display: none;',
-										'schedule_the' => 'display: none;',
-										'schedule_dom' => 'display: none;',
-										'schedule_at' => '',
-										'schedule_tod' => ''
-										),
-									'Daily' => array( 
-										'schedule_debug' => 'display: none;',
-										'schedule_once' => 'display: none;',
-										'schedule_before' => '',
-										'schedule_interval' => '',
-										'schedule_hours' => 'display: none;',
-										'schedule_days' => '',
-										'schedule_weeks' => 'display: none;',
-										'schedule_months' => 'display: none;',
-										'schedule_on' => 'display: none;',
-										'schedule_dow' => 'display: none;',
-										'schedule_the' => 'display: none;',
-										'schedule_dom' => 'display: none;',
-										'schedule_at' => '',
-										'schedule_tod' => ''
-										),
-									'Weekly' => array( 
-										'schedule_debug' => 'display: none;',
-										'schedule_once' => 'display: none;',
-										'schedule_before' => '',
-										'schedule_interval' => '',
-										'schedule_hours' => 'display: none;',
-										'schedule_days' => 'display: none;',
-										'schedule_weeks' => '',
-										'schedule_months' => 'display: none;',
-										'schedule_on' => '',
-										'schedule_dow' => '',
-										'schedule_the' => 'display: none;',
-										'schedule_dom' => 'display: none;',
-										'schedule_at' => '',
-										'schedule_tod' => ''
-										),
-									'Monthly' => array( 
-										'schedule_debug' => 'display: none;',
-										'schedule_once' => 'display: none;',
-										'schedule_before' => '',
-										'schedule_interval' => '',
-										'schedule_hours' => 'display: none;',
-										'schedule_days' => 'display: none;',
-										'schedule_weeks' => 'display: none;',
-										'schedule_months' => '',
-										'schedule_on' => '',
-										'schedule_dow' => 'display: none;',
-										'schedule_the' => '',
-										'schedule_dom' => '',
-										'schedule_at' => '',
-										'schedule_tod' => ''
-										)
-									);		
-		
-		if( self::DEBUG_MODE == TRUE ) {
-			$display_type_settings['debug'] = array( 
-										'schedule_debug' => '',
-										'schedule_once' => 'display: none;',
-										'schedule_before' => 'display: none;',
-										'schedule_interval' => 'display: none;',
-										'schedule_hours' => 'display: none;',
-										'schedule_days' => 'display: none;',
-										'schedule_weeks' => 'display: none;',
-										'schedule_months' => 'display: none;',
-										'schedule_on' => 'display: none;',
-										'schedule_dow' => 'display: none;',
-										'schedule_the' => 'display: none;',
-										'schedule_dom' => 'display: none;',
-										'schedule_at' => 'display: none;',
-										'schedule_tod' => 'display: none;'
-										);
-		}
-		
-		echo '<script type="text/javascript">//<![CDATA[' . "\n";
-		
-		echo 'function set_schedule_display() {' . "\n";
-		echo 'var display_type_settings = new Array() ' . "\n\n";
-
-		foreach( $display_type_settings as $key => $value ) {
-			echo 'display_type_settings[\'' . $key . '\'] = new Array();' . "\n";
-		}
-		
-		foreach( $display_type_settings as $key => $value ) {
-			foreach( $value as $subkey => $subvalue ) {
-				echo 'display_type_settings[\'' . $key . '\'][\'' . $subkey . '\'] = \'';
-				if( $subvalue == "display: none;" ) { echo '0'; } else { echo '1'; }
-				echo '\';' . "\n";
-			}
-		}
-		
 		echo "\n";
-		
-		echo 'var type = jQuery("#schedule_type").val();' . "\n";
-		echo "\n";
-		echo 'for( var i in display_type_settings[type] ) {' . "\n";
-		echo 'if( display_type_settings[type][i] == 0 ) { jQuery("#" + i).css( "display", "none" ); } else { jQuery("#" + i).css( "display", "" ); }' . "\n";
-		echo '}' . "\n";
-		
-		echo '}' . "\n";
-		
-		echo '//]]></script>' . "\n";
-
-		// Output
-		foreach( $notes as $note ) {
-			switch( $note[1] )
-				{
-				case 0:
-					echo '<div id="message" class="updated fade"><p>' . $note[0] . '</p></div>';
-					break;
-				case 1:
-					echo '<div id="message" class="updated fade" style="border-left: 4px solid #fbff1c;"><p>' . $note[0] . '</p></div>';
-					break;
-				case 2:
-					echo '<div id="message" class="error fade"><p>' . $note[0] . '</p></div>';
-					break;
-				}
-				
-			echo "\n";
-		}
+	}
 ?>
 
 <div class="wrap">

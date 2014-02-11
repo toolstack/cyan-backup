@@ -1,37 +1,41 @@
 <?php
-		$notes = array();
-		$nonce_field = 'backup';
 
-		if (isset($_POST['remove_backup'])) {
-			if ($this->wp_version_check('2.5') && function_exists('check_admin_referer'))
-				check_admin_referer($nonce_field, self::NONCE_NAME);
-			if (isset($_POST['remove'])) {
-				$postdata = $this->get_real_post_data();
-				$count = 0;
-				foreach((array)$_POST['remove'] as $index => $bfile) {
-					$file = $postdata['remove[' . $index . ']'];
-					if (($file = realpath($file)) !== FALSE) {
-						if (@unlink($file))
-							$count ++;
-					}
-				}
-				if ($count > 0) {
-					$notes[] = "<strong>".__('ERROR: Failed to delete backup Files!', $this->textdomain)."</strong>";
+	if( !is_admin() )
+		wp_die(__('Access denied!', $this->textdomain));
+		
+	$notes = array();
+	$nonce_field = 'backup';
+
+	if (isset($_POST['remove_backup'])) {
+		if ($this->wp_version_check('2.5') && function_exists('check_admin_referer'))
+			check_admin_referer($nonce_field, self::NONCE_NAME);
+		if (isset($_POST['remove'])) {
+			$postdata = $this->get_real_post_data();
+			$count = 0;
+			foreach((array)$_POST['remove'] as $index => $bfile) {
+				$file = $postdata['remove[' . $index . ']'];
+				if (($file = realpath($file)) !== FALSE) {
+					if (@unlink($file))
+						$count ++;
 				}
 			}
+			if ($count > 0) {
+				$notes[] = "<strong>".__('ERROR: Failed to delete backup Files!', $this->textdomain)."</strong>";
+			}
 		}
+	}
 
-		// Output
-		foreach( $notes as $note ) {
-			echo '<div id="message" class="updated fade"><p>' . $note . '</p></div>';
-			echo "\n";
-		}
+	// Output
+	foreach( $notes as $note ) {
+		echo '<div id="message" class="updated fade"><p>' . $note . '</p></div>';
+		echo "\n";
+	}
 
-		
-		$nonces =
-			( $this->wp_version_check('2.5') && function_exists('wp_nonce_field') )
-			? wp_nonce_field($nonce_field, self::NONCE_NAME, true, false)
-			: '';
+	
+	$nonces =
+		( $this->wp_version_check('2.5') && function_exists('wp_nonce_field') )
+		? wp_nonce_field($nonce_field, self::NONCE_NAME, true, false)
+		: '';
 ?>
 <div class="wrap">
 
