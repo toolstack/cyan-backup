@@ -76,6 +76,11 @@ This could be many things, but the most likely issue is your site is taking a lo
 * None at this time.
 
 == Changelog == 
+= 0.6 =
+* Added: Check to see if web access to archive directory is enabled if it is inside of the WordPress directory.
+* Added: Automatic addition of archive directory to the excluded directories list if it is inside of the WordPress directory.
+* Added: Buttons to create .htaccess and Web.Config files in the archive directory.
+
 = 0.5 =
 * Renamed: Total Backup code base to CYAN backup.
 * Added: About page.
