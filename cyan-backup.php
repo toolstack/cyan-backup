@@ -23,8 +23,6 @@ function cyan_backup_scheduled_run() {
 	global $cyan_backup;
 
 	$cyan_backup->scheduled_backup();
-	
-	$cyan_backup->schedule_next_backup();
 }
 
 add_action('cyan_backup_hook', 'cyan_backup_scheduled_run');
@@ -557,6 +555,8 @@ class CYANBackup {
 		$options = (array)get_option($this->option_name);
 
 		$this->prune_backups( $options['prune']['number'] );
+		
+		$this->schedule_next_backup();
 	}
 
 	//**************************************************************************************
@@ -840,6 +840,113 @@ jQuery(function($){
 		} else {
 			return $_GET;
 		}
+	}
+
+	//**************************************************************************************
+	// Determine when the first backup should happen based on the schedule
+	//**************************************************************************************
+	private function calculate_initial_backup( $schedule ) {
+		if( !is_array($schedule) ) 
+			{ 
+			$options = (array)get_option($this->option_name);
+			
+			$schedule = $options['schedule'];
+			}
+		
+		$parameter = '';
+		$now = getdate( time() );
+
+		$hours = '';
+		$minutes = '';
+		
+		if( $schedule['tod'] != '' ) 
+			{
+			list( $hours, $minutes) = explode( ':', trim($schedule['tod']) );
+		
+			if( $minutes != '' )
+				{
+				if( stristr( $minutes, 'am' ) ) { $minutes = str_ireplace( 'am', '', $minutes ); }
+				if( stristr( $minutes, 'pm' ) ) { $minutes = str_ireplace( 'pm', '', $minutes ); $hours += 12; }
+				}
+			else
+				{
+				$minutes = $hours;
+				$hours = '';
+				}
+			}
+		
+		if( $schedule['type'] == 'Once' )
+			{
+			$parameter = $schedule['dow'] . ' ' . $schedule['dom'] . ' ' . $schedule['tod'];
+			$result = strtotime( $parameter );
+			}
+		else if( $schedule['type'] == 'Hourly' )
+			{
+			if( $now['minutes'] > $minutes && $minutes != '' ) { $now['hours']++; }
+			$result = mktime( $now['hours'], $minutes );
+			}
+		else if( $schedule['type'] == 'Daily' )
+			{
+			$result = mktime( $hours, $minutes );
+			}
+		else if( $schedule['type'] == 'Weekly' )
+			{
+			$weekdays = array( 'Sunday'=>0, 'Monday'=>1, 'Tuesday'=>2, 'Wednesday'=>3, 'Thursday'=>4, 'Friday'=>5, 'Saturday'=>6 );
+			
+			if( $schedule['dow'] != '' ) 
+				{ 
+				$schedule_dow = $weekdays[$schedule['dow']]; 
+				
+				if( $now['wday'] == $schedule_dow )
+					{
+					if( $now['hours'] > $hours )
+						{
+						if( $now['minutes'] > $minutes )
+							{
+							$now['mday'] += 7;
+							}
+						}
+					}
+				else if( $now['wday'] > $schedule_dow )
+					{
+						$now['mday'] += 7 - ( $now['wday'] - $schedule_dow );
+					}
+				}
+			
+			$result = mktime( $hours, $minutes, 0, $now['mon'], $now['mday'] );
+			}
+		else if( $schedule['type'] == 'Monthly' )
+			{
+			if( $schedule['dom'] == '' ) 
+				$schedule['dom'] = $now['mday'];
+
+			if( $now['mday'] == $schedule['dom'] )
+				{
+				if( $now['hours'] > $hours )
+					{
+					if( $now['minutes'] > $minutes )
+						{
+						$now['mon'] += 1;
+						}
+					}
+				}
+			else if( $now['mday'] > $schedule['dom'] )
+				{
+				$now['mon'] += 1;
+				}
+
+			$result = mktime( $hours, $minutes, 0, $now['mon'], $schedule['dom'] );
+			}
+		else if( $schedule['type'] == 'debug' )
+			{
+			$result = strtotime( '+1 minute' );
+			}
+		else
+			{
+			return FALSE;
+			}
+
+		return $result;
 	}
 
 	//**************************************************************************************
