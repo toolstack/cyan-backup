@@ -75,6 +75,17 @@ class CYANBackup {
 			add_action('init', array(&$this, 'file_download'));
 		}
 
+		$options = get_option( $this->option_name );
+		
+		// Run the upgrade code if required
+		if( $options['version'] != self::VERSION ) 
+			{
+			$options['version'] = self::VERSION;
+			$options['next_backup_time'] = wp_next_scheduled('cyan_backup_hook');
+			
+			update_option( $this->option_name, $options );
+			}
+		
 		// activation & deactivation
 		if (function_exists('register_activation_hook'))
 			register_activation_hook(__FILE__, array(&$this, 'activation'));
@@ -431,7 +442,7 @@ class CYANBackup {
 
 	// get filemtime
 	private function get_filemtime($file_name) {
-		$filemtime = filemtime($file_name)  + (int)get_option('gmt_offset') * 3600;
+		$filemtime = filemtime($file_name); //  + (int)get_option('gmt_offset') * 3600;
 		$date_gmt  = $this->get_date_and_gmt(
 			(int)date('Y', $filemtime),
 			(int)date('n', $filemtime),
@@ -550,12 +561,16 @@ class CYANBackup {
 	public function scheduled_backup() {
 		$remote_backuper = $this->remote_backuper();
 
+		// Run the backup.
 		$remote_backuper->wp_backup();
 
+		// Get the options.
 		$options = (array)get_option($this->option_name);
 
+		// Prune existing backup files as per the options.
 		$this->prune_backups( $options['prune']['number'] );
 		
+		// Determine the next backup time
 		$this->schedule_next_backup();
 	}
 
@@ -986,59 +1001,56 @@ jQuery(function($){
 	//**************************************************************************************
 	// Determine when the next backup should happen based on the schedule
 	//**************************************************************************************
-	private function calculate_next_backup( $schedule ) {
-		if( !is_array($schedule) ) 
+	private function calculate_next_backup( $options ) {
+		if( !is_array($options) ) 
 			{ 
 			$options = (array)get_option($this->option_name);
-			
-			$schedule = $options['schedule'];
 			}
 		
-		$parameter = '';
-		
-		if( $schedule['type'] == 'Once' )
+		$schedule = $options['schedule'];
+		$last_schedule = $options['next_backup_time'];
+
+		// Get the current date/time and split it up for reference later on.
+		$last = getdate( $last_schedule );
+
+		if( $schedule['type'] == 'Hourly' )
 			{
-			$parameter = $schedule['dow'] . ' ' . $schedule['dom'] . ' ' . $schedule['tod'];
-			}
-		else if( $schedule['type'] == 'Hourly' )
-			{
-			$parameter = '+' . $schedule['interval'] . ' hours';
+			$result = mktime( $last['hours'] + $schedule['interval'], $last['minutes'], 0, $last['mon'], $last['mday'], $last['year'] );
 			}
 		else if( $schedule['type'] == 'Daily' )
 			{
-			$parameter = '+' . $schedule['interval'] . ' days ' . $schedule['tod'];
+			$result = mktime( $last['hours'], $last['minutes'], 0, $last['mon'], $last['mday'] + $schedule['interval'], $last['year'] );
 			}
 		else if( $schedule['type'] == 'Weekly' )
 			{
-			$parameter = '+' . $schedule['interval'] . ' weeks ' . $schedule['dow'] . ' ' . $schedule['tod'];
+			$result = mktime( $last['hours'], $last['minutes'], 0, $last['mon'], $last['mday'] + ( $schedule['interval'] * 7 ), $last['year'] );
 			}
 		else if( $schedule['type'] == 'Monthly' )
 			{
-			$parameter = '+' . $schedule['interval'] . ' month ' . $schedule['tod'];
+			$result = mktime( $last['hours'], $last['minutes'], 0, $last['mon'] + $schedule['interval'], $last['mday'], $last['year'] );
 			}
 		else if( $schedule['type'] == 'debug' )
 			{
-			$parameter = '+1 minute';
-			}
-			
-		if( $parameter != '' )
-			{
-			$result = strtotime( $parameter );
-			return $result;
+			$result = mktime( $last['hours'], $last['minutes'] + 1, 0, $last['mon'], $last['mday'], $last['year'] );
 			}
 		else
 			{
-			return FALSE;
+			$result = FALSE;
 			}
+			
+		return $result;
 	}
 
 	public function schedule_next_backup( $schedule ) {
 		$options = (array)get_option($this->option_name);
 			
 		if( $options['schedule']['enabled'] && $options['schedule']['type'] != 'Once' ) {
-			$next_backup_time = $this->calculate_next_backup( $options['schedule'] );
+			$next_backup_time = $this->calculate_next_backup( $options );
 		
 			wp_schedule_single_event($next_backup_time, 'cyan_backup_hook');
+
+			$options['next_backup_time'] = $next_backup_time;
+			update_option($this->option_name, $options);
 		}
 	}	
 	

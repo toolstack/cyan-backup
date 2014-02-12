@@ -159,7 +159,7 @@ class WP_Backuper {
 
 	// get filemtime
 	private function get_filemtime($file_name) {
-		$filemtime = filemtime($file_name)  + (int)get_option('gmt_offset') * 3600;
+		$filemtime = filemtime($file_name);//  + (int)get_option('gmt_offset') * 3600;
 		$date_gmt  = $this->get_date_and_gmt(
 			(int)date('Y', $filemtime),
 			(int)date('n', $filemtime),

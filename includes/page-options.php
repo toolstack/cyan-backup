@@ -170,6 +170,7 @@
 
 			if( $next_backup_time > time() ) {
 				wp_schedule_single_event($next_backup_time, 'cyan_backup_hook');
+				$options['next_backup_time'] = $next_backup_time;
 			} else {
 				$notes[] = array( __('ERROR: Schedule not set, failed to determine the next scheduled time to backup!', $this->textdomain), 2);
 			}
