@@ -853,97 +853,131 @@ jQuery(function($){
 			$schedule = $options['schedule'];
 			}
 		
-		$parameter = '';
+		// Get the current date/time and split it up for reference later on.
 		$now = getdate( time() );
 
+		// TOD is stored as a single string, we need to split it for use later on.
 		$hours = '';
 		$minutes = '';
-		
+
 		if( $schedule['tod'] != '' ) 
 			{
+			// First, split the string at the colon.
 			list( $hours, $minutes) = explode( ':', trim($schedule['tod']) );
 		
+			// If there minutes is blank then there was no colan, otherwise we have a valide hour/minutes setting.
 			if( $minutes != '' )
 				{
-				if( stristr( $minutes, 'am' ) ) { $minutes = str_ireplace( 'am', '', $minutes ); }
-				if( stristr( $minutes, 'pm' ) ) { $minutes = str_ireplace( 'pm', '', $minutes ); $hours += 12; }
+				// Strip out the am if we have one.
+				if( stristr( $minutes, 'am' ) ) { $minutes = str_ireplace( 'am', '', $minutes ); if( $hours == 12 ) { $hours = 0; } }
+				
+				// Strip out the pm if we have one and set the hours forward to represent a 24 hour clock.
+				if( stristr( $minutes, 'pm' ) ) { $minutes = str_ireplace( 'pm', '', $minutes ); if( $hours < 12 ) { $hours += 12; } }
 				}
 			else
 				{
+				// If there was no colan, then assume whatever value we have is minutes.
 				$minutes = $hours;
 				$hours = '';
 				}
 			}
 		
+		// Now that we've processed the hours/minutes, lets make sure they aren't blank.  If they are, set them to the current time.
+		if( $hours == '' ) { $hours = $now['hours']; }
+		if( $minutes == '' ) { $minutes = $now['minutes']; }
+
+		// We have to do some work with day names and need to be able to translate them to numbers, setup an array for later to do this.
+		$weekdays = array( 'Sunday'=>0, 'Monday'=>1, 'Tuesday'=>2, 'Wednesday'=>3, 'Thursday'=>4, 'Friday'=>5, 'Saturday'=>6 );
+		
 		if( $schedule['type'] == 'Once' )
 			{
-			$parameter = $schedule['dow'] . ' ' . $schedule['dom'] . ' ' . $schedule['tod'];
-			$result = strtotime( $parameter );
+			// DOW takes precedence over DOM.
+			if( $schedule['dow'] != '' )
+				{
+				// Convert the scheduled DOW to a number.
+				$schedule_dow = $weekdays[$schedule['dow']];
+				
+				// Determine if we've passed the scheduled DOW yet this week.
+				$next_dow = $schedule_dow - $now['wday'];
+				
+				// If we have, we need to add a week.
+				if( $next_dow < 0 ) { $next_dow += 7; }
+				
+				// If we're on the DOW we're scheduled to run, check to see if we've passed the scheduled time, if so, sit it to next week.
+				if( $next_dow == 0 && $now['hours'] > $hours) { $next_dow += 7; }
+				if( $next_dow == 0 && $now['hours'] == $hours && $now['minutes'] > $minutes ) { $next_dow += 7; }
+
+				$now['mday'] += $next_dow;
+
+				$result = mktime( $hours, $minutes, 0, $now['mon'], $now['mday'] );
+				}
+			else if( $schedule['dom'] != '' )
+				{
+				// Determine if we've passed the scheduled DOM yet this month.  If so, set it to next month.
+				if( $schedule['dom'] > $now['mday'] ) { $now['mon'] ++; }
+
+				// If we're on the DOM we're scheduled to run, check to see if we've passed the scheduled time, if so, sit it to next month.
+				if( $schedule['dom'] == $now['mday'] && $now['hours'] > $hours ) { $now['mon']++; }
+				if( $schedule['dom'] == $now['mday'] && $now['hours'] == $hours && $now['minutes'] > $minutes ) { $now['mon']++; }
+
+				$result = mktime( $hours, $minutes, 0, $now['mon'], $schedule['dom'] );
+				}
 			}
 		else if( $schedule['type'] == 'Hourly' )
 			{
-			if( $now['minutes'] > $minutes && $minutes != '' ) { $now['hours']++; }
+			// If we've passed the current time to run it, schedule it for next hour.
+			if( $now['minutes'] > $minutes ) { $now['hours']++; }
+			
 			$result = mktime( $now['hours'], $minutes );
 			}
 		else if( $schedule['type'] == 'Daily' )
 			{
-			$result = mktime( $hours, $minutes );
+			// If we've already passed the TOD to run it at, add another day to it.
+			if( $now['hours'] > $hours ) { $now['mday']++; }
+			if( $now['hours'] == $hours && $now['minutes'] > $minutes ) { $now['mday']++; }
+
+			$result = mktime( $hours, $minutes, 0, $now['mon'], $now['mday'] );
 			}
 		else if( $schedule['type'] == 'Weekly' )
 			{
-			$weekdays = array( 'Sunday'=>0, 'Monday'=>1, 'Tuesday'=>2, 'Wednesday'=>3, 'Thursday'=>4, 'Friday'=>5, 'Saturday'=>6 );
+			// If we have a schedule DOW use it, otherwise use today.
+			if( $schedule['dow'] != '' ) { $schedule_dow = $weekdays[$schedule['dow']]; } else { $schedule_dow = $now['wday']; }
+
+			// If we've already passed the TOD to run it at, add another week to it.
+			if( $now['wday'] == $schedule_dow && $now['hours'] > $hours ) { $now['mday'] += 7; }
+			if( $now['wday'] == $schedule_dow && $now['hours'] == $hours && $now['minutes'] > $minutes ) { $now['mday'] += 7; }
 			
-			if( $schedule['dow'] != '' ) 
-				{ 
-				$schedule_dow = $weekdays[$schedule['dow']]; 
-				
-				if( $now['wday'] == $schedule_dow )
-					{
-					if( $now['hours'] > $hours )
-						{
-						if( $now['minutes'] > $minutes )
-							{
-							$now['mday'] += 7;
-							}
-						}
-					}
-				else if( $now['wday'] > $schedule_dow )
-					{
-						$now['mday'] += 7 - ( $now['wday'] - $schedule_dow );
-					}
-				}
+			// If we've passed the day this week to run it, add the required number of days to catch it the next week.
+			if( $now['wday'] >  $schedule_dow ) { $now['mday'] += 7 - ( $now['wday'] - $schedule_dow ); }
+
+			// If we haven't passed the day this week to run it, add the required number of days to set it.
+			if( $now['wday'] <  $schedule_dow ) { $now['mday'] += ( $schedule_dow - $now['wday'] ); }
 			
 			$result = mktime( $hours, $minutes, 0, $now['mon'], $now['mday'] );
 			}
 		else if( $schedule['type'] == 'Monthly' )
 			{
-			if( $schedule['dom'] == '' ) 
-				$schedule['dom'] = $now['mday'];
+			// If we have a schedule DOm use it, otherwise use today.
+			if( $schedule['dom'] == '' ) { $schedule['dom'] = $now['mday']; }
 
-			if( $now['mday'] == $schedule['dom'] )
-				{
-				if( $now['hours'] > $hours )
-					{
-					if( $now['minutes'] > $minutes )
-						{
-						$now['mon'] += 1;
-						}
-					}
-				}
-			else if( $now['mday'] > $schedule['dom'] )
-				{
-				$now['mon'] += 1;
-				}
+			// If we've already passed the TOD to run it at, add another week to it.
+			if( $now['mday'] == $schedule['dom'] && $now['hours'] > $hours ) { $now['mon'] += 1; }
+			if( $now['mday'] == $schedule['dom'] && $now['hours'] == $hours && $now['minutes'] > $minutes ) { $now['mon'] += 1; }
+			
+			// If we've already passed the DOM this month, set it to next month.
+			if( $now['mday'] > $schedule['dom'] ) {	$now['mon'] += 1; }
 
 			$result = mktime( $hours, $minutes, 0, $now['mon'], $schedule['dom'] );
 			}
 		else if( $schedule['type'] == 'debug' )
 			{
-			$result = strtotime( '+1 minute' );
+			// The debug schedule is every minute, so just set it to now + 1.
+			$result = mktime( $now['hours'], $now['minutes'] + 1 );
 			}
 		else
 			{
-			return FALSE;
+			// On an unknown type, return FALSE.
+			$result = FALSE;
 			}
 
 		return $result;
