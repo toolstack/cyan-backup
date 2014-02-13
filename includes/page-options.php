@@ -155,6 +155,7 @@
 		if ( isset($_POST['schedule']) ) {
 			if( is_array( $_POST['schedule'] ) ) {
 				$options['schedule'] = $_POST['schedule'];
+				$options['schedule']['tod'] = $options['schedule']['hours'] . ':' . $options['schedule']['minutes'] . $options['schedule']['ampm'];
 			}
 		}
 
@@ -211,7 +212,7 @@
 									'schedule_once' => '',
 									'schedule_before' => 'display: none;',
 									'schedule_interval' => 'display: none;',
-									'schedule_hours' => 'display: none;',
+									'schedule_hours_label' => 'display: none;',
 									'schedule_days' => 'display: none;',
 									'schedule_weeks' => 'display: none;',
 									'schedule_months' => 'display: none;',
@@ -220,14 +221,16 @@
 									'schedule_the' => '',
 									'schedule_dom' => '',
 									'schedule_at' => '',
-									'schedule_tod' => ''
+									'schedule_hours' => '',
+									'schedule_minutes' => '',
+									'schedule_ampm' => ''
 									),
 								'Hourly' => array( 
 									'schedule_debug' => 'display: none;',
 									'schedule_once' => 'display: none;',
 									'schedule_before' => '',
 									'schedule_interval' => '',
-									'schedule_hours' => '',
+									'schedule_hours_label' => '',
 									'schedule_days' => 'display: none;',
 									'schedule_weeks' => 'display: none;',
 									'schedule_months' => 'display: none;',
@@ -236,14 +239,16 @@
 									'schedule_the' => 'display: none;',
 									'schedule_dom' => 'display: none;',
 									'schedule_at' => '',
-									'schedule_tod' => ''
+									'schedule_hours' => '',
+									'schedule_minutes' => '',
+									'schedule_ampm' => ''
 									),
 								'Daily' => array( 
 									'schedule_debug' => 'display: none;',
 									'schedule_once' => 'display: none;',
 									'schedule_before' => '',
 									'schedule_interval' => '',
-									'schedule_hours' => 'display: none;',
+									'schedule_hours_label' => 'display: none;',
 									'schedule_days' => '',
 									'schedule_weeks' => 'display: none;',
 									'schedule_months' => 'display: none;',
@@ -252,14 +257,16 @@
 									'schedule_the' => 'display: none;',
 									'schedule_dom' => 'display: none;',
 									'schedule_at' => '',
-									'schedule_tod' => ''
+									'schedule_hours' => '',
+									'schedule_minutes' => '',
+									'schedule_ampm' => ''
 									),
 								'Weekly' => array( 
 									'schedule_debug' => 'display: none;',
 									'schedule_once' => 'display: none;',
 									'schedule_before' => '',
 									'schedule_interval' => '',
-									'schedule_hours' => 'display: none;',
+									'schedule_hours_label' => 'display: none;',
 									'schedule_days' => 'display: none;',
 									'schedule_weeks' => '',
 									'schedule_months' => 'display: none;',
@@ -268,14 +275,16 @@
 									'schedule_the' => 'display: none;',
 									'schedule_dom' => 'display: none;',
 									'schedule_at' => '',
-									'schedule_tod' => ''
+									'schedule_hours' => '',
+									'schedule_minutes' => '',
+									'schedule_ampm' => ''
 									),
 								'Monthly' => array( 
 									'schedule_debug' => 'display: none;',
 									'schedule_once' => 'display: none;',
 									'schedule_before' => '',
 									'schedule_interval' => '',
-									'schedule_hours' => 'display: none;',
+									'schedule_hours_label' => 'display: none;',
 									'schedule_days' => 'display: none;',
 									'schedule_weeks' => 'display: none;',
 									'schedule_months' => '',
@@ -284,7 +293,9 @@
 									'schedule_the' => '',
 									'schedule_dom' => '',
 									'schedule_at' => '',
-									'schedule_tod' => ''
+									'schedule_hours' => '',
+									'schedule_minutes' => '',
+									'schedule_ampm' => ''
 									)
 								);		
 	
@@ -294,7 +305,7 @@
 									'schedule_once' => 'display: none;',
 									'schedule_before' => 'display: none;',
 									'schedule_interval' => 'display: none;',
-									'schedule_hours' => 'display: none;',
+									'schedule_hours_label' => 'display: none;',
 									'schedule_days' => 'display: none;',
 									'schedule_weeks' => 'display: none;',
 									'schedule_months' => 'display: none;',
@@ -303,7 +314,9 @@
 									'schedule_the' => 'display: none;',
 									'schedule_dom' => 'display: none;',
 									'schedule_at' => 'display: none;',
-									'schedule_tod' => 'display: none;'
+									'schedule_hours' => 'display: none;',
+									'schedule_minutes' => 'display: none;',
+									'schedule_ampm' => 'display: none;'
 									);
 	}
 	
@@ -470,8 +483,17 @@
 ?>		
 						<span id="schedule_once" style="<?php echo $display_settings['schedule_once'];?>"><?php _e('Only once', $this->textdomain);?></span>
 						<span id="schedule_before" style="<?php echo $display_settings['schedule_before'];?>"><?php _e('Run backup every', $this->textdomain);?> </span>
-						<input type="text" id="schedule_interval" name="schedule[interval]" size="3" value="<?php echo $option['schedule']['interval'];?>" style="<?php echo $display_settings['schedule_interval'];?>">
-						<span id="schedule_hours" style="<?php echo $display_settings['schedule_hours'];?>"> <?php _e('hour(s)', $this->textdomain);?></span><span id="schedule_days" style="<?php echo $display_settings['schedule_days'];?>"> <?php _e('day(s)', $this->textdomain);?></span><span id="schedule_weeks" style="<?php echo $display_settings['schedule_weeks'];?>"> <?php _e('week(s)', $this->textdomain);?></span><span id="schedule_months" style="<?php echo $display_settings['schedule_months'];?>"> <?php _e('month(s)', $this->textdomain);?></span>
+<?php
+		echo "\t\t\t\t\t<select id=" . '"schedule_interval" name="schedule[interval]">';
+		for( $i = 1; $i < 32; $i++ ) 
+			{ 
+			echo '<option value="' . $i . '"';
+			if( $i == (int)$option['schedule']['interval'] ) { echo ' SELECTED'; }
+			echo '>' . $i . '</option>'; 
+			}
+		echo "</select>\n";
+?>
+						<span id="schedule_hours_label" style="<?php echo $display_settings['schedule_hours_label'];?>"> <?php _e('hour(s)', $this->textdomain);?></span><span id="schedule_days" style="<?php echo $display_settings['schedule_days'];?>"> <?php _e('day(s)', $this->textdomain);?></span><span id="schedule_weeks" style="<?php echo $display_settings['schedule_weeks'];?>"> <?php _e('week(s)', $this->textdomain);?></span><span id="schedule_months" style="<?php echo $display_settings['schedule_months'];?>"> <?php _e('month(s)', $this->textdomain);?></span>
 						<span id="schedule_on" style="<?php echo $display_settings['schedule_on'];?>"> <?php _e('on', $this->textdomain);?></span>
 
 						<select id="schedule_dow" name="schedule[dow]" style="<?php echo $display_settings['schedule_dow'];?>">
@@ -504,8 +526,29 @@
 						</select>
 			
 						<span id="schedule_at" style="<?php echo $display_settings['schedule_at'];?>"> <?php _e('at', $this->textdomain);?></span>
-						<input type="text" id="schedule_tod" name="schedule[tod]" size="8" value="<?php echo $option['schedule']['tod'];?>" style="<?php echo $display_settings['schedule_tod'];?>">
-					.</td>
+<?php
+		echo "\t\t\t\t\t<select id=" . '"schedule_hours" name="schedule[hours]"><option value=""></option>';
+		for( $i = 1; $i < 13; $i++ ) 
+			{ 
+			echo '<option value="' . $i . '"';
+			if( $i == (int)$option['schedule']['hours'] ) { echo ' SELECTED'; }
+			echo '>' . $i . '</option>'; 
+			}
+		echo "</select>\n";
+
+		echo "\t\t\t\t\t<select id=" . '"schedule_minutes" name="schedule[minutes]"><option value=""></option>';
+		for( $i = 0; $i < 60; $i++ ) 
+			{ 
+			echo '<option value="' . $i . '"';
+			if( $i == (int)$option['schedule']['minutes'] ) { echo ' SELECTED'; }
+			echo '>:';
+			if( $i < 10 ) { echo '0'; }
+			echo $i . '</option>'; 
+			}
+		echo "</select>\n";
+?>
+						<select id="schedule_ampm" name="schedule[ampm]"><option value="am"<?php if( $option['schedule']['ampm'] == 'am' ) { echo ' SELECTED'; } ?>>am</option><option value="pm"<?php if( $option['schedule']['ampm'] == 'pm' ) { echo ' SELECTED'; } ?>>pm</option></select>.
+					</td>
 				</tr>
 			</tbody>
 		</table>
