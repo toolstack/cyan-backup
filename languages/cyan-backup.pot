@@ -2,9 +2,9 @@
 # This file is distributed under the same license as the CYAN Backup package.
 msgid ""
 msgstr ""
-"Project-Id-Version: CYAN Backup 0.5\n"
+"Project-Id-Version: CYAN Backup 0.7\n"
 "Report-Msgid-Bugs-To: http://wordpress.org/tag/cyan-backup\n"
-"POT-Creation-Date: 2014-02-10 22:21:24+00:00\n"
+"POT-Creation-Date: 2014-02-13 20:40:05+00:00\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -12,309 +12,369 @@ msgstr ""
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 
-#: cyan-backup.php:492
+#: cyan-backup.php:500
 msgid "not logged in!"
 msgstr ""
 
-#: cyan-backup.php:516
+#: cyan-backup.php:524
 msgid "Method not found!"
 msgstr ""
 
-#: cyan-backup.php:571
+#: cyan-backup.php:590
 msgid "Settings"
 msgstr ""
 
-#. #-#-#-#-#  plugin.pot (CYAN Backup 0.5)  #-#-#-#-#
+#. #-#-#-#-#  plugin.pot (CYAN Backup 0.7)  #-#-#-#-#
 #. Plugin Name of the plugin/theme
-#: cyan-backup.php:728 cyan-backup.php:729 cyan-backup.php:843
+#: cyan-backup.php:747 cyan-backup.php:748 includes/page-backups.php:44
 msgid "CYAN Backup"
 msgstr ""
 
-#: cyan-backup.php:742 cyan-backup.php:743
+#: cyan-backup.php:761 cyan-backup.php:762
 msgid "Backups"
 msgstr ""
 
-#: cyan-backup.php:751
+#: cyan-backup.php:770
 msgid "Options &gt; CYAN Backup"
 msgstr ""
 
-#: cyan-backup.php:752
+#: cyan-backup.php:771
 msgid "Options"
 msgstr ""
 
-#: cyan-backup.php:765
+#: cyan-backup.php:784
 msgid "About &gt; CYAN Backup"
 msgstr ""
 
-#: cyan-backup.php:766
+#: cyan-backup.php:785
 msgid "About"
 msgstr ""
 
-#: cyan-backup.php:787
+#: includes/class-wp-backuper.php:247
+msgid "Could not set transient!"
+msgstr ""
+
+#: includes/class-wp-backuper.php:255
+msgid "User does not have rights to backup!"
+msgstr ""
+
+#: includes/class-wp-backuper.php:378 includes/class-wp-backuper.php:431
+msgid "Could not backup!"
+msgstr ""
+
+#: includes/class-wp-backuper.php:384 includes/class-wp-backuper.php:395
+#: includes/class-wp-backuper.php:473 includes/class-wp-backuper.php:507
+msgid "Could not open the backup file for writing!"
+msgstr ""
+
+#: includes/class-wp-backuper.php:590
+msgid "WordPress MySQL database backup"
+msgstr ""
+
+#: includes/class-wp-backuper.php:592
+msgid "Generated: %s"
+msgstr ""
+
+#: includes/class-wp-backuper.php:593
+msgid "Hostname: %s"
+msgstr ""
+
+#: includes/class-wp-backuper.php:594
+msgid "Database: %s"
+msgstr ""
+
+#: includes/class-wp-backuper.php:603
+msgid "Could not open the db dump file for writing!"
+msgstr ""
+
+#: includes/class-wp-backuper.php:619
+msgid "There was an error writing a line to the backup script:"
+msgstr ""
+
+#: includes/class-wp-backuper.php:637
+msgid "Table: %s"
+msgstr ""
+
+#: includes/class-wp-backuper.php:643
+msgid "Error getting table details"
+msgstr ""
+
+#: includes/class-wp-backuper.php:650
+msgid "Delete any existing table %s"
+msgstr ""
+
+#: includes/class-wp-backuper.php:658
+msgid "Table structure of table %s"
+msgstr ""
+
+#: includes/class-wp-backuper.php:668
+msgid "Data contents of table %s"
+msgstr ""
+
+#: includes/class-wp-backuper.php:674
+msgid "Error with SHOW CREATE TABLE for %s."
+msgstr ""
+
+#: includes/class-wp-backuper.php:677
+msgid "Error getting table structure of %s"
+msgstr ""
+
+#: includes/class-wp-backuper.php:743
+msgid "End of data contents of table %s"
+msgstr ""
+
+#: includes/class-wp-backuper.php:811
+msgid "Forbidden"
+msgstr ""
+
+#: includes/class-wp-backuper.php:820
+msgid "File not Found"
+msgstr ""
+
+#: includes/page-about.php:3 includes/page-backups.php:4
+#: includes/page-options.php:4
+msgid "Access denied!"
+msgstr ""
+
+#: includes/page-about.php:10
 msgid "About CYAN Backup"
 msgstr ""
 
-#: cyan-backup.php:789
+#: includes/page-about.php:12
 msgid "CYAN Backup Version %s"
 msgstr ""
 
-#: cyan-backup.php:790
+#: includes/page-about.php:13
 msgid "by"
 msgstr ""
 
-#: cyan-backup.php:792
+#: includes/page-about.php:15
 msgid "A fork of the great %sTotal Backup%s by %swokamoto%s."
 msgstr ""
 
-#: cyan-backup.php:794
+#: includes/page-about.php:17
 msgid "Licenced under the %sGPL Version 2%s"
 msgstr ""
 
-#: cyan-backup.php:795
+#: includes/page-about.php:18
 msgid ""
 "To find out more, please visit the %sWordPress Plugin Directory page%s or "
 "the plugin home page on %sToolStack.com%s"
 msgstr ""
 
-#: cyan-backup.php:797
+#: includes/page-about.php:20
 msgid "Don't forget to %srate and review%s it too!"
 msgstr ""
 
-#: cyan-backup.php:829
-msgid "Delete Backup Files!"
+#: includes/page-backups.php:23
+msgid "ERROR: Failed to delete backup Files!"
 msgstr ""
 
-#: cyan-backup.php:847
+#: includes/page-backups.php:46
 msgid "Run Backup"
 msgstr ""
 
-#: cyan-backup.php:852 cyan-backup.php:854
+#: includes/page-backups.php:50 includes/page-backups.php:52
 msgid "Backup Now!"
 msgstr ""
 
-#: cyan-backup.php:860
+#: includes/page-backups.php:57
 msgid "Backup Files"
 msgstr ""
 
-#: cyan-backup.php:869
-msgid "Backup file name"
+#: includes/page-backups.php:66
+msgid "File Name"
 msgstr ""
 
-#: cyan-backup.php:870
-msgid "Datetime"
+#: includes/page-backups.php:67
+msgid "Date and Time"
 msgstr ""
 
-#: cyan-backup.php:871
+#: includes/page-backups.php:68
 msgid "Size"
 msgstr ""
 
-#: cyan-backup.php:878
+#: includes/page-backups.php:76
 msgid "Delete"
 msgstr ""
 
-#: cyan-backup.php:1060
+#: includes/page-options.php:40
+msgid "Web.Config written!"
+msgstr ""
+
+#: includes/page-options.php:44
+msgid "WARNING: Web.Config already exists, please edit it manually!"
+msgstr ""
+
+#: includes/page-options.php:64
+msgid ".htaccess written!"
+msgstr ""
+
+#: includes/page-options.php:68
+msgid "WARNING: .htaccess already exists, please edit it manually!"
+msgstr ""
+
+#: includes/page-options.php:106
 msgid ""
 "WARNING: Archive directory (\"%s\") is a subdirectory in the WordPress root "
-"and may be accessible via the web, this could be an insecure configuration!"
+"and is accessible via the web, this is an insecure configuration!"
 msgstr ""
 
-#: cyan-backup.php:1061
+#: includes/page-options.php:109
+msgid "ERROR: Archive directory (\"%s\") is not writable!"
+msgstr ""
+
+#: includes/page-options.php:113
+msgid "ERROR: Archive directory (\"%s\") does not exist!"
+msgstr ""
+
+#: includes/page-options.php:139
 msgid ""
-"WARNING: If you keep this configuration also make sure to exclude this "
-"directory from the backup."
+"WARNING: Excluded directory (\"%s\") is not found, removed from exclusions."
 msgstr ""
 
-#: cyan-backup.php:1065
-msgid "Failure!: Archive directory (\"%s\") is not found."
+#: includes/page-options.php:149
+msgid ""
+"INFO: Archive path is in the WordPress directory tree but was not found in "
+"the exclusions, it has automatically been added."
 msgstr ""
 
-#: cyan-backup.php:1084
-msgid "Failure!: Excluded dir(\"%s\") is not found."
+#: includes/page-options.php:176
+msgid ""
+"ERROR: Schedule not set, failed to determine the next scheduled time to "
+"backup!"
 msgstr ""
 
-#: cyan-backup.php:1131
+#: includes/page-options.php:199
 msgid "Configuration saved!"
 msgstr ""
 
-#: cyan-backup.php:1276
+#: includes/page-options.php:375
 msgid "CYAN Backup Options"
 msgstr ""
 
-#: cyan-backup.php:1280
+#: includes/page-options.php:377
 msgid "Directory Options"
 msgstr ""
 
-#: cyan-backup.php:1290
+#: includes/page-options.php:387
 msgid "Archive path"
 msgstr ""
 
-#: cyan-backup.php:1295
+#: includes/page-options.php:391
+msgid "Create .htaccess File"
+msgstr ""
+
+#: includes/page-options.php:392
+msgid "Create WebConfig File"
+msgstr ""
+
+#: includes/page-options.php:397
 msgid "Excluded dir"
 msgstr ""
 
-#: cyan-backup.php:1313
+#: includes/page-options.php:407
+msgid "Add Archive Dir"
+msgstr ""
+
+#: includes/page-options.php:408
+msgid "Add WP-Content Dir"
+msgstr ""
+
+#: includes/page-options.php:409
+msgid "Add WP-Upgrade Dir"
+msgstr ""
+
+#: includes/page-options.php:410
+msgid "Add WP-Admin Dir"
+msgstr ""
+
+#: includes/page-options.php:411
+msgid "Add WP-Includes Dir"
+msgstr ""
+
+#: includes/page-options.php:417
 msgid "Schedule Options"
 msgstr ""
 
-#: cyan-backup.php:1318
+#: includes/page-options.php:422
 msgid "Current server time"
 msgstr ""
 
-#: cyan-backup.php:1329
+#: includes/page-options.php:432
 msgid "Next backup scheduled for"
 msgstr ""
 
-#: cyan-backup.php:1337
+#: includes/page-options.php:440
 msgid "None"
 msgstr ""
 
-#: cyan-backup.php:1349
+#: includes/page-options.php:452
 msgid "Enable"
 msgstr ""
 
-#: cyan-backup.php:1356
+#: includes/page-options.php:458
 msgid "Type"
 msgstr ""
 
-#: cyan-backup.php:1371
+#: includes/page-options.php:476
 msgid "Schedule"
 msgstr ""
 
-#: cyan-backup.php:1375
+#: includes/page-options.php:481
 msgid "Every minute, for debugging only"
 msgstr ""
 
-#: cyan-backup.php:1378
+#: includes/page-options.php:484
 msgid "Only once"
 msgstr ""
 
-#: cyan-backup.php:1379
+#: includes/page-options.php:485
 msgid "Run backup every"
 msgstr ""
 
-#: cyan-backup.php:1381
+#: includes/page-options.php:496
 msgid "hour(s)"
 msgstr ""
 
-#: cyan-backup.php:1381
+#: includes/page-options.php:496
 msgid "day(s)"
 msgstr ""
 
-#: cyan-backup.php:1381
+#: includes/page-options.php:496
 msgid "week(s)"
 msgstr ""
 
-#: cyan-backup.php:1381
+#: includes/page-options.php:496
 msgid "month(s)"
 msgstr ""
 
-#: cyan-backup.php:1382
+#: includes/page-options.php:497
 msgid "on"
 msgstr ""
 
-#: cyan-backup.php:1398
+#: includes/page-options.php:513
 msgid "the"
 msgstr ""
 
-#: cyan-backup.php:1414
+#: includes/page-options.php:528
 msgid "at"
 msgstr ""
 
-#: cyan-backup.php:1422
+#: includes/page-options.php:556
 msgid "Storage Maintenance"
 msgstr ""
 
-#: cyan-backup.php:1428
+#: includes/page-options.php:561
 msgid "Enable backup pruning"
 msgstr ""
 
-#: cyan-backup.php:1435
+#: includes/page-options.php:567
 msgid "Number of backups to keep"
 msgstr ""
 
-#: cyan-backup.php:1442
+#: includes/page-options.php:573
 msgid "Update Options"
-msgstr ""
-
-#: includes/class-wp-backuper.php:248
-msgid "Could not set transient!"
-msgstr ""
-
-#: includes/class-wp-backuper.php:256
-msgid "User does not have rights to backup!"
-msgstr ""
-
-#: includes/class-wp-backuper.php:379 includes/class-wp-backuper.php:432
-msgid "Could not backup!"
-msgstr ""
-
-#: includes/class-wp-backuper.php:385 includes/class-wp-backuper.php:396
-#: includes/class-wp-backuper.php:474 includes/class-wp-backuper.php:508
-msgid "Could not open the backup file for writing!"
-msgstr ""
-
-#: includes/class-wp-backuper.php:591
-msgid "WordPress MySQL database backup"
-msgstr ""
-
-#: includes/class-wp-backuper.php:593
-msgid "Generated: %s"
-msgstr ""
-
-#: includes/class-wp-backuper.php:594
-msgid "Hostname: %s"
-msgstr ""
-
-#: includes/class-wp-backuper.php:595
-msgid "Database: %s"
-msgstr ""
-
-#: includes/class-wp-backuper.php:604
-msgid "Could not open the db dump file for writing!"
-msgstr ""
-
-#: includes/class-wp-backuper.php:620
-msgid "There was an error writing a line to the backup script:"
-msgstr ""
-
-#: includes/class-wp-backuper.php:638
-msgid "Table: %s"
-msgstr ""
-
-#: includes/class-wp-backuper.php:644
-msgid "Error getting table details"
-msgstr ""
-
-#: includes/class-wp-backuper.php:651
-msgid "Delete any existing table %s"
-msgstr ""
-
-#: includes/class-wp-backuper.php:659
-msgid "Table structure of table %s"
-msgstr ""
-
-#: includes/class-wp-backuper.php:669
-msgid "Data contents of table %s"
-msgstr ""
-
-#: includes/class-wp-backuper.php:675
-msgid "Error with SHOW CREATE TABLE for %s."
-msgstr ""
-
-#: includes/class-wp-backuper.php:678
-msgid "Error getting table structure of %s"
-msgstr ""
-
-#: includes/class-wp-backuper.php:744
-msgid "End of data contents of table %s"
-msgstr ""
-
-#: includes/class-wp-backuper.php:812
-msgid "Forbidden"
-msgstr ""
-
-#: includes/class-wp-backuper.php:821
-msgid "File not Found"
 msgstr ""
 
 #. Plugin URI of the plugin/theme
