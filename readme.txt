@@ -5,7 +5,7 @@ Author URI: http://toolstack.com
 Tags: Backup, Schedule
 Requires at least: 2.9
 Tested up to: 3.8.1
-Stable tag: 0.6
+Stable tag: 0.7
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -75,6 +75,10 @@ This could be many things, but the most likely issue is your site is taking a lo
 * None at this time.
 
 == Changelog == 
+= 0.7 =
+* Fixed: Exclusion buttons in options.
+* Updated: Translation files.
+
 = 0.6 =
 * Added: Check to see if web access to archive directory is enabled if it is inside of the WordPress directory.
 * Added: Automatic addition of archive directory to the excluded directories list if it is inside of the WordPress directory.
