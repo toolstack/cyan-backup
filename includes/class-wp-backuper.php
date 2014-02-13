@@ -268,7 +268,7 @@ class WP_Backuper {
 
 			$archive_path   = $this->get_archive_path($this->archive_path);
 			$archive_prefix = $this->get_archive_prefix($this->archive_pre);
-			$filename       = $archive_prefix . date('Ymd.B');
+			$filename       = $archive_prefix . date('Ymd.His');
 
 			// Maintenance mode ON
 			//$this->maintenance_mode(TRUE);
@@ -571,7 +571,7 @@ class WP_Backuper {
 		$file_name = $this->chg_directory_separator(
 			$file_path .
 			untrailingslashit($pre === FALSE ? 'dump.' : str_replace(DIRECTORY_SEPARATOR, '-', untrailingslashit($pre))) .
-			date('Ymd.B') . '.sql',
+			date('Ymd.His') . '.sql',
 			FALSE);
 		if (!is_writable($file_path))
 			return FALSE;

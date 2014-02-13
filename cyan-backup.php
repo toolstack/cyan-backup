@@ -1010,7 +1010,7 @@ jQuery(function($){
 		$schedule = $options['schedule'];
 		$last_schedule = $options['next_backup_time'];
 
-		// Get the current date/time and split it up for reference later on.
+		// Get the last schedule we set to use as a baseline, then we can just add the appropriate interval to it.
 		$last = getdate( $last_schedule );
 
 		if( $schedule['type'] == 'Hourly' )

@@ -48,9 +48,9 @@ You can also enable auto pruning of old backups by setting the number of backup 
 
 Backing up your site can take a while, you will want to ensure your PHP and webserver are configured to allow for the backup script to run long enough to complete the backup..
 
-Once a backup is complete you can download the backup files from the links in Backup page.  You can delete old backup files by checking one or more boxes in the backup ulist and then clicking the Delete button.
+Once a backup is complete you can download the backup files from the links in Backup page.  You can delete old backup files by checking one or more boxes in the backup list and then clicking the Delete button.
 
-The backup file of DB is included in the zip file as {the directory name of WordPress}.yyyymmdd.xxx.sql. 
+The backup file of DB is included in the zip file as {the directory name of WordPress}.yyyymmdd.hhmmss.sql. 
 
 == Installation ==
 
