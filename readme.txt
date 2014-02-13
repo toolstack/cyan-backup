@@ -5,7 +5,7 @@ Author URI: http://toolstack.com
 Tags: Backup, Schedule
 Requires at least: 2.9
 Tested up to: 3.8.1
-Stable tag: 0.5
+Stable tag: 0.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -71,7 +71,7 @@ This could be many things, but the most likely issue is your site is taking a lo
 3. About page.
 
 == Upgrade Notice ==
-= 0.5 =
+= 0.6 =
 * None at this time.
 
 == Changelog == 
@@ -79,6 +79,14 @@ This could be many things, but the most likely issue is your site is taking a lo
 * Added: Check to see if web access to archive directory is enabled if it is inside of the WordPress directory.
 * Added: Automatic addition of archive directory to the excluded directories list if it is inside of the WordPress directory.
 * Added: Buttons to create .htaccess and Web.Config files in the archive directory.
+* Added: Error message if the schedule failed to properly.
+* Updated: Icon files.
+* Updated: Split Backups/Settings/About pages out of the main file in to separate includes.
+* Updated: Default exclusion list to not include the upload directory.
+* Updated: Rewrote the scheduler code to better set the initial backup and handle more cases.
+* Updated: Backup files now use YYYYMMDD.HHMMSS instead of YYYYMMDD.B, B could wrap around if multiple backups were done in a single day and cause the file list to display incorrectly.
+* Updated: All fields in the scheduler are now drop down boxes instead of text input fields.
+* Fixed: File times were being reported incorrectly due to GMT offset being applied twice.
 
 = 0.5 =
 * Renamed: Total Backup code base to CYAN backup.

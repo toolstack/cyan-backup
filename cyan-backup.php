@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: CYAN Backup
-Version: 0.5
+Version: 0.6
 Plugin URI: http://toolstack.com/cyan-backup
 Description: Backup your entire WordPress site and its database into a zip file on a schedule.
 Author: Greg Ross
@@ -47,7 +47,7 @@ class CYANBackup {
 	const   NONCE_NAME   = '_wpnonce_CYAN_Backup';
 	const   TIME_LIMIT   = 900;			// 15min * 60sec
 	const	DEBUG_MODE   = FALSE;
-	const	VERSION      = "0.5";
+	const	VERSION      = "0.6";
 
 	function __construct() {
 		global $wpdb;
@@ -547,10 +547,15 @@ class CYANBackup {
 		$result = $remote_backuper->wp_backup();
 		$backup_file = isset($result['backup']) ? $result['backup'] : FALSE;
 		if ($backup_file && file_exists($backup_file)) {
+			$options = (array)get_option( $this->option_name );
+			$this->prune_backups( $options['prune']['number'] );
+
 			$filesize = (int)sprintf('%u', filesize($backup_file)) / 1024 / 1024;
+			$temp_time = strtotime($this->get_filemtime($backup_file));
+			$filedate = date( get_option('date_format'), $temp_time ) . ' @ ' . date( get_option('time_format'), $temp_time );
 			return array(
 				'backup_file' => $backup_file,
-				'backup_date' => $this->get_filemtime($backup_file),
+				'backup_date' => $filedate,
 				'backup_size' => number_format($filesize, 2) . ' MB',
 				);
 		} else {
@@ -1011,6 +1016,7 @@ jQuery(function($){
 		$last_schedule = $options['next_backup_time'];
 
 		// Get the last schedule we set to use as a baseline, then we can just add the appropriate interval to it.
+		$now = time();
 		$last = getdate( $last_schedule );
 
 		if( $schedule['type'] == 'Hourly' )
@@ -1037,6 +1043,11 @@ jQuery(function($){
 			{
 			$result = FALSE;
 			}
+
+		// If we've calculated a result but it's in the past, get the next possible schedule, which happens to be the same as the initial schedule.
+		if( $result !== FALSE && $result < $now ) {
+			$result = calculate_initial_backup( $schedule );
+		}
 			
 		return $result;
 	}

@@ -239,9 +239,9 @@
 									'schedule_the' => 'display: none;',
 									'schedule_dom' => 'display: none;',
 									'schedule_at' => '',
-									'schedule_hours' => '',
+									'schedule_hours' => 'display: none;',
 									'schedule_minutes' => '',
-									'schedule_ampm' => ''
+									'schedule_ampm' => 'display: none;'
 									),
 								'Daily' => array( 
 									'schedule_debug' => 'display: none;',
