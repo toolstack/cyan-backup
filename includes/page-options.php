@@ -404,11 +404,11 @@
 	}
 ?></textarea><br><br>
 
-						<input class="button" id="AddArchiveDir" name="AddArchiveDir" type="button" value="<?php _e('Add Archive Dir', $this->textdomain);?>" onClick="excluded.value = jQuery.trim( excluded.value ) + \'\n'. addslashes( $archive_path ) . '\">&nbsp;
-						<input class="button" id="AddWPContentDir" name="AddWPContentDir" type="button" value="<?php _e('Add WP-Content Dir', $this->textdomain);?>" onClick="excluded.value = jQuery.trim( excluded.value ) + \'\n'. addslashes( WP_CONTENT_DIR ) . '\">&nbsp;
-						<input class="button" id="AddWPContentDir" name="AddWPUpgradeDir" type="button" value="<?php _e('Add WP-Upgrade Dir', $this->textdomain);?>" onClick="excluded.value = jQuery.trim( excluded.value ) + \'\n'. addslashes( WP_CONTENT_DIR ) . '/upgrade\">&nbsp;
-						<input class="button" id="AddWPAdminDir" name="AddWPAdminDir" type="button" value="<?php _e('Add WP-Admin Dir', $this->textdomain);?>" onClick="excluded.value = jQuery.trim( excluded.value ) + \'\n'. addslashes( $abspath ) . 'wp-admin\">&nbsp;
-						<input class="button" id="AddWPIncludesDir" name="AddWPIncludesDir" type="button" value="<?php _e('Add WP-Includes Dir', $this->textdomain);?>" onClick="excluded.value = jQuery.trim( excluded.value ) + \'\n'. addslashes($abspath) . 'wp-includes\">&nbsp;
+						<input class="button" id="AddArchiveDir" name="AddArchiveDir" type="button" value="<?php _e('Add Archive Dir', $this->textdomain);?>" onClick="excluded.value = jQuery.trim( excluded.value ) + '\n<?php echo addslashes( $archive_path ); ?>';">&nbsp;
+						<input class="button" id="AddWPContentDir" name="AddWPContentDir" type="button" value="<?php _e('Add WP-Content Dir', $this->textdomain);?>" onClick="excluded.value = jQuery.trim( excluded.value ) + '\n<?php echo addslashes( WP_CONTENT_DIR ); ?>';">&nbsp;
+						<input class="button" id="AddWPContentDir" name="AddWPUpgradeDir" type="button" value="<?php _e('Add WP-Upgrade Dir', $this->textdomain);?>" onClick="excluded.value = jQuery.trim( excluded.value ) + '\n<?php echo addslashes( WP_CONTENT_DIR ); ?>/upgrade';">&nbsp;
+						<input class="button" id="AddWPAdminDir" name="AddWPAdminDir" type="button" value="<?php _e('Add WP-Admin Dir', $this->textdomain);?>" onClick="excluded.value = jQuery.trim( excluded.value ) + '\n<?php echo addslashes( $abspath ); ?>wp-admin';">&nbsp;
+						<input class="button" id="AddWPIncludesDir" name="AddWPIncludesDir" type="button" value="<?php _e('Add WP-Includes Dir', $this->textdomain);?>" onClick="excluded.value = jQuery.trim( excluded.value ) + '\n<?php echo addslashes($abspath)?>wp-includes\';">&nbsp;
 					</td>
 				</tr>
 			</tbody>
