@@ -5,7 +5,7 @@ Author URI: http://toolstack.com
 Tags: Backup, Schedule
 Requires at least: 2.9
 Tested up to: 3.8.1
-Stable tag: 0.7
+Stable tag: 1.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -71,10 +71,13 @@ This could be many things, but the most likely issue is your site is taking a lo
 3. About page.
 
 == Upgrade Notice ==
-= 0.6 =
+= 1.0 =
 * None at this time.
 
 == Changelog == 
+= 1.0 =
+* Updated: Upgrade function now updates the schedule between V0.5 and V0.6 style configuration settings. 
+
 = 0.7 =
 * Fixed: Exclusion buttons in options.
 * Updated: Translation files.
@@ -123,8 +126,6 @@ This could be many things, but the most likely issue is your site is taking a lo
 * Initial fork from Total Backup.
 
 == Road Map ==
-* 0.5 - Initial release
-* 1.0 - Stability release
 * 1.1 - Progress bar
 * 1.2 - Logging
 * 1.3 - email notifications/reporting

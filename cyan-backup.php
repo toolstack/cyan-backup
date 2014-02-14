@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: CYAN Backup
-Version: 0.7
+Version: 1.0
 Plugin URI: http://toolstack.com/cyan-backup
 Description: Backup your entire WordPress site and its database into a zip file on a schedule.
 Author: Greg Ross
@@ -47,7 +47,7 @@ class CYANBackup {
 	const   NONCE_NAME   = '_wpnonce_CYAN_Backup';
 	const   TIME_LIMIT   = 900;			// 15min * 60sec
 	const	DEBUG_MODE   = FALSE;
-	const	VERSION      = "0.7";
+	const	VERSION      = "1.0";
 
 	function __construct() {
 		global $wpdb;
@@ -82,6 +82,10 @@ class CYANBackup {
 			{
 			$options['version'] = self::VERSION;
 			$options['next_backup_time'] = wp_next_scheduled('cyan_backup_hook');
+
+			if( ! isset( $options['schedule']['ampm'] ) ) {
+				list( $hours, $options['schedule']['minutes'], $options['schedule']['hours'], $options['schedule']['ampm'] ) = $this->split_date_string( $schedule['tod'] );
+			}
 			
 			update_option( $this->option_name, $options );
 			}
@@ -865,6 +869,42 @@ jQuery(function($){
 	//**************************************************************************************
 	// Determine when the first backup should happen based on the schedule
 	//**************************************************************************************
+	private function split_date_string( $datestring ) {
+		$hours = '';
+		$minutes = '';
+		$long = '';
+		$ampm = 'am';
+		// First, split the string at the colon.
+		list( $hours, $minutes) = explode( ':', trim($datestring) );
+	
+		// If there minutes is blank then there was no colon, otherwise we have a valid hour/minutes setting.
+		if( $minutes != '' )
+			{
+			// Strip out the am if we have one.
+			if( stristr( $minutes, 'am' ) ) { $minutes = str_ireplace( 'am', '', $minutes ); if( $hours == 12 ) { $hours = 0; } }
+			
+			// Strip out the pm if we have one and set the hours forward to represent a 24 hour clock.
+			if( stristr( $minutes, 'pm' ) ) { $minutes = str_ireplace( 'pm', '', $minutes ); if( $hours < 12 ) { $hours += 12; } }
+			}
+		else
+			{
+			// If there was no colon, then assume whatever value we have is minutes.
+			$minutes = $hours;
+			$hours = '';
+			}
+			
+		if( $hours > 11 ) { $ampm = 'pm'; }
+		
+		$long = $hours;
+		if( $long > 12 ) { $long -= 12; }
+		if( $long == 0 ) { $long = 12; }
+
+		return array( $hours, $minutes, $long, $ampm );
+	}
+	
+	//**************************************************************************************
+	// Determine when the first backup should happen based on the schedule
+	//**************************************************************************************
 	private function calculate_initial_backup( $schedule ) {
 		if( !is_array($schedule) ) 
 			{ 
@@ -879,27 +919,12 @@ jQuery(function($){
 		// TOD is stored as a single string, we need to split it for use later on.
 		$hours = '';
 		$minutes = '';
+		$long = '';
+		$ampm = '';
 
 		if( $schedule['tod'] != '' ) 
 			{
-			// First, split the string at the colon.
-			list( $hours, $minutes) = explode( ':', trim($schedule['tod']) );
-		
-			// If there minutes is blank then there was no colan, otherwise we have a valide hour/minutes setting.
-			if( $minutes != '' )
-				{
-				// Strip out the am if we have one.
-				if( stristr( $minutes, 'am' ) ) { $minutes = str_ireplace( 'am', '', $minutes ); if( $hours == 12 ) { $hours = 0; } }
-				
-				// Strip out the pm if we have one and set the hours forward to represent a 24 hour clock.
-				if( stristr( $minutes, 'pm' ) ) { $minutes = str_ireplace( 'pm', '', $minutes ); if( $hours < 12 ) { $hours += 12; } }
-				}
-			else
-				{
-				// If there was no colan, then assume whatever value we have is minutes.
-				$minutes = $hours;
-				$hours = '';
-				}
+			list( $hours, $minutes, $long, $ampm ) = $this->split_date_string( $schedule['tod'] );
 			}
 		
 		// Now that we've processed the hours/minutes, lets make sure they aren't blank.  If they are, set them to the current time.
