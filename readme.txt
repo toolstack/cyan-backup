@@ -79,6 +79,9 @@ This could be many things, but the most likely issue is your site is taking a lo
 * Added: Progress bar when manually backing up.
 * Removed: Old Windows based zip routine.  Now always use a PHP based library.
 * Updated: Backup library now uses same text domain as main backup class.
+* Added: Code to avoid executing two backups at the same time.
+* Added: When a backup is running and you go to the backup page, the current status will be displayed.
+* Updated: Exclusion buttons now display the appropriate slash for the OS you are running on.
 
 = 1.0 =
 * Updated: Upgrade function now updates the schedule between V0.5 and V0.6 style configuration settings. 
