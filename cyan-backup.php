@@ -521,6 +521,30 @@ class CYANBackup {
 			case 'backup':
 				$result = $this->json_backup($userid);
 				break;
+			case 'status':
+				$status = @file_get_contents( $this->get_archive_path() . 'status.log' );
+				
+				$this->write_debug_log( $this->archive_path . 'status.log' );
+				$this->write_debug_log( $status );
+				
+				if( $status === FALSE ) 
+					{ 
+					$result = array( 
+						'result' => FALSE,
+						'method' => $method_name,
+						'message' => __('No backup running!', $this->textdomain),
+						);
+					}
+				else
+					{
+					list( $result['percentage'], $result['message'] ) = explode( "\n", $status );
+					$result['percentage'] = trim( $result['percentage'] );
+					$result['message'] = trim( $result['message'] );
+					}
+					
+				$this->write_debug_log( serialize( $result ) );
+				
+				break;
 			default:
 				$result = array(
 					'result' => FALSE,
@@ -603,6 +627,12 @@ class CYANBackup {
 	//**************************************************************************************
 	public function add_admin_scripts() {
 		wp_enqueue_script('jquery');
+		wp_enqueue_script('jquery-ui-progressbar');
+
+		global $wp_scripts; 
+		wp_register_style("jquery-ui-css", plugin_dir_url(__FILE__) . "css/jquery-ui-1.10.4.custom.css");
+		wp_enqueue_style("jquery-ui-css");
+
 	}
 
 	public function add_admin_head() {
@@ -623,20 +653,25 @@ class CYANBackup {
 
 		$site_url = trailingslashit(function_exists('home_url') ? home_url() : get_option('home'));
 		$json_backup_url  = $site_url;
+		$json_status_url  = $site_url;
 		$json_backup_args = "userid:{$userid},\n";
+		$json_status_args = "userid:{$userid},\n";
 		$json_method_type = 'POST';
 		switch ($this->get_permalink_type()) {
 		case 'Pretty':
 			$json_backup_url .= 'json/backup/';
+			$json_status_url .= 'json/status/';
 			$json_method_type = 'POST';
 			break;
 		case 'Almost Pretty':
 			$json_backup_url .= 'index.php/json/backup/';
+			$json_status_url .= 'index.php/json/status/';
 			$json_method_type = 'POST';
 			break;
 		case 'Ugly':
 		default:
 			$json_backup_args .= "json:'backup',\n";
+			$json_status_args .= "json:'status',\n";
 			$json_method_type = 'GET';
 			break;
 		}
@@ -649,6 +684,10 @@ class CYANBackup {
 		foreach ($this->get_nonces('backup') as $key => $val) {
 			$nonces_1 .= "'{$key}':'{$val}',\n";
 			$nonces_2 .= '&' . $key . '=' . rawurlencode($val);
+		}
+		$nonces_3 = '';
+		foreach ($this->get_nonces('status') as $key => $val) {
+			$nonces_3 .= "'{$key}':'{$val}',\n";
 		}
 		
 		$option = (array)get_option($this->option_name);
@@ -686,6 +725,37 @@ jQuery(function($){
 			jQuery('[id^="removefiles"]').attr('checked', false);
 		}
 	});
+
+	$("#progressbar").progressbar();
+
+	var CYANBackupInterval = null;
+	
+	function CYANBackupUpdater() {
+		var current = $("#progressbar").progressbar( "value" );
+		var args = {
+<?php echo $json_status_args; ?>
+<?php echo $nonces_3; ?>
+			};
+		
+		$.ajax({
+			async: true,
+			cache: false,
+			data: args,
+			dataType: 'json',
+			success: function(json, status, xhr){
+				if( CYANBackupInterval != null ) {
+					$("#progressbar").progressbar( "value", parseInt( json.percentage ) );
+					$("#progresstext").html(json.message);
+				}
+			},
+			error: function(req, status, err){
+				$("#progressbar").progressbar( "value", 0 );
+				$("#progresstext").html(req.responseText);
+			},
+			type: '<?php echo $json_method_type; ?>',
+			url: '<?php echo $json_status_url; ?>'
+		});
+	}
 	
 	$('input[name="backup_site"]').unbind('click').click(function(){
 		var args = {
@@ -700,12 +770,20 @@ jQuery(function($){
 		wrap.append('<?php echo $loading_img; ?>');
 		buttons_disabled(true);
 
+		$("#progressbar").progressbar("enable");
+		$("#progresstext").html("<?php _e("Starting Backup...", $this->textdomain);?>");
+		$("#progressbar").progressbar( "value", 0 );
+		
+		if( CYANBackupInterval == null ) { CYANBackupInterval = setInterval( CYANBackupUpdater, 1000 ); }
+		
 		$.ajax({
 			async: true,
 			cache: false,
 			data: args,
 			dataType: 'json',
 			success: function(json, status, xhr){
+				clearInterval( CYANBackupInterval );
+				CYANBackupInterval = null;
 				$('img.updating', wrap).remove();
 				if ( xhr.status == 200 && json.result ) {
 					var backup_file = '<a href="?page=<?php echo $this->menu_base; ?>&download=' + encodeURIComponent(json.backup_file) + '<?php echo $nonces_2; ?>' + '" title="' + basename(json.backup_file) + '">' + basename(json.backup_file) + '</a>';
@@ -720,11 +798,17 @@ jQuery(function($){
 					wrap.append('<?php echo $failure_img; ?> <span id="error_message">' + json.errors + '</span>');
 				}
 				buttons_disabled(false);
+				$("#progressbar").progressbar( "value", 100 );
+				$("#progresstext").html("<?php _e("Backup complete!", $this->textdomain);?>");
 			},
 			error: function(req, status, err){
+				clearInterval( CYANBackupInterval );
+				CYANBackupInterval = null;
 				$('img.updating', wrap).remove();
 				wrap.append('<?php echo $failure_img; ?> <span id="error_message">' + req.responseText + '</span>');
 				buttons_disabled(false);
+				$("#progressbar").progressbar( "value", 100 );
+				$("#progresstext").html("<?php _e("Backup failed!", $this->textdomain);?>");
 			},
 			type: '<?php echo $json_method_type; ?>',
 			url: '<?php echo $json_backup_url; ?>'

@@ -53,7 +53,10 @@
 		</p>
 	</form>
 
-
+	<div id="progressbar"></div>
+	<br>
+	<div id="progresstext" style="margin-left: 13px;">&nbsp;</div>
+	
 	<h3><?php _e('Backup Files', $this->textdomain);?></h3>
 
 	<form method="post" action="'.$this->admin_action.'">

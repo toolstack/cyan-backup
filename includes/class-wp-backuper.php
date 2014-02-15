@@ -11,10 +11,16 @@ class WP_Backuper {
 	    'wp-content/tmp/',
 	    'wp-content/upgrade/',
 		);
+	private $textdomain  = 'cyan-backup';
 
 	private $dump_file;
 	private $core_tables = array();
 	private $files = array();
+	private $statuslogfile = null;
+	private $currentcount = 0;
+	private $increment = 0;
+	private $percentage = 0;
+	private $last_percentage = 0;
 
 	private $error = array();
 
@@ -237,6 +243,37 @@ class WP_Backuper {
 	}
 
 	//**************************************************************************************
+	// Get the total number of rows in the WordPress tables we're going to backup.
+	//**************************************************************************************
+	private function get_sql_row_count() {
+		global $wpdb;
+		
+		// get core tables
+		$core_tables = $this->get_core_tables();
+		$row_count = 0;
+
+		// Count the total number of rows in the tables.
+		foreach( $core_tables as $table ) {
+			$row_count += $wpdb->get_var("SELECT count(*) FROM `{$table}`" );
+		}
+		
+		return $row_count;
+	}
+
+	private function write_status_file( $percentage, $message ) {
+		if( $this->statuslogfile == null ) { return; }
+	
+		$status_file = fopen( $this->statuslogfile, "w" );
+
+		if( $status_file !== FALSE ) {
+			fwrite( $status_file, $percentage . "\n" );
+			fwrite( $status_file, $message . "\n" );
+			
+			fclose( $status_file );	
+		}
+	}
+	
+	//**************************************************************************************
 	// WP Backup
 	//**************************************************************************************
 	public function wp_backup($db_backup = TRUE) {
@@ -244,7 +281,7 @@ class WP_Backuper {
 	    $this->set_transient(self::EXCLUSION_KEY, TRUE);
 		
 		if ($this->get_transient(self::EXCLUSION_KEY) === false) {
-			$this->error[] = __('Could not set transient!','wp-backuper');
+			$this->error[] = __('Could not set transient!', $this->textdomain);
 			return array(
 				'result'    => FALSE ,
 				'errors'    => $this->error ,
@@ -252,7 +289,7 @@ class WP_Backuper {
 		}
 
 		if (!$this->can_user_backup()) {
-			$this->error[] = __('User does not have rights to backup!','wp-backuper');
+			$this->error[] = __('User does not have rights to backup!', $this->textdomain);
 			return array(
 				'result'    => FALSE ,
 				'errors'    => $this->error ,
@@ -270,15 +307,34 @@ class WP_Backuper {
 			$archive_prefix = $this->get_archive_prefix($this->archive_pre);
 			$filename       = $archive_prefix . date('Ymd.His');
 
+			$this->statuslogfile = $archive_path . 'status.log';
+			$this->write_status_file( 0, __('Calculating backup size...', $this->textdomain) );
+
 			// Maintenance mode ON
 			//$this->maintenance_mode(TRUE);
 
+			// get SQL rows.
+			$sqlrowcount = $this->get_sql_row_count();
+			
+			// get files
+			$this->files = $files = $this->get_files($this->wp_dir, $this->excluded);
+			$filecount = count( $files );
+			
+			// Total count is the sqlrowcount + 3 times through the file tree
+			// pass 1: copy to temp directory
+			// pass 2: add to zip
+			// pass 3: remove temp directory
+			$total_count = $sqlrowcount + ( $filecount * 3 );
+			
+			$this->increment = 100 / $total_count;
+
+			$this->write_status_file( 0, __('Backup started, processing SQL tables...', $this->textdomain));
+			
 			// DB backup
 			if ($db_backup)
 				$this->dump_file = $this->wpdb_dump($archive_path, $archive_prefix);
 
-			// get files
-			$this->files = $files = $this->get_files($this->wp_dir, $this->excluded);
+			$this->write_status_file( $this->last_percentage, __('Making temporary copying of WordPress...', $this->textdomain));
 
 			// WP Core files backup
 			$backup_dir = trailingslashit(trailingslashit($archive_path).$filename);
@@ -287,9 +343,13 @@ class WP_Backuper {
 			// Maintenance mode OFF
 			//$this->maintenance_mode(FALSE);
 
+			$this->write_status_file( $this->last_percentage, __('Archiving files...', $this->textdomain));
+
 			// WP Core files archive
 			$zip_file = $this->chg_directory_separator(trailingslashit($archive_path).$filename.'.zip');
 			$backup = $this->files_archive($backup_dir, $files, $zip_file);
+
+			$this->write_status_file( $this->last_percentage, __('Removing temporary files...', $this->textdomain));
 
 			// Remove DB backup files
 			if ( $db_backup && file_exists($this->dump_file) ) {
@@ -310,6 +370,9 @@ class WP_Backuper {
 
 			$this->delete_transient(self::EXCLUSION_KEY);
 
+			$this->write_status_file( 100, __('Backup complete!', $this->textdomain ) );
+			$this->statuslogfile = null;
+			
 			return array(
 				'backup'    => ($backup && file_exists($backup)) ? $this->archive_file : FALSE ,
 				'db_backup' => $db_backup ? basename($this->dump_file) : FALSE ,
@@ -375,13 +438,13 @@ class WP_Backuper {
 	//**************************************************************************************
 	private function files_backup($source_dir, $files, $dest_dir) {
 		if (!$this->can_user_backup())
-			throw new Exception(__('Could not backup!','wp-backuper'));
+			throw new Exception(__('Could not backup!', $this->textdomain));
 
 		try {
 			if ( !file_exists($dest_dir) )
 				mkdir($dest_dir, 0700);
 			if (!is_writable($dest_dir))
-				throw new Exception(__('Could not open the backup file for writing!','wp-backuper'));
+				throw new Exception(__('Could not open the backup file for writing!', $this->textdomain));
 
 			$dest_dir = trailingslashit($dest_dir);
 			if ( file_exists($this->dump_file) )
@@ -392,11 +455,19 @@ class WP_Backuper {
 			if ( !file_exists($dest_dir) )
 				mkdir($dest_dir, 0700);
 			if (!is_writable($dest_dir))
-				throw new Exception(__('Could not open the backup file for writing!','wp-backuper'));
+				throw new Exception(__('Could not open the backup file for writing!', $this->textdomain));
 
 			$source_dir = $this->chg_directory_separator(trailingslashit($source_dir));
 
 			foreach ($files as $file) {
+				$this->currentcount++;
+				$this->percentage += $this->increment;
+				
+				if( round( $this->percentage ) > $this->last_percentage ) {
+					$this->last_percentage = round( $this->percentage );
+					$this->write_status_file( $this->last_percentage, sprintf( __("Copying %s...", $this->textdomain), $file ) );
+				}
+
 				if ( is_dir($source_dir.$file) ) {
 					if ( !file_exists($dest_dir.$file) )
 						mkdir($dest_dir.$file);
@@ -418,8 +489,25 @@ class WP_Backuper {
 				if ($file != "." && $file != "..")
 					$this->recursive_rmdir($dir . DIRECTORY_SEPARATOR . $file);
 			}
+			
+			$this->currentcount++;
+			$this->percentage += $this->increment;
+			
+			if( round( $this->percentage ) > $this->last_percentage ) {
+				$this->last_percentage = round( $this->percentage );
+				$this->write_status_file( $this->last_percentage, sprintf( __("Deleting %s...", $this->textdomain), realpath($dir) ) );
+			}
+
 			rmdir($dir);
 		} else if (file_exists($dir)) {
+			$this->currentcount++;
+			$this->percentage += $this->increment;
+			
+			if( round( $this->percentage ) > $this->last_percentage ) {
+				$this->last_percentage = round( $this->percentage );
+				$this->write_status_file( $this->last_percentage, sprintf( __("Deleting %s...", $this->textdomain), realpath($dir) ) );
+			}
+
 			unlink($dir);
 		}
 	} 
@@ -428,28 +516,13 @@ class WP_Backuper {
 	//**************************************************************************************
 	private function files_archive($source_dir, $files, $zip_file) {
 		if (!$this->can_user_backup())
-			throw new Exception(__('Could not backup!','wp-backuper'));
+			throw new Exception(__('Could not backup!', $this->textdomain));
 
 		if (file_exists($zip_file))
 			@unlink($zip_file);
 
 		$wp_dir    = basename($this->wp_dir) . DIRECTORY_SEPARATOR;
 		$dump_file = basename($this->dump_file);
-
-		if ( !ini_get('safe_mode') && (PHP_OS !== "WIN32" && PHP_OS !== "WINNT")) {
-			try {
-				chdir( dirname($zip_file) . DIRECTORY_SEPARATOR . basename($source_dir) );
-				$command = "zip -r {$zip_file} {$wp_dir} {$dump_file}";
-				exec( $command );
-				chdir( dirname(__FILE__) );
-			} catch(Exception $e) {
-				$this->error[] = $e->getMessage();
-			}
-			if (file_exists($zip_file)) {
-				chmod($zip_file, 0600);
-				return $zip_file;
-			}
-		}
 
 		try {
 			$dump_file  = $source_dir . DIRECTORY_SEPARATOR . $dump_file;
@@ -460,6 +533,14 @@ class WP_Backuper {
 				if ( $zip->open($zip_file, ZipArchive::CREATE) === TRUE ) {
 					$zip->addEmptyDir($parent);
 					foreach ($files as $file) {
+						$this->currentcount++;
+						$this->percentage += $this->increment;
+						
+						if( round( $this->percentage ) > $this->last_percentage ) {
+							$this->last_percentage = round( $this->percentage );
+							$this->write_status_file( $this->last_percentage, sprintf( __("Archiving %s...", $this->textdomain), realpath($file) ) );
+						}
+					
 						if ( !is_dir($source_dir.$file) )
 							$zip->addFile($source_dir.$file, $wp_dir.$file);
 					}
@@ -470,7 +551,7 @@ class WP_Backuper {
 
 					$zip->close();
 				} else {
-					throw new Exception(__('Could not open the backup file for writing!','wp-backuper'));
+					throw new Exception(__('Could not open the backup file for writing!', $this->textdomain));
 				}
 
 			} else {
@@ -480,6 +561,14 @@ class WP_Backuper {
 				$zip = new PclZip($zip_file);
 				$backup_files = array();
 				foreach ($files as $file) {
+					$this->currentcount++;
+					$this->percentage += $this->increment;
+					
+					if( round( $this->percentage ) > $this->last_percentage ) {
+						$this->last_percentage = round( $this->percentage );
+						$this->write_status_file( $this->last_percentage, sprintf( __("Archiving %s...", $this->textdomain), realpath($file) ) );
+					}
+
 					if ( !is_dir($source_dir.$file) )
 						$backup_files[] = $source_dir.$file;
 
@@ -504,7 +593,7 @@ class WP_Backuper {
 			chmod($zip_file, 0600);
 			return $zip_file;
 		} else {
-			throw new Exception(__('Could not open the backup file for writing!','wp-backuper'));
+			throw new Exception(__('Could not open the backup file for writing!', $this->textdomain));
 		}
 	}
 
@@ -587,11 +676,11 @@ class WP_Backuper {
 		$fp = @fopen($file_name, 'w');
 		if($fp) {
 			//Begin new backup of MySql
-			$this->fwrite($fp, "# " . __('WordPress MySQL database backup','wp-backuper') . "\n");
+			$this->fwrite($fp, "# " . __('WordPress MySQL database backup', $this->textdomain) . "\n");
 			$this->fwrite($fp, "#\n");
-			$this->fwrite($fp, "# " . sprintf(__('Generated: %s','wp-backuper'), date("l j. F Y H:i T")) . "\n");
-			$this->fwrite($fp, "# " . sprintf(__('Hostname: %s','wp-backuper'),  DB_HOST) . "\n");
-			$this->fwrite($fp, "# " . sprintf(__('Database: %s','wp-backuper'),  $this->backquote(DB_NAME)) . "\n");
+			$this->fwrite($fp, "# " . sprintf(__('Generated: %s', $this->textdomain), date("l j. F Y H:i T")) . "\n");
+			$this->fwrite($fp, "# " . sprintf(__('Hostname: %s', $this->textdomain),  DB_HOST) . "\n");
+			$this->fwrite($fp, "# " . sprintf(__('Database: %s', $this->textdomain),  $this->backquote(DB_NAME)) . "\n");
 			$this->fwrite($fp, "# --------------------------------------------------------\n");
 
 			// backup tables
@@ -600,7 +689,7 @@ class WP_Backuper {
 			}
 			fclose($fp);
 		} else {
-			$this->error[] = __('Could not open the db dump file for writing!','wp-backuper');
+			$this->error[] = __('Could not open the db dump file for writing!', $this->textdomain);
 		}
 
 		if (file_exists($file_name)) {
@@ -616,7 +705,7 @@ class WP_Backuper {
 	//**************************************************************************************
 	function fwrite($fp, $query_line) {
 		if(false === @fwrite($fp, $query_line))
-			$this->error[] = __('There was an error writing a line to the backup script:', 'wp-backuper') . '  ' . $query_line . '  ' . $php_errormsg;
+			$this->error[] = __('There was an error writing a line to the backup script:',  $this->textdomain) . '  ' . $query_line . '  ' . $php_errormsg;
 	}
 
 	//**************************************************************************************
@@ -634,20 +723,20 @@ class WP_Backuper {
 
 		// Create the SQL statements
 		$this->fwrite($fp, "# --------------------------------------------------------\n");
-		$this->fwrite($fp, "# " . sprintf(__('Table: %s','wp-backuper'),$this->backquote($table)) . "\n");
+		$this->fwrite($fp, "# " . sprintf(__('Table: %s', $this->textdomain),$this->backquote($table)) . "\n");
 		$this->fwrite($fp, "# --------------------------------------------------------\n");
 
 		// Get Table structure
 		$table_structure = $wpdb->get_results("DESCRIBE $table");
 		if ( !$table_structure ) {
-			$this->error[] = __('Error getting table details','wp-backuper') . ': $table';
+			$this->error[] = __('Error getting table details', $this->textdomain) . ': $table';
 			return FALSE;
 		}
 
 		// Add SQL statement to drop existing table
 		$this->fwrite($fp, "\n\n");
 		$this->fwrite($fp, "#\n");
-		$this->fwrite($fp, "# " . sprintf(__('Delete any existing table %s','wp-backuper'), $this->backquote($table)) . "\n");
+		$this->fwrite($fp, "# " . sprintf(__('Delete any existing table %s', $this->textdomain), $this->backquote($table)) . "\n");
 		$this->fwrite($fp, "#\n");
 		$this->fwrite($fp, "\n");
 		$this->fwrite($fp, "DROP TABLE IF EXISTS " . $this->backquote($table) . ";\n");
@@ -655,7 +744,7 @@ class WP_Backuper {
 		// Table structure
 		$this->fwrite($fp, "\n\n");
 		$this->fwrite($fp, "#\n");
-		$this->fwrite($fp, "# " . sprintf(__('Table structure of table %s','wp-backuper'), $this->backquote($table)) . "\n");
+		$this->fwrite($fp, "# " . sprintf(__('Table structure of table %s', $this->textdomain), $this->backquote($table)) . "\n");
 		$this->fwrite($fp, "#\n");
 		$this->fwrite($fp, "\n");
 
@@ -665,16 +754,16 @@ class WP_Backuper {
 			$this->fwrite($fp, $create_table[0][1] . ' ;');
 			$this->fwrite($fp, "\n\n");
 			$this->fwrite($fp, "#\n");
-			$this->fwrite($fp, '# ' . sprintf(__('Data contents of table %s','wp-backuper'),$this->backquote($table)) . "\n");
+			$this->fwrite($fp, '# ' . sprintf(__('Data contents of table %s', $this->textdomain),$this->backquote($table)) . "\n");
 			$this->fwrite($fp, "#\n");
 			if ( preg_match('/PRIMARY KEY \(([^\)]*)\)/i', $create_table[0][1], $matches) ) {
 				$pkey = $matches[1];
 			}
 		} else {
-			$err_msg = sprintf(__('Error with SHOW CREATE TABLE for %s.','wp-backuper'), $table);
+			$err_msg = sprintf(__('Error with SHOW CREATE TABLE for %s.', $this->textdomain), $table);
 			$this->error[] = $err_msg;
 			$this->fwrite($fp, "#\n# $err_msg\n#\n");
-			$err_msg = sprintf(__('Error getting table structure of %s','wp-backuper'), $table);
+			$err_msg = sprintf(__('Error getting table structure of %s', $this->textdomain), $table);
 			$this->error[] = $err_msg;
 			$this->fwrite($fp, "#\n# $err_msg\n#\n");
 		}
@@ -721,6 +810,14 @@ class WP_Backuper {
 				if( count($table_data) > 0 ) {
 					$entries = 'INSERT INTO ' . $this->backquote($table) . ' VALUES (';	
 					foreach ($table_data as $row) {
+						$this->currentcount++;
+						$this->percentage += $this->increment;
+						
+						if( round( $this->percentage ) > $this->last_percentage ) {
+							$this->last_percentage = round( $this->percentage );
+							$this->write_status_file( $this->last_percentage, sprintf( __("Processing %s...", $this->textdomain), $table ) );
+						}
+
 						$values = array();
 						foreach ($row as $key => $value) {
 							if (isset($ints[strtolower($key)]) && $ints[strtolower($key)]) {
@@ -740,7 +837,7 @@ class WP_Backuper {
 		// Create footer/closing comment in SQL-file
 		$this->fwrite($fp, "\n");
 		$this->fwrite($fp, "#\n");
-		$this->fwrite($fp, "# " . sprintf(__('End of data contents of table %s','wp-backuper'),$this->backquote($table)) . "\n");
+		$this->fwrite($fp, "# " . sprintf(__('End of data contents of table %s', $this->textdomain),$this->backquote($table)) . "\n");
 		$this->fwrite($fp, "# --------------------------------------------------------\n");
 		$this->fwrite($fp, "\n");
 
