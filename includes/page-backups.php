@@ -45,10 +45,10 @@
 
 	<h3><?php _e('Run Backup', $this->textdomain);?></h3>
 
-	<form method="post" id="backup_site" action="'.$this->admin_action.'">
+	<form method="post" id="backup_site" action="<?php echo $this->admin_action; ?>">
 		<?php echo $nonces;?>
 		<input type="hidden" name="backup_site" class="button-primary sites_backup" value="<?php _e('Backup Now!', $this->textdomain)?>" class="button" style="margin-left:1em;" />
-		<p style="margin-top:1em">
+		<p style="margin-top:1em" id='img_wrap'>
 			<input type="submit" name="backup_site" class="button-primary sites_backup" value="<?php _e('Backup Now!', $this->textdomain)?>" class="button" style="margin-left:1em;" />
 		</p>
 	</form>

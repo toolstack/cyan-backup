@@ -524,9 +524,6 @@ class CYANBackup {
 			case 'status':
 				$status = @file_get_contents( $this->get_archive_path() . 'status.log' );
 				
-				$this->write_debug_log( $this->archive_path . 'status.log' );
-				$this->write_debug_log( $status );
-				
 				if( $status === FALSE ) 
 					{ 
 					$result = array( 
@@ -537,13 +534,20 @@ class CYANBackup {
 					}
 				else
 					{
-					list( $result['percentage'], $result['message'] ) = explode( "\n", $status );
+					list( $result['percentage'], $result['message'], $result['state'], $result['backup_file'], $result['backup_date'], $result['backup_size'] ) = explode( "\n", $status );
 					$result['percentage'] = trim( $result['percentage'] );
 					$result['message'] = trim( $result['message'] );
+					$result['state'] = trim( $result['state'] );
+					$result['backup_file'] = trim( $result['backup_file'] );
+					$result['backup_date'] = trim( $result['backup_date'] );
+					$result['backup_size'] = trim( $result['backup_size'] );
+
+					$temp_time = strtotime($result['backup_date']);
+					$result['backup_date'] = date( get_option('date_format'), $temp_time ) . ' @ ' . date( get_option('time_format'), $temp_time );
+
+					$result['backup_size'] = number_format((float)$result['backup_size'], 2) . ' MB';
 					}
 					
-				$this->write_debug_log( serialize( $result ) );
-				
 				break;
 			default:
 				$result = array(
@@ -729,9 +733,40 @@ jQuery(function($){
 	$("#progressbar").progressbar();
 
 	var CYANBackupInterval = null;
+
+	CYANBackupActivityCheck();
 	
+	function CYANBackupActivityCheck() {
+		var args = {
+<?php echo $json_status_args; ?>
+<?php echo $nonces_3; ?>
+			};
+		
+		$.ajax({
+			async: true,
+			cache: false,
+			data: args,
+			dataType: 'json',
+			success: function(json, status, xhr){
+				if( json.state == 'active' ) {
+					var wrap = $('#img_wrap');
+					wrap.append('<?php echo $loading_img; ?>');
+					buttons_disabled(true);
+
+					$("#progressbar").progressbar("enable");
+					
+					if( CYANBackupInterval == null ) { CYANBackupInterval = setInterval( CYANBackupUpdater, 1000 ); }
+					
+					$("#progressbar").progressbar( "value", parseInt( json.percentage ) );
+					$("#progresstext").html(json.message);
+				}
+			},
+			type: '<?php echo $json_method_type; ?>',
+			url: '<?php echo $json_status_url; ?>'
+		});
+	}
+		
 	function CYANBackupUpdater() {
-		var current = $("#progressbar").progressbar( "value" );
 		var args = {
 <?php echo $json_status_args; ?>
 <?php echo $nonces_3; ?>
@@ -746,6 +781,37 @@ jQuery(function($){
 				if( CYANBackupInterval != null ) {
 					$("#progressbar").progressbar( "value", parseInt( json.percentage ) );
 					$("#progresstext").html(json.message);
+
+					if( json.state == 'complete' ) {
+						var wrap = $('#img_wrap');
+						$('img.success', wrap).remove();
+						$('img.failure', wrap).remove();
+						$('img.updating', wrap).remove();
+						$('div#message').remove();
+						$('span#error_message').remove();
+						buttons_disabled(false);
+
+						$("#progressbar").progressbar("disable");
+						
+						clearInterval( CYANBackupInterval );
+						CYANBackupInterval = null;
+						
+						$("#progressbar").progressbar( "value", parseInt( json.percentage ) );
+						$("#progresstext").html(json.message);
+
+						if ( xhr.status == 200 && json.result ) {
+							var backup_file = '<a href="?page=<?php echo $this->menu_base; ?>&download=' + encodeURIComponent(json.backup_file) + '<?php echo $nonces_2; ?>' + '" title="' + basename(json.backup_file) + '">' + basename(json.backup_file) + '</a>';
+							var rowCount = $('#backuplist tr').length - 2;
+							var tr = $('<tr><td>' + backup_file + '</td>' +
+								'<td>' + json.backup_date  + '</td>' +
+								'<td>' + json.backup_size  + '</td>' +
+								'<td style="text-align: center;"><input type="checkbox" name="remove[' + ( rowCount )  + ']" value="<?php echo addslashes($archive_path);?>' + basename(json.backup_file) +'"></td></tr>');
+							wrap.append('<?php echo $success_img; ?>');
+							$('#backuplist').prepend(tr);
+						} else {
+							wrap.append('<?php echo $failure_img; ?> <span id="error_message">' + json.errors + '</span>');
+						}
+					}
 				}
 			},
 			error: function(req, status, err){
@@ -782,21 +848,7 @@ jQuery(function($){
 			data: args,
 			dataType: 'json',
 			success: function(json, status, xhr){
-				clearInterval( CYANBackupInterval );
-				CYANBackupInterval = null;
 				$('img.updating', wrap).remove();
-				if ( xhr.status == 200 && json.result ) {
-					var backup_file = '<a href="?page=<?php echo $this->menu_base; ?>&download=' + encodeURIComponent(json.backup_file) + '<?php echo $nonces_2; ?>' + '" title="' + basename(json.backup_file) + '">' + basename(json.backup_file) + '</a>';
-					var rowCount = $('#backuplist tr').length - 2;
-					var tr = $('<tr><td>' + backup_file + '</td>' +
-						'<td>' + json.backup_date  + '</td>' +
-						'<td>' + json.backup_size  + '</td>' +
-						'<td style="text-align: center;"><input type="checkbox" name="remove[' + ( rowCount )  + ']" value="<?php echo addslashes($archive_path);?>' + basename(json.backup_file) +'"></td></tr>');
-					wrap.append('<?php echo $success_img; ?>');
-					$('#backuplist').prepend(tr);
-				} else {
-					wrap.append('<?php echo $failure_img; ?> <span id="error_message">' + json.errors + '</span>');
-				}
 				buttons_disabled(false);
 				$("#progressbar").progressbar( "value", 100 );
 				$("#progresstext").html("<?php _e("Backup complete!", $this->textdomain);?>");

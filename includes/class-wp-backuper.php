@@ -260,7 +260,7 @@ class WP_Backuper {
 		return $row_count;
 	}
 
-	private function write_status_file( $percentage, $message ) {
+	private function write_status_file( $percentage, $message, $state = 'active') {
 		if( $this->statuslogfile == null ) { return; }
 	
 		$status_file = fopen( $this->statuslogfile, "w" );
@@ -268,6 +268,16 @@ class WP_Backuper {
 		if( $status_file !== FALSE ) {
 			fwrite( $status_file, $percentage . "\n" );
 			fwrite( $status_file, $message . "\n" );
+			fwrite( $status_file, $state . "\n" );
+			fwrite( $status_file, realpath( $this->archive_file ). "\n" );
+			
+			if( $state == 'complete' ) {
+				fwrite( $status_file, $this->get_filemtime($this->archive_file) . "\n" );
+				fwrite( $status_file, ( filesize($this->archive_file) / 1024 / 1024 ) . "\n");
+			} else {
+				fwrite( $status_file, date("Y-m-d H:i:s", time() ) );
+				fwrite( $status_file, "0" );
+			}
 			
 			fclose( $status_file );	
 		}
@@ -307,6 +317,27 @@ class WP_Backuper {
 			$archive_prefix = $this->get_archive_prefix($this->archive_pre);
 			$filename       = $archive_prefix . date('Ymd.His');
 
+			$active_filename = $archive_path . 'backup.active';
+			if( file_exists( $active_filename ) ) {
+				$active_filetime = strtotime( $this->get_filemtime($active_filename) );
+				
+				// Check to see if the active state is stale ( >30 minutes old )
+				if( time() - $active_filetime > (60 * 30) ) {
+					unlink( $active_filename );
+				} else {
+					$this->error[] = __('Another backup is already running!', $this->textdomain);
+					return array(
+						'result'    => FALSE ,
+						'errors'    => $this->error ,
+						);
+				}
+			} 
+
+			// Create a semaphore file to indicate we're active.
+			$active_backup = fopen( $active_filename, "w" );
+			fwrite( $active_backup, "placeholder\n" );
+			fclose( $active_backup );
+			
 			$this->statuslogfile = $archive_path . 'status.log';
 			$this->write_status_file( 0, __('Calculating backup size...', $this->textdomain) );
 
@@ -370,8 +401,10 @@ class WP_Backuper {
 
 			$this->delete_transient(self::EXCLUSION_KEY);
 
-			$this->write_status_file( 100, __('Backup complete!', $this->textdomain ) );
+			$this->write_status_file( 100, __('Backup complete!', $this->textdomain ), 'complete' );
 			$this->statuslogfile = null;
+			
+			unlink( $active_filename );
 			
 			return array(
 				'backup'    => ($backup && file_exists($backup)) ? $this->archive_file : FALSE ,
@@ -465,7 +498,7 @@ class WP_Backuper {
 				
 				if( round( $this->percentage ) > $this->last_percentage ) {
 					$this->last_percentage = round( $this->percentage );
-					$this->write_status_file( $this->last_percentage, sprintf( __("Copying %s...", $this->textdomain), $file ) );
+					$this->write_status_file( $this->last_percentage, sprintf( __("Copying %s...", $this->textdomain), realpath($file) ) );
 				}
 
 				if ( is_dir($source_dir.$file) ) {
@@ -546,6 +579,7 @@ class WP_Backuper {
 					}
 
 					if (file_exists($dump_file)) {
+					$this->write_status_file( $this->last_percentage, __("Archiving SQL dump...", $this->textdomain) );
 						$zip->addFile($dump_file, basename($this->dump_file));
 					}
 
@@ -582,6 +616,7 @@ class WP_Backuper {
 				}
 
 				if (file_exists($dump_file)) {
+					$this->write_status_file( $this->last_percentage, __("Archiving SQL dump...", $this->textdomain) );
 					$zip->add($dump_file, PCLZIP_OPT_REMOVE_PATH, dirname($this->dump_file));
 				}
 			}

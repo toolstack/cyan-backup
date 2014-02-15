@@ -75,6 +75,11 @@
 		if ( $this->wp_version_check('2.5') && function_exists('check_admin_referer') )
 			check_admin_referer($nonce_field, self::NONCE_NAME);
 
+		if( isset( $_POST['clear_backup'] ) ) {
+			@unlink( $archive_path . 'backup.active' );
+			$notes[] = array( "<strong>". __('Active backup state cleared!', $this->textdomain)."</strong>", 0);
+		}
+
 		$postdata = $this->get_real_post_data();
 
 		if ( isset($postdata['archive_path']) ) {
@@ -405,10 +410,10 @@
 ?></textarea><br><br>
 
 						<input class="button" id="AddArchiveDir" name="AddArchiveDir" type="button" value="<?php _e('Add Archive Dir', $this->textdomain);?>" onClick="excluded.value = jQuery.trim( excluded.value ) + '\n<?php echo addslashes( $archive_path ); ?>';">&nbsp;
-						<input class="button" id="AddWPContentDir" name="AddWPContentDir" type="button" value="<?php _e('Add WP-Content Dir', $this->textdomain);?>" onClick="excluded.value = jQuery.trim( excluded.value ) + '\n<?php echo addslashes( WP_CONTENT_DIR ); ?>';">&nbsp;
-						<input class="button" id="AddWPContentDir" name="AddWPUpgradeDir" type="button" value="<?php _e('Add WP-Upgrade Dir', $this->textdomain);?>" onClick="excluded.value = jQuery.trim( excluded.value ) + '\n<?php echo addslashes( WP_CONTENT_DIR ); ?>/upgrade';">&nbsp;
-						<input class="button" id="AddWPAdminDir" name="AddWPAdminDir" type="button" value="<?php _e('Add WP-Admin Dir', $this->textdomain);?>" onClick="excluded.value = jQuery.trim( excluded.value ) + '\n<?php echo addslashes( $abspath ); ?>wp-admin';">&nbsp;
-						<input class="button" id="AddWPIncludesDir" name="AddWPIncludesDir" type="button" value="<?php _e('Add WP-Includes Dir', $this->textdomain);?>" onClick="excluded.value = jQuery.trim( excluded.value ) + '\n<?php echo addslashes($abspath)?>wp-includes\';">&nbsp;
+						<input class="button" id="AddWPContentDir" name="AddWPContentDir" type="button" value="<?php _e('Add WP-Content Dir', $this->textdomain);?>" onClick="excluded.value = jQuery.trim( excluded.value ) + '\n<?php echo addslashes( $this->chg_directory_separator(WP_CONTENT_DIR . "/", FALSE) ); ?>';">&nbsp;
+						<input class="button" id="AddWPContentDir" name="AddWPUpgradeDir" type="button" value="<?php _e('Add WP-Upgrade Dir', $this->textdomain);?>" onClick="excluded.value = jQuery.trim( excluded.value ) + '\n<?php echo addslashes( $this->chg_directory_separator( WP_CONTENT_DIR . "/upgrade/", FALSE ) ); ?>';">&nbsp;
+						<input class="button" id="AddWPAdminDir" name="AddWPAdminDir" type="button" value="<?php _e('Add WP-Admin Dir', $this->textdomain);?>" onClick="excluded.value = jQuery.trim( excluded.value ) + '\n<?php echo addslashes( $this->chg_directory_separator($abspath . "wp-admin/", FALSE) ); ?>';">&nbsp;
+						<input class="button" id="AddWPIncludesDir" name="AddWPIncludesDir" type="button" value="<?php _e('Add WP-Includes Dir', $this->textdomain);?>" onClick="excluded.value = jQuery.trim( excluded.value ) + '\n<?php echo addslashes($this->chg_directory_separator($abspath . "wp-includes/", FALSE) )?>';">&nbsp;
 					</td>
 				</tr>
 			</tbody>
@@ -560,13 +565,27 @@
 				<tr>
 					<th><?php _e('Enable backup pruning', $this->textdomain);?></th>
 					
-					<td><input type=checkbox name="prune[enabled]"<?php	if( $option['prune']['enabled'] == 'on' ) { echo' CHECKED'; }?>></td>
+					<td><input type="checkbox" name="prune[enabled]"<?php	if( $option['prune']['enabled'] == 'on' ) { echo' CHECKED'; }?>></td>
 				</tr>
 
 				<tr>
 					<th><?php _e('Number of backups to keep', $this->textdomain);?></th>
+
 					<td><input type="text" name="prune[number]" size="5" value="<?php echo $option['prune']['number'];?>"></td>
 				</tr>
+			</tbody>
+		</table>
+
+		<h3><?php _e('Clear Active Backup', $this->textdomain);?></h3>
+
+		<table class="optiontable form-table" style="margin-top:0;">
+			<tbody>
+				<tr>
+					<th><?php _e('Clear active backup status', $this->textdomain);?></th>
+
+					<td><input type="checkbox" name="clear_backup"><br><br><?php _e('WARNING: Only check this if a backup has hung and you can no longer execute backups.', $this->textdomain);?></td>
+				</tr>
+
 			</tbody>
 		</table>
 
