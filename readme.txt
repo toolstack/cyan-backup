@@ -64,6 +64,10 @@ The backup file of DB is included in the zip file as {the directory name of Word
 
 This could be many things, but the most likely issue is your site is taking a long time to backup and the web server or PHP are timing out.  Make sure both have high enough time-out options set to let the backup complete.
 
+= Something has gone horrible wrong and I can no longer run a backup, what can I do? =
+
+CYAN Backup uses a status file to tell if a backup is running or not, if this file hasn't been deleted after a backup is complete you won't be able to run another backup for 30 minutes.  If you wish to force the deletion of the file, go in to Options and check the "Clear active backup status" and save the settings.  This will force the deletion of the file.
+
 == Screenshots ==
 
 1. Backups page.
@@ -75,13 +79,13 @@ This could be many things, but the most likely issue is your site is taking a lo
 * None at this time.
 
 == Changelog == 
-= 1.1 -
+= 1.1 =
 * Added: Progress bar when manually backing up.
-* Removed: Old Windows based zip routine.  Now always use a PHP based library.
-* Updated: Backup library now uses same text domain as main backup class.
 * Added: Code to avoid executing two backups at the same time.
 * Added: When a backup is running and you go to the backup page, the current status will be displayed.
+* Updated: Backup library now uses same text domain as main backup class.
 * Updated: Exclusion buttons now display the appropriate slash for the OS you are running on.
+* Removed: Old Windows based zip routine.  Now always use a PHP based library.
 
 = 1.0 =
 * Updated: Upgrade function now updates the schedule between V0.5 and V0.6 style configuration settings. 
