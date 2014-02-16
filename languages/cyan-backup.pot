@@ -2,9 +2,9 @@
 # This file is distributed under the same license as the CYAN Backup package.
 msgid ""
 msgstr ""
-"Project-Id-Version: CYAN Backup 1.0\n"
+"Project-Id-Version: CYAN Backup 1.1\n"
 "Report-Msgid-Bugs-To: http://wordpress.org/tag/cyan-backup\n"
-"POT-Creation-Date: 2014-02-14 13:43:26+00:00\n"
+"POT-Creation-Date: 2014-02-16 15:42:20+00:00\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -16,118 +16,182 @@ msgstr ""
 msgid "not logged in!"
 msgstr ""
 
-#: cyan-backup.php:528
+#: cyan-backup.php:532
+msgid "No backup running!"
+msgstr ""
+
+#: cyan-backup.php:556
 msgid "Method not found!"
 msgstr ""
 
-#: cyan-backup.php:594
+#: cyan-backup.php:622
 msgid "Settings"
 msgstr ""
 
-#. #-#-#-#-#  plugin.pot (CYAN Backup 1.0)  #-#-#-#-#
+#: cyan-backup.php:846
+msgid "Starting Backup..."
+msgstr ""
+
+#: cyan-backup.php:860 includes/class-wp-backuper.php:411
+msgid "Backup complete!"
+msgstr ""
+
+#: cyan-backup.php:869
+msgid "Backup failed!"
+msgstr ""
+
+#. #-#-#-#-#  plugin.pot (CYAN Backup 1.1)  #-#-#-#-#
 #. Plugin Name of the plugin/theme
-#: cyan-backup.php:751 cyan-backup.php:752 includes/page-backups.php:44
+#: cyan-backup.php:893 cyan-backup.php:894 includes/page-backups.php:44
 msgid "CYAN Backup"
 msgstr ""
 
-#: cyan-backup.php:765 cyan-backup.php:766
+#: cyan-backup.php:907 cyan-backup.php:908
 msgid "Backups"
 msgstr ""
 
-#: cyan-backup.php:774
+#: cyan-backup.php:916
 msgid "Options &gt; CYAN Backup"
 msgstr ""
 
-#: cyan-backup.php:775
+#: cyan-backup.php:917
 msgid "Options"
 msgstr ""
 
-#: cyan-backup.php:788
+#: cyan-backup.php:930
 msgid "About &gt; CYAN Backup"
 msgstr ""
 
-#: cyan-backup.php:789
+#: cyan-backup.php:931
 msgid "About"
 msgstr ""
 
-#: includes/class-wp-backuper.php:247
+#: includes/class-wp-backuper.php:294
 msgid "Could not set transient!"
 msgstr ""
 
-#: includes/class-wp-backuper.php:255
+#: includes/class-wp-backuper.php:302
 msgid "User does not have rights to backup!"
 msgstr ""
 
-#: includes/class-wp-backuper.php:378 includes/class-wp-backuper.php:431
+#: includes/class-wp-backuper.php:328
+msgid "Another backup is already running!"
+msgstr ""
+
+#: includes/class-wp-backuper.php:342
+msgid "Calculating backup size..."
+msgstr ""
+
+#: includes/class-wp-backuper.php:362
+msgid "Backup started, processing SQL tables..."
+msgstr ""
+
+#: includes/class-wp-backuper.php:368
+msgid "Making temporary copying of WordPress..."
+msgstr ""
+
+#: includes/class-wp-backuper.php:377
+msgid "Archiving files..."
+msgstr ""
+
+#: includes/class-wp-backuper.php:383
+msgid "Removing temporary files..."
+msgstr ""
+
+#: includes/class-wp-backuper.php:406
+msgid "ERROR:"
+msgstr ""
+
+#: includes/class-wp-backuper.php:482 includes/class-wp-backuper.php:560
 msgid "Could not backup!"
 msgstr ""
 
-#: includes/class-wp-backuper.php:384 includes/class-wp-backuper.php:395
-#: includes/class-wp-backuper.php:473 includes/class-wp-backuper.php:507
+#: includes/class-wp-backuper.php:488 includes/class-wp-backuper.php:499
+#: includes/class-wp-backuper.php:596 includes/class-wp-backuper.php:639
 msgid "Could not open the backup file for writing!"
 msgstr ""
 
-#: includes/class-wp-backuper.php:590
+#: includes/class-wp-backuper.php:509
+msgid "Copying %s..."
+msgstr ""
+
+#: includes/class-wp-backuper.php:539 includes/class-wp-backuper.php:549
+msgid "Deleting %s..."
+msgstr ""
+
+#: includes/class-wp-backuper.php:582 includes/class-wp-backuper.php:611
+msgid "Archiving %s..."
+msgstr ""
+
+#: includes/class-wp-backuper.php:590 includes/class-wp-backuper.php:627
+msgid "Archiving SQL dump..."
+msgstr ""
+
+#: includes/class-wp-backuper.php:722
 msgid "WordPress MySQL database backup"
 msgstr ""
 
-#: includes/class-wp-backuper.php:592
+#: includes/class-wp-backuper.php:724
 msgid "Generated: %s"
 msgstr ""
 
-#: includes/class-wp-backuper.php:593
+#: includes/class-wp-backuper.php:725
 msgid "Hostname: %s"
 msgstr ""
 
-#: includes/class-wp-backuper.php:594
+#: includes/class-wp-backuper.php:726
 msgid "Database: %s"
 msgstr ""
 
-#: includes/class-wp-backuper.php:603
+#: includes/class-wp-backuper.php:735
 msgid "Could not open the db dump file for writing!"
 msgstr ""
 
-#: includes/class-wp-backuper.php:619
+#: includes/class-wp-backuper.php:751
 msgid "There was an error writing a line to the backup script:"
 msgstr ""
 
-#: includes/class-wp-backuper.php:637
+#: includes/class-wp-backuper.php:769
 msgid "Table: %s"
 msgstr ""
 
-#: includes/class-wp-backuper.php:643
+#: includes/class-wp-backuper.php:775
 msgid "Error getting table details"
 msgstr ""
 
-#: includes/class-wp-backuper.php:650
+#: includes/class-wp-backuper.php:782
 msgid "Delete any existing table %s"
 msgstr ""
 
-#: includes/class-wp-backuper.php:658
+#: includes/class-wp-backuper.php:790
 msgid "Table structure of table %s"
 msgstr ""
 
-#: includes/class-wp-backuper.php:668
+#: includes/class-wp-backuper.php:800
 msgid "Data contents of table %s"
 msgstr ""
 
-#: includes/class-wp-backuper.php:674
+#: includes/class-wp-backuper.php:806
 msgid "Error with SHOW CREATE TABLE for %s."
 msgstr ""
 
-#: includes/class-wp-backuper.php:677
+#: includes/class-wp-backuper.php:809
 msgid "Error getting table structure of %s"
 msgstr ""
 
-#: includes/class-wp-backuper.php:743
+#: includes/class-wp-backuper.php:861
+msgid "Processing %s..."
+msgstr ""
+
+#: includes/class-wp-backuper.php:883
 msgid "End of data contents of table %s"
 msgstr ""
 
-#: includes/class-wp-backuper.php:811
+#: includes/class-wp-backuper.php:951
 msgid "Forbidden"
 msgstr ""
 
-#: includes/class-wp-backuper.php:820
+#: includes/class-wp-backuper.php:960
 msgid "File not Found"
 msgstr ""
 
@@ -178,23 +242,23 @@ msgstr ""
 msgid "Backup Now!"
 msgstr ""
 
-#: includes/page-backups.php:57
+#: includes/page-backups.php:60
 msgid "Backup Files"
 msgstr ""
 
-#: includes/page-backups.php:66
+#: includes/page-backups.php:69
 msgid "File Name"
 msgstr ""
 
-#: includes/page-backups.php:67
+#: includes/page-backups.php:70
 msgid "Date and Time"
 msgstr ""
 
-#: includes/page-backups.php:68
+#: includes/page-backups.php:71
 msgid "Size"
 msgstr ""
 
-#: includes/page-backups.php:76
+#: includes/page-backups.php:79
 msgid "Delete"
 msgstr ""
 
@@ -214,166 +278,184 @@ msgstr ""
 msgid "WARNING: .htaccess already exists, please edit it manually!"
 msgstr ""
 
-#: includes/page-options.php:106
+#: includes/page-options.php:80
+msgid "Active backup state cleared!"
+msgstr ""
+
+#: includes/page-options.php:111
 msgid ""
 "WARNING: Archive directory (\"%s\") is a subdirectory in the WordPress root "
 "and is accessible via the web, this is an insecure configuration!"
 msgstr ""
 
-#: includes/page-options.php:109
+#: includes/page-options.php:114
 msgid "ERROR: Archive directory (\"%s\") is not writable!"
 msgstr ""
 
-#: includes/page-options.php:113
+#: includes/page-options.php:118
 msgid "ERROR: Archive directory (\"%s\") does not exist!"
 msgstr ""
 
-#: includes/page-options.php:139
+#: includes/page-options.php:144
 msgid ""
 "WARNING: Excluded directory (\"%s\") is not found, removed from exclusions."
 msgstr ""
 
-#: includes/page-options.php:149
+#: includes/page-options.php:154
 msgid ""
 "INFO: Archive path is in the WordPress directory tree but was not found in "
 "the exclusions, it has automatically been added."
 msgstr ""
 
-#: includes/page-options.php:176
+#: includes/page-options.php:181
 msgid ""
 "ERROR: Schedule not set, failed to determine the next scheduled time to "
 "backup!"
 msgstr ""
 
-#: includes/page-options.php:199
+#: includes/page-options.php:204
 msgid "Configuration saved!"
 msgstr ""
 
-#: includes/page-options.php:375
+#: includes/page-options.php:380
 msgid "CYAN Backup Options"
 msgstr ""
 
-#: includes/page-options.php:377
+#: includes/page-options.php:382
 msgid "Directory Options"
 msgstr ""
 
-#: includes/page-options.php:387
+#: includes/page-options.php:392
 msgid "Archive path"
 msgstr ""
 
-#: includes/page-options.php:391
+#: includes/page-options.php:396
 msgid "Create .htaccess File"
 msgstr ""
 
-#: includes/page-options.php:392
+#: includes/page-options.php:397
 msgid "Create WebConfig File"
 msgstr ""
 
-#: includes/page-options.php:397
+#: includes/page-options.php:402
 msgid "Excluded dir"
 msgstr ""
 
-#: includes/page-options.php:407
+#: includes/page-options.php:412
 msgid "Add Archive Dir"
 msgstr ""
 
-#: includes/page-options.php:408
+#: includes/page-options.php:413
 msgid "Add WP-Content Dir"
 msgstr ""
 
-#: includes/page-options.php:409
+#: includes/page-options.php:414
 msgid "Add WP-Upgrade Dir"
 msgstr ""
 
-#: includes/page-options.php:410
+#: includes/page-options.php:415
 msgid "Add WP-Admin Dir"
 msgstr ""
 
-#: includes/page-options.php:411
+#: includes/page-options.php:416
 msgid "Add WP-Includes Dir"
 msgstr ""
 
-#: includes/page-options.php:417
+#: includes/page-options.php:422
 msgid "Schedule Options"
 msgstr ""
 
-#: includes/page-options.php:422
+#: includes/page-options.php:427
 msgid "Current server time"
 msgstr ""
 
-#: includes/page-options.php:432
+#: includes/page-options.php:437
 msgid "Next backup scheduled for"
 msgstr ""
 
-#: includes/page-options.php:440
+#: includes/page-options.php:445
 msgid "None"
 msgstr ""
 
-#: includes/page-options.php:452
+#: includes/page-options.php:457
 msgid "Enable"
 msgstr ""
 
-#: includes/page-options.php:458
+#: includes/page-options.php:463
 msgid "Type"
 msgstr ""
 
-#: includes/page-options.php:476
+#: includes/page-options.php:481
 msgid "Schedule"
 msgstr ""
 
-#: includes/page-options.php:481
+#: includes/page-options.php:486
 msgid "Every minute, for debugging only"
 msgstr ""
 
-#: includes/page-options.php:484
+#: includes/page-options.php:489
 msgid "Only once"
 msgstr ""
 
-#: includes/page-options.php:485
+#: includes/page-options.php:490
 msgid "Run backup every"
 msgstr ""
 
-#: includes/page-options.php:496
+#: includes/page-options.php:501
 msgid "hour(s)"
 msgstr ""
 
-#: includes/page-options.php:496
+#: includes/page-options.php:501
 msgid "day(s)"
 msgstr ""
 
-#: includes/page-options.php:496
+#: includes/page-options.php:501
 msgid "week(s)"
 msgstr ""
 
-#: includes/page-options.php:496
+#: includes/page-options.php:501
 msgid "month(s)"
 msgstr ""
 
-#: includes/page-options.php:497
+#: includes/page-options.php:502
 msgid "on"
 msgstr ""
 
-#: includes/page-options.php:513
+#: includes/page-options.php:518
 msgid "the"
 msgstr ""
 
-#: includes/page-options.php:528
+#: includes/page-options.php:533
 msgid "at"
 msgstr ""
 
-#: includes/page-options.php:556
+#: includes/page-options.php:561
 msgid "Storage Maintenance"
 msgstr ""
 
-#: includes/page-options.php:561
+#: includes/page-options.php:566
 msgid "Enable backup pruning"
 msgstr ""
 
-#: includes/page-options.php:567
+#: includes/page-options.php:572
 msgid "Number of backups to keep"
 msgstr ""
 
-#: includes/page-options.php:573
+#: includes/page-options.php:579
+msgid "Clear Active Backup"
+msgstr ""
+
+#: includes/page-options.php:584
+msgid "Clear active backup status"
+msgstr ""
+
+#: includes/page-options.php:586
+msgid ""
+"WARNING: Only check this if a backup has hung and you can no longer execute "
+"backups."
+msgstr ""
+
+#: includes/page-options.php:592
 msgid "Update Options"
 msgstr ""
 
