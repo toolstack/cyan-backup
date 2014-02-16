@@ -401,8 +401,16 @@ class WP_Backuper {
 
 			$this->delete_transient(self::EXCLUSION_KEY);
 
-			$this->write_status_file( 100, __('Backup complete!', $this->textdomain ), 'complete' );
-			$this->statuslogfile = null;
+			if( count( $this->error ) > 0 )
+				{
+				$this->write_status_file( 100, __('ERROR:', $this->textdomain ) . implode( '<br>', $this->error ), 'error' );
+				$this->statuslogfile = null;
+				}
+			else
+				{
+				$this->write_status_file( 100, __('Backup complete!', $this->textdomain ), 'complete' );
+				$this->statuslogfile = null;
+				}
 			
 			unlink( $active_filename );
 			

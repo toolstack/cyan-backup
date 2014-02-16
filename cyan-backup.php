@@ -782,36 +782,42 @@ jQuery(function($){
 					$("#progressbar").progressbar( "value", parseInt( json.percentage ) );
 					$("#progresstext").html(json.message);
 
-					if( json.state == 'complete' ) {
-						var wrap = $('#img_wrap');
-						$('img.success', wrap).remove();
-						$('img.failure', wrap).remove();
-						$('img.updating', wrap).remove();
-						$('div#message').remove();
-						$('span#error_message').remove();
-						buttons_disabled(false);
+					var wrap = $('#img_wrap');
 
-						$("#progressbar").progressbar("disable");
-						
+					$('img.success', wrap).remove();
+					$('img.failure', wrap).remove();
+					$('img.updating', wrap).remove();
+					$('div#message').remove();
+					$('span#error_message').remove();
+
+					if( json.state == 'complete' ) {
+						var backup_file = '<a href="?page=<?php echo $this->menu_base; ?>&download=' + encodeURIComponent(json.backup_file) + '<?php echo $nonces_2; ?>' + '" title="' + basename(json.backup_file) + '">' + basename(json.backup_file) + '</a>';
+						var rowCount = $('#backuplist tr').length - 2;
+						var tr = $('<tr><td>' + backup_file + '</td>' +
+							'<td>' + json.backup_date  + '</td>' +
+							'<td>' + json.backup_size  + '</td>' +
+							'<td style="text-align: center;"><input type="checkbox" name="remove[' + ( rowCount )  + ']" value="<?php echo addslashes($archive_path);?>' + basename(json.backup_file) +'"></td></tr>');
+
 						clearInterval( CYANBackupInterval );
 						CYANBackupInterval = null;
 						
-						$("#progressbar").progressbar( "value", parseInt( json.percentage ) );
-						$("#progresstext").html(json.message);
+						buttons_disabled(false);
 
-						if ( xhr.status == 200 && json.result ) {
-							var backup_file = '<a href="?page=<?php echo $this->menu_base; ?>&download=' + encodeURIComponent(json.backup_file) + '<?php echo $nonces_2; ?>' + '" title="' + basename(json.backup_file) + '">' + basename(json.backup_file) + '</a>';
-							var rowCount = $('#backuplist tr').length - 2;
-							var tr = $('<tr><td>' + backup_file + '</td>' +
-								'<td>' + json.backup_date  + '</td>' +
-								'<td>' + json.backup_size  + '</td>' +
-								'<td style="text-align: center;"><input type="checkbox" name="remove[' + ( rowCount )  + ']" value="<?php echo addslashes($archive_path);?>' + basename(json.backup_file) +'"></td></tr>');
-							wrap.append('<?php echo $success_img; ?>');
-							$('#backuplist').prepend(tr);
-						} else {
-							wrap.append('<?php echo $failure_img; ?> <span id="error_message">' + json.errors + '</span>');
-						}
+						$("#progressbar").progressbar("disable");
+
+						wrap.append('<?php echo $success_img; ?>');
+						$('#backuplist').prepend(tr);
+					} else if( json.state == 'error' ) {
+						clearInterval( CYANBackupInterval );
+						CYANBackupInterval = null;
+						
+						buttons_disabled(false);
+
+						$("#progressbar").progressbar("disable");
+
+						wrap.append('<?php echo $failure_img; ?> <span id="error_message">' + json.errors + '</span>');
 					}
+
 				}
 			},
 			error: function(req, status, err){
