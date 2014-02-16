@@ -5,7 +5,7 @@ Author URI: http://toolstack.com
 Tags: Backup, Schedule
 Requires at least: 2.9
 Tested up to: 3.8.1
-Stable tag: 1.0
+Stable tag: 1.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -138,7 +138,6 @@ CYAN Backup uses a status file to tell if a backup is running or not, if this fi
 * Initial fork from Total Backup.
 
 == Road Map ==
-* 1.1 - Progress bar
 * 1.2 - Logging
 * 1.3 - email notifications/reporting
 * 1.4 - FTP support (local network only)
