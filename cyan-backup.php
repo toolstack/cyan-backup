@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: CYAN Backup
-Version: 1.1
+Version: 1.1.1
 Plugin URI: http://toolstack.com/cyan-backup
 Description: Backup your entire WordPress site and its database into a zip file on a schedule.
 Author: Greg Ross
@@ -47,7 +47,7 @@ class CYANBackup {
 	const   NONCE_NAME   = '_wpnonce_CYAN_Backup';
 	const   TIME_LIMIT   = 900;			// 15min * 60sec
 	const	DEBUG_MODE   = FALSE;
-	const	VERSION      = "1.1";
+	const	VERSION      = "1.1.1";
 
 	function __construct() {
 		global $wpdb;
@@ -784,12 +784,6 @@ jQuery(function($){
 
 					var wrap = $('#img_wrap');
 
-					$('img.success', wrap).remove();
-					$('img.failure', wrap).remove();
-					$('img.updating', wrap).remove();
-					$('div#message').remove();
-					$('span#error_message').remove();
-
 					if( json.state == 'complete' ) {
 						var backup_file = '<a href="?page=<?php echo $this->menu_base; ?>&download=' + encodeURIComponent(json.backup_file) + '<?php echo $nonces_2; ?>' + '" title="' + basename(json.backup_file) + '">' + basename(json.backup_file) + '</a>';
 						var rowCount = $('#backuplist tr').length - 2;
@@ -797,6 +791,12 @@ jQuery(function($){
 							'<td>' + json.backup_date  + '</td>' +
 							'<td>' + json.backup_size  + '</td>' +
 							'<td style="text-align: center;"><input type="checkbox" name="remove[' + ( rowCount )  + ']" value="<?php echo addslashes($archive_path);?>' + basename(json.backup_file) +'"></td></tr>');
+
+						$('img.success', wrap).remove();
+						$('img.failure', wrap).remove();
+						$('img.updating', wrap).remove();
+						$('div#message').remove();
+						$('span#error_message').remove();
 
 						clearInterval( CYANBackupInterval );
 						CYANBackupInterval = null;
@@ -811,6 +811,12 @@ jQuery(function($){
 						clearInterval( CYANBackupInterval );
 						CYANBackupInterval = null;
 						
+						$('img.success', wrap).remove();
+						$('img.failure', wrap).remove();
+						$('img.updating', wrap).remove();
+						$('div#message').remove();
+						$('span#error_message').remove();
+
 						buttons_disabled(false);
 
 						$("#progressbar").progressbar("disable");

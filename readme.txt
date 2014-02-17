@@ -5,7 +5,7 @@ Author URI: http://toolstack.com
 Tags: Backup, Schedule
 Requires at least: 2.9
 Tested up to: 3.8.1
-Stable tag: 1.1
+Stable tag: 1.1.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -68,6 +68,10 @@ This could be many things, but the most likely issue is your site is taking a lo
 
 CYAN Backup uses a status file to tell if a backup is running or not, if this file hasn't been deleted after a backup is complete you won't be able to run another backup for 30 minutes.  If you wish to force the deletion of the file, go in to Options and check the "Clear active backup status" and save the settings.  This will force the deletion of the file.
 
+= The progress bar never updates until the backup is complete. =
+
+The progress bar uses AJAX requests to the site to get the status, the backup process is pretty resource intensive, if your host cannot respond to the AJAX calls while the backup is running then you won't see the progress bar move until it does.
+
 == Screenshots ==
 
 1. Backups page.
@@ -79,6 +83,9 @@ CYAN Backup uses a status file to tell if a backup is running or not, if this fi
 * None at this time.
 
 == Changelog == 
+= 1.1.1 =
+* Fixed: Spinning icon while backing up disappeared after first update of the progress bar.
+
 = 1.1 =
 * Added: Progress bar when manually backing up.
 * Added: Code to avoid executing two backups at the same time.
