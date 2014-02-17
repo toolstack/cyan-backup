@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: CYAN Backup
-Version: 1.2
+Version: 1.2.1
 Plugin URI: http://toolstack.com/cyan-backup
 Description: Backup your entire WordPress site and its database into a zip file on a schedule.
 Author: Greg Ross
@@ -47,7 +47,7 @@ class CYANBackup {
 	const   NONCE_NAME   = '_wpnonce_CYAN_Backup';
 	const   TIME_LIMIT   = 900;			// 15min * 60sec
 	const	DEBUG_MODE   = FALSE;
-	const	VERSION      = "1.2";
+	const	VERSION      = "1.2.1";
 
 	function __construct() {
 		global $wpdb;
@@ -1257,7 +1257,9 @@ jQuery(function($){
 			foreach ($backup_files as $backup_file) {
 				if( $i > $number ) {
 					if( ($file = realpath( $backup_file['filename'] ) ) !== FALSE) {
+						$logfile = str_ireplace( '.zip', '.log', $file );
 						@unlink($file);
+						@unlink($logfile);
 						$j++;
 					}
 				}

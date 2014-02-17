@@ -353,14 +353,14 @@ class WP_Backuper {
 			} 
 
 			// Create a semaphore file to indicate we're active.
-			$active_backup = fopen( $active_filename, "w" );
+			$active_backup = fopen( $active_filename, 'w' );
 			fwrite( $active_backup, "placeholder\n" );
 			fclose( $active_backup );
 			
 			$this->statuslogfile = $archive_path . 'status.log';
 			$this->write_status_file( 0, __('Calculating backup size...', $this->textdomain) );
 			
-			$this->open_log_file( $archive_path . $filename . ".log" );
+			$this->open_log_file( $archive_path . $filename . '.log' );
 			$this->write_log_file( __('Calculating backup size...', $this->textdomain) );
 
 			// Maintenance mode ON
@@ -970,7 +970,7 @@ class WP_Backuper {
 						);
 					$filesize = (int)sprintf('%u', filesize($backup_file)) / 1024 / 1024;
 
-					$log_file = str_replace( '.zip', '.log', $backup_file );
+					$log_file = str_ireplace( '.zip', '.log', $backup_file );
 					if (file_exists($log_file)) {
 						$logquery =
 							$page

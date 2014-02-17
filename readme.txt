@@ -5,7 +5,7 @@ Author URI: http://toolstack.com
 Tags: Backup, Schedule
 Requires at least: 2.9
 Tested up to: 3.8.1
-Stable tag: 1.2
+Stable tag: 1.2.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -83,6 +83,11 @@ The progress bar uses AJAX requests to the site to get the status, the backup pr
 * None at this time.
 
 == Changelog == 
+= 1.2.1 =
+* Added: Log file deletion when zip is deleted.
+* Fixed: Deletion of files through the backups page now works again.
+* Fixed: Spurious error when deleting files.
+
 = 1.2 =
 * Added: Log file creation and download support.
 * Removed: Duplicate download hook in backup class.

@@ -15,8 +15,12 @@
 			foreach((array)$_POST['remove'] as $index => $bfile) {
 				$file = $postdata['remove[' . $index . ']'];
 				if (($file = realpath($file)) !== FALSE) {
-					if (@unlink($file))
+					$logfile = str_ireplace( '.zip', '.log', $file );
+
+					if (@unlink($file) === FALSE)
 						$count ++;
+						
+					@unlink($logfile);
 				}
 			}
 			if ($count > 0) {
@@ -59,7 +63,7 @@
 	
 	<h3><?php _e('Backup Files', $this->textdomain);?></h3>
 
-	<form method="post" action="'.$this->admin_action.'">
+	<form method="post" action="<?php echo $this->admin_action; ?>">
 		<?php echo $nonces;?>
 
 		<table id="backuplist" class="wp-list-table widefat fixed" style="margin-top:0;">
