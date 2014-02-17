@@ -88,7 +88,12 @@
 			$i = 0;
 			foreach ($backup_files as $backup_file) {
 				echo "\t\t\t\t<tr{$alternate}>\n";
-				printf("\t\t\t\t\t<td>%s</td>\n", $backup_file['url']);
+				if( $backup_file['logurl'] != '' ) {
+					$logtitle = ' [' . $backup_file['logurl'] . ']';
+				} else {
+					$logtitle = '';
+				}
+				printf("\t\t\t\t\t<td>%s%s</td>\n", $backup_file['url'], $logtitle);
 
 				$temp_time = strtotime( $backup_file['filemtime'] );
 

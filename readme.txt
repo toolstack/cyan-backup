@@ -5,7 +5,7 @@ Author URI: http://toolstack.com
 Tags: Backup, Schedule
 Requires at least: 2.9
 Tested up to: 3.8.1
-Stable tag: 1.1.1
+Stable tag: 1.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -83,6 +83,10 @@ The progress bar uses AJAX requests to the site to get the status, the backup pr
 * None at this time.
 
 == Changelog == 
+= 1.2 =
+* Added: Log file creation and download support.
+* Removed: Duplicate download hook in backup class.
+
 = 1.1.1 =
 * Fixed: Spinning icon while backing up disappeared after first update of the progress bar.
 

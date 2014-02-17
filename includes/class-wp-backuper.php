@@ -17,6 +17,7 @@ class WP_Backuper {
 	private $core_tables = array();
 	private $files = array();
 	private $statuslogfile = null;
+	private $logfile = null;
 	private $currentcount = 0;
 	private $increment = 0;
 	private $percentage = 0;
@@ -56,7 +57,6 @@ class WP_Backuper {
 				),
 			$this->get_excluded_dir($excluded)
 			);
-		add_action('init', array(&$this, 'file_download'));
 	}
 
 	//**************************************************************************************
@@ -282,7 +282,26 @@ class WP_Backuper {
 			fclose( $status_file );	
 		}
 	}
+
+	private function open_log_file( $name ) {
+		if( $this->logfile == null ) {
+			$this->logfile = fopen($name, 'a');
+		}
+	}
 	
+	private function write_log_file( $message ) {
+		if( $this->logfile != null ) {
+			fwrite($this->logfile, '[' . date("Y-m-d H:i:s") . '] ' . $message . "\n");
+		}
+	}
+	
+	private function close_log_file() {
+		if( $this->logfile != null ) {
+			fclose($this->logfile);
+			$this->logfile = null;
+		}
+	}
+
 	//**************************************************************************************
 	// WP Backup
 	//**************************************************************************************
@@ -340,6 +359,9 @@ class WP_Backuper {
 			
 			$this->statuslogfile = $archive_path . 'status.log';
 			$this->write_status_file( 0, __('Calculating backup size...', $this->textdomain) );
+			
+			$this->open_log_file( $archive_path . $filename . ".log" );
+			$this->write_log_file( __('Calculating backup size...', $this->textdomain) );
 
 			// Maintenance mode ON
 			//$this->maintenance_mode(TRUE);
@@ -360,12 +382,14 @@ class WP_Backuper {
 			$this->increment = 100 / $total_count;
 
 			$this->write_status_file( 0, __('Backup started, processing SQL tables...', $this->textdomain));
+			$this->write_log_file( __('Backup started, processing SQL tables...', $this->textdomain) );
 			
 			// DB backup
 			if ($db_backup)
 				$this->dump_file = $this->wpdb_dump($archive_path, $archive_prefix);
 
 			$this->write_status_file( $this->last_percentage, __('Making temporary copying of WordPress...', $this->textdomain));
+			$this->write_log_file( __('Making temporary copying of WordPress...', $this->textdomain) );
 
 			// WP Core files backup
 			$backup_dir = trailingslashit(trailingslashit($archive_path).$filename);
@@ -375,12 +399,14 @@ class WP_Backuper {
 			//$this->maintenance_mode(FALSE);
 
 			$this->write_status_file( $this->last_percentage, __('Archiving files...', $this->textdomain));
+			$this->write_log_file( __('Archiving files...', $this->textdomain) );
 
 			// WP Core files archive
 			$zip_file = $this->chg_directory_separator(trailingslashit($archive_path).$filename.'.zip');
 			$backup = $this->files_archive($backup_dir, $files, $zip_file);
 
 			$this->write_status_file( $this->last_percentage, __('Removing temporary files...', $this->textdomain));
+			$this->write_log_file( __('Removing temporary files...', $this->textdomain) );
 
 			// Remove DB backup files
 			if ( $db_backup && file_exists($this->dump_file) ) {
@@ -404,15 +430,19 @@ class WP_Backuper {
 			if( count( $this->error ) > 0 )
 				{
 				$this->write_status_file( 100, __('ERROR:', $this->textdomain ) . implode( '<br>', $this->error ), 'error' );
+				$this->write_log_file( __('ERROR:', $this->textdomain ) . implode( ' - ', $this->error ) );
 				$this->statuslogfile = null;
 				}
 			else
 				{
 				$this->write_status_file( 100, __('Backup complete!', $this->textdomain ), 'complete' );
+				$this->write_log_file( __('Backup complete!', $this->textdomain) );
 				$this->statuslogfile = null;
 				}
 			
 			unlink( $active_filename );
+			
+			$this->close_log_file();
 			
 			return array(
 				'backup'    => ($backup && file_exists($backup)) ? $this->archive_file : FALSE ,
@@ -509,6 +539,8 @@ class WP_Backuper {
 					$this->write_status_file( $this->last_percentage, sprintf( __("Copying %s...", $this->textdomain), realpath($file) ) );
 				}
 
+				$this->write_log_file( sprintf( __("Copying %s...", $this->textdomain), realpath($file) ) );
+				
 				if ( is_dir($source_dir.$file) ) {
 					if ( !file_exists($dest_dir.$file) )
 						mkdir($dest_dir.$file);
@@ -539,6 +571,8 @@ class WP_Backuper {
 				$this->write_status_file( $this->last_percentage, sprintf( __("Deleting %s...", $this->textdomain), realpath($dir) ) );
 			}
 
+			$this->write_log_file( sprintf( __("Deleting %s...", $this->textdomain), realpath($dir) ) );
+			
 			rmdir($dir);
 		} else if (file_exists($dir)) {
 			$this->currentcount++;
@@ -549,6 +583,7 @@ class WP_Backuper {
 				$this->write_status_file( $this->last_percentage, sprintf( __("Deleting %s...", $this->textdomain), realpath($dir) ) );
 			}
 
+			$this->write_log_file( sprintf( __("Deleting %s...", $this->textdomain), realpath($dir) ) );
 			unlink($dir);
 		}
 	} 
@@ -582,12 +617,14 @@ class WP_Backuper {
 							$this->write_status_file( $this->last_percentage, sprintf( __("Archiving %s...", $this->textdomain), realpath($file) ) );
 						}
 					
+						$this->write_log_file( sprintf( __("Archiving %s...", $this->textdomain), realpath($file) ) );
+					
 						if ( !is_dir($source_dir.$file) )
 							$zip->addFile($source_dir.$file, $wp_dir.$file);
 					}
 
 					if (file_exists($dump_file)) {
-					$this->write_status_file( $this->last_percentage, __("Archiving SQL dump...", $this->textdomain) );
+						$this->write_status_file( $this->last_percentage, __("Archiving SQL dump...", $this->textdomain) );
 						$zip->addFile($dump_file, basename($this->dump_file));
 					}
 
@@ -611,6 +648,8 @@ class WP_Backuper {
 						$this->write_status_file( $this->last_percentage, sprintf( __("Archiving %s...", $this->textdomain), realpath($file) ) );
 					}
 
+					$this->write_log_file( sprintf( __("Archiving %s...", $this->textdomain), realpath($file) ) );
+					
 					if ( !is_dir($source_dir.$file) )
 						$backup_files[] = $source_dir.$file;
 
@@ -625,6 +664,8 @@ class WP_Backuper {
 
 				if (file_exists($dump_file)) {
 					$this->write_status_file( $this->last_percentage, __("Archiving SQL dump...", $this->textdomain) );
+					$this->write_log_file( sprintf( __("Archiving SQL dump...", $this->textdomain), realpath($file) ) );
+					
 					$zip->add($dump_file, PCLZIP_OPT_REMOVE_PATH, dirname($this->dump_file));
 				}
 			}
@@ -759,6 +800,8 @@ class WP_Backuper {
 
 		if( !$fp || empty($table) )
 			return FALSE;
+
+		$this->write_log_file( sprintf( __("Processing %s...", $this->textdomain), $table ) );
 
 		// Increase script execution time-limit to 15 min.
 		if ( !ini_get('safe_mode'))
@@ -926,11 +969,28 @@ class WP_Backuper {
 						esc_html(basename($backup_file))
 						);
 					$filesize = (int)sprintf('%u', filesize($backup_file)) / 1024 / 1024;
+
+					$log_file = str_replace( '.zip', '.log', $backup_file );
+					if (file_exists($log_file)) {
+						$logquery =
+							$page
+							? "?page={$page}&download=" . rawurlencode($log_file) . $nonces
+							: '?download=' . rawurlencode($log_file) . $nonces ;
+						$logurl = sprintf(
+							'<a href="%1$s" title="log">log</a>' ,
+							(is_admin() ? '' : trailingslashit(function_exists('home_url') ? home_url() : get_option('home'))) . $logquery, 
+							esc_html(basename($log_file))
+							);
+					} else {
+						$logurl = '';
+					}
+					
 					$backup_files_info[] = array(
 						'filename'  => $backup_file ,
 						'filemtime' => $filemtime ,
 						'filesize'  => $filesize ,
 						'url'       => $url ,
+						'logurl' 	=> $logurl,
 						);
 				}
 			}
@@ -939,28 +999,6 @@ class WP_Backuper {
 	}
 	public function wp_backup_files_info() {
 		return array('backup_files' => $this->backup_files_info());
-	}
-
-	//**************************************************************************************
-	// file download
-	//**************************************************************************************
-	public function file_download() {
-		if ( isset($_GET['nonce']) && isset($_GET['download']) && !isset($_GET['_wp_http_referer']) ) {
-			if ( ! $this->verify_nonce_no_logged_in($_GET['nonce']) ) {
-				header('HTTP/1.0 403 Forbidden');
-				wp_die(__('Forbidden', $this->textdomain));
-			}
-
-			if (($file = realpath($_GET['download'])) !== FALSE) {
-				header("Content-Type: application/x-compress;");
-				header("Content-Disposition: attachement; filename=".basename($file));
-				readfile($file);
-			} else {
-				header('HTTP/1.0 404 Not Found');
-				wp_die(__('File not Found', $this->textdomain));
-			}
-			exit;
-		}
 	}
 }
 
