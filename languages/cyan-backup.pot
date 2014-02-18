@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: CYAN Backup 1.3\n"
 "Report-Msgid-Bugs-To: http://wordpress.org/tag/cyan-backup\n"
-"POT-Creation-Date: 2014-02-18 01:47:51+00:00\n"
+"POT-Creation-Date: 2014-02-18 15:57:55+00:00\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -12,62 +12,62 @@ msgstr ""
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 
-#: cyan-backup.php:504
+#: cyan-backup.php:507
 msgid "not logged in!"
 msgstr ""
 
-#: cyan-backup.php:532
+#: cyan-backup.php:535
 msgid "No backup running!"
 msgstr ""
 
-#: cyan-backup.php:556
+#: cyan-backup.php:559
 msgid "Method not found!"
 msgstr ""
 
-#: cyan-backup.php:622
+#: cyan-backup.php:652
 msgid "Settings"
 msgstr ""
 
-#: cyan-backup.php:796
+#: cyan-backup.php:826
 msgid "log"
 msgstr ""
 
-#: cyan-backup.php:860
+#: cyan-backup.php:890
 msgid "Starting Backup..."
 msgstr ""
 
-#: cyan-backup.php:874 includes/class-wp-backuper.php:471
-#: includes/class-wp-backuper.php:472 includes/class-wp-backuper.php:477
+#: cyan-backup.php:904 includes/class-wp-backuper.php:484
+#: includes/class-wp-backuper.php:485 includes/class-wp-backuper.php:491
 msgid "Backup complete!"
 msgstr ""
 
-#: cyan-backup.php:883
+#: cyan-backup.php:913
 msgid "Backup failed!"
 msgstr ""
 
 #. #-#-#-#-#  plugin.pot (CYAN Backup 1.3)  #-#-#-#-#
 #. Plugin Name of the plugin/theme
-#: cyan-backup.php:907 cyan-backup.php:908 includes/page-backups.php:48
+#: cyan-backup.php:937 cyan-backup.php:938 includes/page-backups.php:48
 msgid "CYAN Backup"
 msgstr ""
 
-#: cyan-backup.php:921 cyan-backup.php:922
+#: cyan-backup.php:951 cyan-backup.php:952
 msgid "Backups"
 msgstr ""
 
-#: cyan-backup.php:930
+#: cyan-backup.php:960
 msgid "Options &gt; CYAN Backup"
 msgstr ""
 
-#: cyan-backup.php:931
+#: cyan-backup.php:961
 msgid "Options"
 msgstr ""
 
-#: cyan-backup.php:944
+#: cyan-backup.php:975
 msgid "About &gt; CYAN Backup"
 msgstr ""
 
-#: cyan-backup.php:945
+#: cyan-backup.php:976
 msgid "About"
 msgstr ""
 
@@ -91,121 +91,371 @@ msgstr ""
 msgid "Another backup is already running!"
 msgstr ""
 
-#: includes/class-wp-backuper.php:390 includes/class-wp-backuper.php:393
+#: includes/class-wp-backuper.php:390 includes/class-wp-backuper.php:394
 msgid "Calculating backup size..."
 msgstr ""
 
-#: includes/class-wp-backuper.php:413 includes/class-wp-backuper.php:414
+#: includes/class-wp-backuper.php:414 includes/class-wp-backuper.php:415
 msgid "Backup started, processing SQL tables..."
 msgstr ""
 
-#: includes/class-wp-backuper.php:420 includes/class-wp-backuper.php:421
+#: includes/class-wp-backuper.php:421 includes/class-wp-backuper.php:422
 msgid "Making temporary copying of WordPress..."
 msgstr ""
 
-#: includes/class-wp-backuper.php:430 includes/class-wp-backuper.php:431
+#: includes/class-wp-backuper.php:431 includes/class-wp-backuper.php:432
 msgid "Archiving files..."
 msgstr ""
 
-#: includes/class-wp-backuper.php:437 includes/class-wp-backuper.php:438
+#: includes/class-wp-backuper.php:438 includes/class-wp-backuper.php:439
 msgid "Removing temporary files..."
 msgstr ""
 
-#: includes/class-wp-backuper.php:461 includes/class-wp-backuper.php:462
+#: includes/class-wp-backuper.php:461
+msgid "seconds"
+msgstr ""
+
+#: includes/class-wp-backuper.php:464
+msgid "minutes"
+msgstr ""
+
+#: includes/class-wp-backuper.php:467
+msgid "hours"
+msgstr ""
+
+#: includes/class-wp-backuper.php:470
+msgid "Elapsed Time"
+msgstr ""
+
+#: includes/class-wp-backuper.php:474 includes/class-wp-backuper.php:475
 msgid "ERROR:"
 msgstr ""
 
-#: includes/class-wp-backuper.php:547 includes/class-wp-backuper.php:630
+#: includes/class-wp-backuper.php:486
+msgid "Backup size"
+msgstr ""
+
+#: includes/class-wp-backuper.php:561 includes/class-wp-backuper.php:644
 msgid "Could not backup!"
 msgstr ""
 
-#: includes/class-wp-backuper.php:553 includes/class-wp-backuper.php:564
-#: includes/class-wp-backuper.php:668 includes/class-wp-backuper.php:715
+#: includes/class-wp-backuper.php:567 includes/class-wp-backuper.php:578
+#: includes/class-wp-backuper.php:682 includes/class-wp-backuper.php:729
 msgid "Could not open the backup file for writing!"
 msgstr ""
 
-#: includes/class-wp-backuper.php:574 includes/class-wp-backuper.php:577
+#: includes/class-wp-backuper.php:588 includes/class-wp-backuper.php:591
 msgid "Copying %s..."
 msgstr ""
 
-#: includes/class-wp-backuper.php:606 includes/class-wp-backuper.php:609
-#: includes/class-wp-backuper.php:618 includes/class-wp-backuper.php:621
+#: includes/class-wp-backuper.php:620 includes/class-wp-backuper.php:623
+#: includes/class-wp-backuper.php:632 includes/class-wp-backuper.php:635
 msgid "Deleting %s..."
 msgstr ""
 
-#: includes/class-wp-backuper.php:652 includes/class-wp-backuper.php:655
-#: includes/class-wp-backuper.php:683 includes/class-wp-backuper.php:686
+#: includes/class-wp-backuper.php:666 includes/class-wp-backuper.php:669
+#: includes/class-wp-backuper.php:697 includes/class-wp-backuper.php:700
 msgid "Archiving %s..."
 msgstr ""
 
-#: includes/class-wp-backuper.php:662 includes/class-wp-backuper.php:701
-#: includes/class-wp-backuper.php:702
+#: includes/class-wp-backuper.php:676 includes/class-wp-backuper.php:715
+#: includes/class-wp-backuper.php:716
 msgid "Archiving SQL dump..."
 msgstr ""
 
-#: includes/class-wp-backuper.php:798
+#: includes/class-wp-backuper.php:812
 msgid "WordPress MySQL database backup"
 msgstr ""
 
-#: includes/class-wp-backuper.php:800
+#: includes/class-wp-backuper.php:814
 msgid "Generated: %s"
 msgstr ""
 
-#: includes/class-wp-backuper.php:801
+#: includes/class-wp-backuper.php:815
 msgid "Hostname: %s"
 msgstr ""
 
-#: includes/class-wp-backuper.php:802
+#: includes/class-wp-backuper.php:816
 msgid "Database: %s"
 msgstr ""
 
-#: includes/class-wp-backuper.php:811
+#: includes/class-wp-backuper.php:825
 msgid "Could not open the db dump file for writing!"
 msgstr ""
 
-#: includes/class-wp-backuper.php:827
+#: includes/class-wp-backuper.php:841
 msgid "There was an error writing a line to the backup script:"
 msgstr ""
 
-#: includes/class-wp-backuper.php:839 includes/class-wp-backuper.php:939
+#: includes/class-wp-backuper.php:853 includes/class-wp-backuper.php:953
 msgid "Processing %s..."
 msgstr ""
 
-#: includes/class-wp-backuper.php:847
+#: includes/class-wp-backuper.php:861
 msgid "Table: %s"
 msgstr ""
 
-#: includes/class-wp-backuper.php:853
+#: includes/class-wp-backuper.php:867
 msgid "Error getting table details"
 msgstr ""
 
-#: includes/class-wp-backuper.php:860
+#: includes/class-wp-backuper.php:874
 msgid "Delete any existing table %s"
 msgstr ""
 
-#: includes/class-wp-backuper.php:868
+#: includes/class-wp-backuper.php:882
 msgid "Table structure of table %s"
 msgstr ""
 
-#: includes/class-wp-backuper.php:878
+#: includes/class-wp-backuper.php:892
 msgid "Data contents of table %s"
 msgstr ""
 
-#: includes/class-wp-backuper.php:884
+#: includes/class-wp-backuper.php:898
 msgid "Error with SHOW CREATE TABLE for %s."
 msgstr ""
 
-#: includes/class-wp-backuper.php:887
+#: includes/class-wp-backuper.php:901
 msgid "Error getting table structure of %s"
 msgstr ""
 
-#: includes/class-wp-backuper.php:961
+#: includes/class-wp-backuper.php:975
 msgid "End of data contents of table %s"
 msgstr ""
 
-#: includes/page-about.php:3 includes/page-backups.php:4
-#: includes/page-options.php:4
+#: includes/help-options.php:4 includes/page-about.php:3
+#: includes/page-backups.php:4 includes/page-options.php:4
 msgid "Access denied!"
+msgstr ""
+
+#: includes/help-options.php:10
+msgid "Overview"
+msgstr ""
+
+#: includes/help-options.php:12
+msgid "This page allows you to set all of your options for CYAN Backup."
+msgstr ""
+
+#: includes/help-options.php:13
+msgid ""
+"There are six overall categories of options to set, you can find details on "
+"each by selecting the related tab to the left."
+msgstr ""
+
+#: includes/help-options.php:14
+msgid ""
+"CYAN Backup is a low level tool for WordPress and should be configured with "
+"care.  Where ever possible, incorrect configurations are detected and a "
+"warning or error message will be displayed.  However not all can be detected "
+"and you should be aware of the impact of your configuration on your site."
+msgstr ""
+
+#: includes/help-options.php:22 includes/page-options.php:409
+msgid "Directory Options"
+msgstr ""
+
+#: includes/help-options.php:24
+msgid ""
+"<b>Archive Path</b>: This is where you wish to store the completed backups.  "
+"This will also be used as the temporary location of working files for CYAN "
+"Backup.  This directory should not be accessible to users as your SQL table "
+"exports will be here, along with your WordPress configuration files."
+msgstr ""
+
+#: includes/help-options.php:25
+msgid ""
+"<b>Create .htaccess/WebConfig File</b>: If you must have your archive path "
+"in a web accessible location (for example, perhaps your hosting provider "
+"only allows for subdirectories inside your web root), you should make sure "
+"your web server configuration blocks access to all files in the archive "
+"directory.  These buttons will create .htaccess/Web.Config files that will "
+"do this if they do not already exist."
+msgstr ""
+
+#: includes/help-options.php:26
+msgid ""
+"<b>Exclude Directories</b>: If you wish to exclude certain directories from "
+"the backup you may enter them here.  Several buttons are provided to add "
+"commonly selected directories to the list.  Note if your archive directory "
+"is in the WordPress directory tree it will automatically be added to the "
+"exclusion list when you save the settings."
+msgstr ""
+
+#: includes/help-options.php:34 includes/page-options.php:448
+msgid "Log Options"
+msgstr ""
+
+#: includes/help-options.php:36
+msgid ""
+"<b>E-Mail the log file</b>:  If this option is enabled the log file will be "
+"e-mailed after a backup has been completed."
+msgstr ""
+
+#: includes/help-options.php:37
+msgid ""
+"<b>Send to Addresses</b>:  This is a comma separated list of e-mail "
+"addresses to send the log to.  If this option is left blank, the site "
+"administrators e-mail address will be used."
+msgstr ""
+
+#: includes/help-options.php:45 includes/page-options.php:472
+msgid "Schedule Options"
+msgstr ""
+
+#: includes/help-options.php:47
+msgid ""
+"<b>Current Server Time</b>:  This displays the server time when you loaded "
+"this page, it is here for reference only.  If this does not display the time "
+"you expect your %stimezone setting%s may be incorrect."
+msgstr ""
+
+#: includes/help-options.php:48
+msgid ""
+"<b>Next backup scheduled for</b>:  This displays the next scheduled backup "
+"in WP Cron, it is here for reference only."
+msgstr ""
+
+#: includes/help-options.php:49
+msgid "<b>Enable</b>:  This enables/disables the scheduler."
+msgstr ""
+
+#: includes/help-options.php:50
+msgid ""
+"<b>Type</b>:  This selects the schedule type, options are Once, Hourly, "
+"Daily, Weekly and Monthly.  Note that selecting different schedule types "
+"will change the options presented in the schedule field."
+msgstr ""
+
+#: includes/help-options.php:51
+msgid ""
+"<b>Schedule - Once</b>:  You may select a day of the week OR a day of the "
+"month to run the backup on.  You may also select a time.  If both the day of "
+"the week and day of the month values have been selected, the day of teh "
+"month will take precedence."
+msgstr ""
+
+#: includes/help-options.php:52
+msgid ""
+"<b>Schedule - Hourly</b>:  You may run an hourly backup on a recurring "
+"interval, for example select to run every 6 hours would create a backup file "
+"4 times a day.  You may also select at what time past the hour you wish to "
+"run the backup."
+msgstr ""
+
+#: includes/help-options.php:53
+msgid ""
+"<b>Schedule - Daily</b>:  You may run a daily backup on a recurring number "
+"of days at a specific time."
+msgstr ""
+
+#: includes/help-options.php:54
+msgid ""
+"<b>Schedule - Weekly</b>:  Weekly schedules can have the recurring time as "
+"well as the day of the week set.  For example you could select every two "
+"weeks on Monday at 11:15pm."
+msgstr ""
+
+#: includes/help-options.php:55
+msgid ""
+"<b>Schedule - Monthly</b>:  Montly schedules can have the recurrance as well "
+"as the day of the month set with a time."
+msgstr ""
+
+#: includes/help-options.php:63 includes/page-options.php:611
+msgid "Storage Maintenance"
+msgstr ""
+
+#: includes/help-options.php:65
+msgid ""
+"<b>Enable backup pruning</b>:  Backup pruning will automatically delete "
+"older backup files after a new backup has completed."
+msgstr ""
+
+#: includes/help-options.php:66
+msgid ""
+"<b>Number of backups to keep</b>:  This is the number of backups to keep "
+"based upon the date and time of the backup files.  If this is set to 0, all "
+"backups will be retained.  You should not set this value too low or you may "
+"lose data if you need to recover an older version of your site."
+msgstr ""
+
+#: includes/help-options.php:74 includes/page-options.php:629
+msgid "Remote Storage"
+msgstr ""
+
+#: includes/help-options.php:76
+msgid ""
+"<b>Enable remote storage</b>:  This will enable the remote storage of your "
+"backup files.  You should ALWAYS keep copies of your backup files on a "
+"different host than your main website as if your site is compromised or has "
+"a major hardware failure you may not be able to access your files on the "
+"primary host."
+msgstr ""
+
+#: includes/help-options.php:77
+msgid ""
+"<b>Protocol</b>:  Select the transfer protocol to use.  At this time only "
+"FTP is supported"
+msgstr ""
+
+#: includes/help-options.php:78
+msgid ""
+"<b>Protocol - FTP</b>:  FTP IS INSECURE.  DO NOT USE THIS ON PRODUCTION "
+"SYSTEMS.  FTP is included here only for testing purposes.  FTP connections "
+"will only be allowed to remote systems on your local subnet."
+msgstr ""
+
+#: includes/help-options.php:79
+msgid ""
+"<b>Username</b>:  The username to login to the remote server with.  Ideally "
+"this user will only be able to write files to the remote location, not "
+"read.  This will ensure that even if your site is compromised, your remote "
+"storage cannot be used to as a distribution point for hackers."
+msgstr ""
+
+#: includes/help-options.php:80
+msgid "<b>Password</b>:  The password to login to the remote server with."
+msgstr ""
+
+#: includes/help-options.php:81
+msgid "<b>Certificate</b>:  Unused at this time."
+msgstr ""
+
+#: includes/help-options.php:82
+msgid ""
+"<b>Remote path</b>:  This is the remote path to use to store the backup."
+msgstr ""
+
+#: includes/help-options.php:82 includes/page-options.php:689
+msgid ""
+"You many use the follow place holders: %m = month (01-12), %d = day (01-31), "
+"%Y = year (XXXX), %M = month (Jan...Dec), %F = month (January...December)"
+msgstr ""
+
+#: includes/help-options.php:83
+msgid ""
+"<b>Include log file</b>:  By default, only the archive log is sent to the "
+"remote server, selecting this option will also send the log file."
+msgstr ""
+
+#: includes/help-options.php:84
+msgid ""
+"<b>Delete local copy</b>:  Once the transfer is successfull, this option "
+"will automatically delete the local copy of the backup and log file."
+msgstr ""
+
+#: includes/help-options.php:92 includes/page-options.php:708
+msgid "Clear Active Backup"
+msgstr ""
+
+#: includes/help-options.php:94
+msgid ""
+"<b>Clear active backup status</b>:  Only check this if a backup has hung and "
+"you can no longer execute backups.  CYAN Backup uses a status file to tell "
+"if a backup is running or not, if this file hasn't been deleted after a "
+"backup is complete you won't be able to run another backup for 30 minutes.  "
+"If you wish to force the deletion of the file check this option and save the "
+"settings.  This will force the deletion of the file."
 msgstr ""
 
 #: includes/page-about.php:10
@@ -270,218 +520,248 @@ msgstr ""
 msgid "Delete"
 msgstr ""
 
-#: includes/page-options.php:40
+#: includes/page-options.php:24
+msgid ""
+"ERROR: Archive path set to WordPress root or admin folder, Web.Config not "
+"written!"
+msgstr ""
+
+#: includes/page-options.php:46
 msgid "Web.Config written!"
 msgstr ""
 
-#: includes/page-options.php:44
+#: includes/page-options.php:50
 msgid "WARNING: Web.Config already exists, please edit it manually!"
 msgstr ""
 
-#: includes/page-options.php:64
+#: includes/page-options.php:58
+msgid ""
+"ERROR: Archive path set to WordPress root or admin folder, .htaccess not "
+"written!"
+msgstr ""
+
+#: includes/page-options.php:73
 msgid ".htaccess written!"
 msgstr ""
 
-#: includes/page-options.php:68
+#: includes/page-options.php:77
 msgid "WARNING: .htaccess already exists, please edit it manually!"
 msgstr ""
 
-#: includes/page-options.php:80
+#: includes/page-options.php:90
 msgid "Active backup state cleared!"
 msgstr ""
 
-#: includes/page-options.php:111
+#: includes/page-options.php:104
+msgid ""
+"ERROR: Archive path set to WordPress root or admin folder, this is not a "
+"valid option!"
+msgstr ""
+
+#: includes/page-options.php:124
 msgid ""
 "WARNING: Archive directory (\"%s\") is a subdirectory in the WordPress root "
 "and is accessible via the web, this is an insecure configuration!"
 msgstr ""
 
-#: includes/page-options.php:114
-msgid "ERROR: Archive directory (\"%s\") is not writable!"
+#: includes/page-options.php:127
+msgid "ERROR: Archive directory (\"%s\") is not writeable!"
 msgstr ""
 
-#: includes/page-options.php:118
+#: includes/page-options.php:132
 msgid "ERROR: Archive directory (\"%s\") does not exist!"
 msgstr ""
 
-#: includes/page-options.php:144
+#: includes/page-options.php:157
 msgid ""
 "WARNING: Excluded directory (\"%s\") is not found, removed from exclusions."
 msgstr ""
 
-#: includes/page-options.php:154
+#: includes/page-options.php:167
 msgid ""
 "INFO: Archive path is in the WordPress directory tree but was not found in "
 "the exclusions, it has automatically been added."
 msgstr ""
 
-#: includes/page-options.php:189
+#: includes/page-options.php:208
 msgid ""
 "ERROR: Schedule not set, failed to determine the next scheduled time to "
 "backup!"
 msgstr ""
 
-#: includes/page-options.php:212
+#: includes/page-options.php:231
 msgid "Configuration saved!"
 msgstr ""
 
-#: includes/page-options.php:388
+#: includes/page-options.php:407
 msgid "CYAN Backup Options"
 msgstr ""
 
-#: includes/page-options.php:390
-msgid "Directory Options"
-msgstr ""
-
-#: includes/page-options.php:400
+#: includes/page-options.php:419
 msgid "Archive path"
 msgstr ""
 
-#: includes/page-options.php:404
+#: includes/page-options.php:423
 msgid "Create .htaccess File"
 msgstr ""
 
-#: includes/page-options.php:405
+#: includes/page-options.php:424
 msgid "Create WebConfig File"
 msgstr ""
 
-#: includes/page-options.php:410
+#: includes/page-options.php:429
 msgid "Excluded dir"
 msgstr ""
 
-#: includes/page-options.php:420
+#: includes/page-options.php:438
 msgid "Add Archive Dir"
 msgstr ""
 
-#: includes/page-options.php:421
+#: includes/page-options.php:439
 msgid "Add WP-Content Dir"
 msgstr ""
 
-#: includes/page-options.php:422
+#: includes/page-options.php:440
 msgid "Add WP-Upgrade Dir"
 msgstr ""
 
-#: includes/page-options.php:423
+#: includes/page-options.php:441
 msgid "Add WP-Admin Dir"
 msgstr ""
 
-#: includes/page-options.php:424
+#: includes/page-options.php:442
 msgid "Add WP-Includes Dir"
 msgstr ""
 
-#: includes/page-options.php:430
-msgid "Log Options"
-msgstr ""
-
-#: includes/page-options.php:435
+#: includes/page-options.php:453
 msgid "E-Mail the log file"
 msgstr ""
 
-#: includes/page-options.php:443
+#: includes/page-options.php:461
 msgid "Send to addresses"
 msgstr ""
 
-#: includes/page-options.php:448
+#: includes/page-options.php:466
 msgid ""
 "This is a comma separated list of e-mail addresses to send the log file to, "
 "if blank it will be sent to the WordPress admin user."
 msgstr ""
 
-#: includes/page-options.php:454
-msgid "Schedule Options"
-msgstr ""
-
-#: includes/page-options.php:459
+#: includes/page-options.php:477
 msgid "Current server time"
 msgstr ""
 
-#: includes/page-options.php:469
+#: includes/page-options.php:487
 msgid "Next backup scheduled for"
 msgstr ""
 
-#: includes/page-options.php:477
+#: includes/page-options.php:495
 msgid "None"
 msgstr ""
 
-#: includes/page-options.php:489
+#: includes/page-options.php:507
 msgid "Enable"
 msgstr ""
 
-#: includes/page-options.php:495
+#: includes/page-options.php:513
 msgid "Type"
 msgstr ""
 
-#: includes/page-options.php:513
+#: includes/page-options.php:531
 msgid "Schedule"
 msgstr ""
 
-#: includes/page-options.php:518
+#: includes/page-options.php:536
 msgid "Every minute, for debugging only"
 msgstr ""
 
-#: includes/page-options.php:521
+#: includes/page-options.php:539
 msgid "Only once"
 msgstr ""
 
-#: includes/page-options.php:522
+#: includes/page-options.php:540
 msgid "Run backup every"
 msgstr ""
 
-#: includes/page-options.php:533
+#: includes/page-options.php:551
 msgid "hour(s)"
 msgstr ""
 
-#: includes/page-options.php:533
+#: includes/page-options.php:551
 msgid "day(s)"
 msgstr ""
 
-#: includes/page-options.php:533
+#: includes/page-options.php:551
 msgid "week(s)"
 msgstr ""
 
-#: includes/page-options.php:533
+#: includes/page-options.php:551
 msgid "month(s)"
 msgstr ""
 
-#: includes/page-options.php:534
+#: includes/page-options.php:552
 msgid "on"
 msgstr ""
 
-#: includes/page-options.php:550
+#: includes/page-options.php:568
 msgid "the"
 msgstr ""
 
-#: includes/page-options.php:565
+#: includes/page-options.php:583
 msgid "at"
 msgstr ""
 
-#: includes/page-options.php:593
-msgid "Storage Maintenance"
-msgstr ""
-
-#: includes/page-options.php:598
+#: includes/page-options.php:616
 msgid "Enable backup pruning"
 msgstr ""
 
-#: includes/page-options.php:604
+#: includes/page-options.php:622
 msgid "Number of backups to keep"
 msgstr ""
 
-#: includes/page-options.php:611
-msgid "Clear Active Backup"
+#: includes/page-options.php:634
+msgid "Enable remote storage"
 msgstr ""
 
-#: includes/page-options.php:616
+#: includes/page-options.php:640
+msgid "Protocol"
+msgstr ""
+
+#: includes/page-options.php:666
+msgid "Username"
+msgstr ""
+
+#: includes/page-options.php:672
+msgid "Password"
+msgstr ""
+
+#: includes/page-options.php:678
+msgid "Certificate"
+msgstr ""
+
+#: includes/page-options.php:684
+msgid "Remote path"
+msgstr ""
+
+#: includes/page-options.php:694
+msgid "Include log file"
+msgstr ""
+
+#: includes/page-options.php:700
+msgid "Delete local copy"
+msgstr ""
+
+#: includes/page-options.php:713
 msgid "Clear active backup status"
 msgstr ""
 
-#: includes/page-options.php:618
+#: includes/page-options.php:715
 msgid ""
 "WARNING: Only check this if a backup has hung and you can no longer execute "
 "backups."
 msgstr ""
 
-#: includes/page-options.php:624
+#: includes/page-options.php:721
 msgid "Update Options"
 msgstr ""
 
