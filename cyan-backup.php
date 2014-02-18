@@ -36,6 +36,9 @@ class CYANBackup {
 	private $option_name;
 	private $admin_action;
 	private $debug_log = null;
+	private $backup_page;
+	private $option_page;
+	private $about_page;
 
 	private $default_excluded = array(
 	    'wp-content/cache/',
@@ -930,7 +933,7 @@ jQuery(function($){
 	}
 
 	public function admin_menu() {
-		$hook = add_menu_page(
+		$this->backup_page = add_menu_page(
 			__('CYAN Backup', $this->textdomain) ,
 			__('CYAN Backup', $this->textdomain) ,
 			self::ACCESS_LEVEL,
@@ -938,10 +941,10 @@ jQuery(function($){
 			array($this, 'site_backup') ,
 			$this->plugin_url . 'images/backup16.png'
 			);
-		add_action('admin_print_scripts-'.$hook, array($this,'add_admin_scripts'));
-		add_action('admin_head-'.$hook, array($this,'add_admin_head'));
-		add_action('admin_head-'.$hook, array($this,'add_admin_head_main'));
-		add_action('admin_print_styles-' . $hook, array($this, 'icon_style'));
+		add_action('admin_print_scripts-'.$this->backup_page, array($this,'add_admin_scripts'));
+		add_action('admin_head-'.$this->backup_page, array($this,'add_admin_head'));
+		add_action('admin_head-'.$this->backup_page, array($this,'add_admin_head_main'));
+		add_action('admin_print_styles-' . $this->backup_page, array($this, 'icon_style'));
 
 		add_submenu_page(
 			$this->menu_base ,
@@ -952,7 +955,7 @@ jQuery(function($){
 			array($this, 'site_backup')
 			);
 			
-		$hook = add_submenu_page(
+		$this->option_page = add_submenu_page(
 			$this->menu_base ,
 			__('Options &gt; CYAN Backup', $this->textdomain) ,
 			__('Options', $this->textdomain) ,
@@ -961,12 +964,13 @@ jQuery(function($){
 			array($this, 'option_page')
 			);
 
-		add_action('admin_print_scripts-'.$hook, array($this,'add_admin_scripts'));
-		add_action('admin_head-'.$hook, array($this,'add_admin_head'));
-		add_action('admin_head-'.$hook, array($this,'add_admin_head_option'));
-		add_action('admin_print_styles-' . $hook, array($this, 'icon_style'));
+		add_action('admin_print_scripts-'.$this->option_page, array($this,'add_admin_scripts'));
+		add_action('admin_head-'.$this->option_page, array($this,'add_admin_head'));
+		add_action('admin_head-'.$this->option_page, array($this,'add_admin_head_option'));
+		add_action('admin_print_styles-'.$this->option_page, array($this, 'icon_style'));
+		add_action('load-'.$this->option_page,array(&$this,'create_help_screen'));
 		
-		$hook = add_submenu_page(
+		$this->about_page = add_submenu_page(
 			$this->menu_base ,
 			__('About &gt; CYAN Backup', $this->textdomain) ,
 			__('About', $this->textdomain) ,
@@ -975,12 +979,16 @@ jQuery(function($){
 			array($this, 'about_page')
 			);
 
-		add_action('admin_print_scripts-'.$hook, array($this,'add_admin_scripts'));
-		add_action('admin_head-'.$hook, array($this,'add_admin_head'));
-		add_action('admin_head-'.$hook, array($this,'add_admin_head_option'));
-		add_action('admin_print_styles-' . $hook, array($this, 'icon_style'));
+		add_action('admin_print_scripts-'.$this->about_page, array($this,'add_admin_scripts'));
+		add_action('admin_head-'.$this->about_page, array($this,'add_admin_head'));
+		add_action('admin_head-'.$this->about_page, array($this,'add_admin_head_option'));
+		add_action('admin_print_styles-' . $this->about_page, array($this, 'icon_style'));
 	}
 
+	public function create_help_screen() {
+		include_once( 'includes/help-options.php' );
+	}
+	
 	//**************************************************************************************
 	// sites backup
 	//**************************************************************************************

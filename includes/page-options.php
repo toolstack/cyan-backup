@@ -9,7 +9,10 @@
 	$option = (array)get_option($this->option_name);
 	$archive_path = $this->get_archive_path($option);
 	$excluded_dir = $this->get_excluded_dir($option, array());
-
+	$content_dir  = $this->chg_directory_separator(WP_CONTENT_DIR . "/", FALSE);
+	$abspath  	  = $this->chg_directory_separator(ABSPATH, FALSE);
+	$admin_dir    = $this->chg_directory_separator($abspath . 'wp-admim/', FALSE);
+	
 	// Create the .htaccess or WebConfig files
 	if (isset($_POST['CreateWebConfig']) || isset($_POST['Createhtaccess'])) {
 		if ( $this->wp_version_check('2.5') && function_exists('check_admin_referer') )
@@ -17,55 +20,62 @@
 
 		if( isset($_POST['CreateWebConfig']) )
 			{
-			$access_filename = $archive_path . 'Web.config';
-			
-			if( !file_exists( $access_filename ) )
-				{
-				$access_file = fopen( $access_filename, 'w' );
+			if( $abspath == $archive_path || $admin_dir == $archive_path) {
+				$notes[] = array( "<strong>". __('ERROR: Archive path set to WordPress root or admin folder, Web.Config not written!', $this->textdomain)."</strong>", 2);
+			} else {
+				$access_filename = $archive_path . 'Web.config';
 				
-				fwrite( $access_file, '<?xml version="1.0" encoding="utf-8" ?>' . "\n");
-				fwrite( $access_file, '<configuration>' . "\n");
-				fwrite( $access_file, '	<system.webServer>' . "\n");
-				fwrite( $access_file, '		<security>' . "\n");
-				fwrite( $access_file, '			<authorization>' . "\n");
-				fwrite( $access_file, '				<remove users="*" roles="" verbs="" />' . "\n");
-				fwrite( $access_file, '				<add accessType="Allow" roles="Administrators" />' . "\n");
-				fwrite( $access_file, '			</authorization>' . "\n");
-				fwrite( $access_file, '		</security>' . "\n");
-				fwrite( $access_file, '	</system.webServer>' . "\n");
-				fwrite( $access_file, '</configuration>' . "\n");
-				
-				fclose( $access_file );
-				
-				$notes[] = array( "<strong>". __('Web.Config written!', $this->textdomain)."</strong>", 0);
+				if( !file_exists( $access_filename ) )
+					{
+					$access_file = fopen( $access_filename, 'w' );
+					
+					fwrite( $access_file, '<?xml version="1.0" encoding="utf-8" ?>' . "\n");
+					fwrite( $access_file, '<configuration>' . "\n");
+					fwrite( $access_file, '	<system.webServer>' . "\n");
+					fwrite( $access_file, '		<security>' . "\n");
+					fwrite( $access_file, '			<authorization>' . "\n");
+					fwrite( $access_file, '				<remove users="*" roles="" verbs="" />' . "\n");
+					fwrite( $access_file, '				<add accessType="Allow" roles="Administrators" />' . "\n");
+					fwrite( $access_file, '			</authorization>' . "\n");
+					fwrite( $access_file, '		</security>' . "\n");
+					fwrite( $access_file, '	</system.webServer>' . "\n");
+					fwrite( $access_file, '</configuration>' . "\n");
+					
+					fclose( $access_file );
+					
+					$notes[] = array( "<strong>". __('Web.Config written!', $this->textdomain)."</strong>", 0);
+					}
+				else 
+					{
+					$notes[] = array( "<strong>". __('WARNING: Web.Config already exists, please edit it manually!', $this->textdomain)."</strong>", 1);
+					}
 				}
-			else 
-				{
-				$notes[] = array( "<strong>". __('WARNING: Web.Config already exists, please edit it manually!', $this->textdomain)."</strong>", 1);
-				}
-			
 			}
 		
 		if( isset($_POST['Createhtaccess']) )
 			{
-			$access_filename = $archive_path . '.htaccess';
-			
-			if( !file_exists( $access_filename ) )
-				{
-				$access_file = fopen( $access_filename, 'w' );
-
-				fwrite( $access_file, '<FilesMatch ".*">' . "\n" );
-				fwrite( $access_file, '  Order Allow,Deny' . "\n" );
-				fwrite( $access_file, '  Deny from all' . "\n" );
-				fwrite( $access_file, '</FilesMatch>' . "\n" );
+			if( $abspath == $archive_path || $admin_dir == $archive_path ) {
+				$notes[] = array( "<strong>". __('ERROR: Archive path set to WordPress root or admin folder, .htaccess not written!', $this->textdomain)."</strong>", 2);
+			} else {
+				$access_filename = $archive_path . '.htaccess';
 				
-				fclose( $access_file );
+				if( !file_exists( $access_filename ) )
+					{
+					$access_file = fopen( $access_filename, 'w' );
 
-				$notes[] = array( "<strong>". __('.htaccess written!', $this->textdomain)."</strong>", 0);
-				}
-			else 
-				{
-				$notes[] = array( "<strong>". __('WARNING: .htaccess already exists, please edit it manually!', $this->textdomain)."</strong>", 1);
+					fwrite( $access_file, '<FilesMatch ".*">' . "\n" );
+					fwrite( $access_file, '  Order Allow,Deny' . "\n" );
+					fwrite( $access_file, '  Deny from all' . "\n" );
+					fwrite( $access_file, '</FilesMatch>' . "\n" );
+					
+					fclose( $access_file );
+
+					$notes[] = array( "<strong>". __('.htaccess written!', $this->textdomain)."</strong>", 0);
+					}
+				else 
+					{
+					$notes[] = array( "<strong>". __('WARNING: .htaccess already exists, please edit it manually!', $this->textdomain)."</strong>", 1);
+					}
 				}
 			}
 	}
@@ -83,35 +93,39 @@
 		$postdata = $this->get_real_post_data();
 
 		if ( isset($postdata['archive_path']) ) {
-			$abspath  = $this->chg_directory_separator(ABSPATH, FALSE);
 			$dir = trim($postdata['archive_path']);
 
 			if ( ($realpath = realpath($dir)) !== FALSE) {
 				$realpath = $this->chg_directory_separator($realpath, FALSE);
 				if ( is_dir($realpath) )
 					$realpath = $this->trailingslashit($realpath, FALSE);
-				$options['archive_path'] = $realpath;
-				
-				if( substr( $realpath, 0, strlen( $abspath) ) == $abspath ) {
-					$test_name = $realpath . "test.zip";
-					$test_text = "This is a test file\n";
-					$test_file = fopen( $test_name, 'w' );
 					
-					if( $test_file ) {
-						fwrite($test_file, $test_text);
-						fclose( $test_file );
-				
-						$test_url = $this->wp_site_url( substr( $realpath, strlen( $abspath ) ) . 'test.zip' );
-				
-						$test_read = @file_get_contents($test_url);
+				if( $realpath == $abspath || $realpath == $admin_dir ) {
+					$notes[] = array( "<strong>". __('ERROR: Archive path set to WordPress root or admin folder, this is not a valid option!', $this->textdomain)."</strong>", 2);
+				} else {
+					$options['archive_path'] = $realpath;
+					
+					if( substr( $realpath, 0, strlen( $abspath) ) == $abspath ) {
+						$test_name = $realpath . "test.zip";
+						$test_text = "This is a test file\n";
+						$test_file = fopen( $test_name, 'w' );
 						
-						unlink( $test_name );
-						
-						if( $test_read == $test_text ) {
-							$notes[] = array( "<strong>". sprintf(__('WARNING: Archive directory ("%s") is a subdirectory in the WordPress root and is accessible via the web, this is an insecure configuration!', $this->textdomain), $realpath)."</strong>", 1);
+						if( $test_file ) {
+							fwrite($test_file, $test_text);
+							fclose( $test_file );
+					
+							$test_url = $this->wp_site_url( substr( $realpath, strlen( $abspath ) ) . 'test.zip' );
+					
+							$test_read = @file_get_contents($test_url);
+							
+							@unlink( $test_name );
+							
+							if( $test_read == $test_text ) {
+								$notes[] = array( "<strong>". sprintf(__('WARNING: Archive directory ("%s") is a subdirectory in the WordPress root and is accessible via the web, this is an insecure configuration!', $this->textdomain), $realpath)."</strong>", 1);
+							}
+						} else {
+							$notes[] = array( "<strong>". sprintf(__('ERROR: Archive directory ("%s") is not writeable!', $this->textdomain), $realpath)."</strong>", 2);
 						}
-					} else {
-						$notes[] = array( "<strong>". __('ERROR: Archive directory ("%s") is not writable!', $this->textdomain)."</strong>", 2);
 					}
 				}
 			} else {
@@ -121,7 +135,6 @@
 		
 		if ( isset($postdata['excluded']) ) {
 			$excluded = $excluded_dir = array();
-			$abspath  = $this->chg_directory_separator(ABSPATH, FALSE);
 			$check_archive_excluded = FALSE;
 			$archive_path_found = FALSE;
 			
@@ -417,16 +430,15 @@
 					
 					<td><textarea name="excluded" id="excluded" rows="5" cols="100">
 <?php
-	$abspath  = $this->chg_directory_separator(ABSPATH, FALSE);
 	foreach ($excluded_dir as $dir) {
 		echo htmlentities($this->chg_directory_separator($abspath.$dir,FALSE)) . "\n";
 	}
 ?></textarea><br><br>
 
 						<input class="button" id="AddArchiveDir" name="AddArchiveDir" type="button" value="<?php _e('Add Archive Dir', $this->textdomain);?>" onClick="excluded.value = jQuery.trim( excluded.value ) + '\n<?php echo addslashes( $archive_path ); ?>';">&nbsp;
-						<input class="button" id="AddWPContentDir" name="AddWPContentDir" type="button" value="<?php _e('Add WP-Content Dir', $this->textdomain);?>" onClick="excluded.value = jQuery.trim( excluded.value ) + '\n<?php echo addslashes( $this->chg_directory_separator(WP_CONTENT_DIR . "/", FALSE) ); ?>';">&nbsp;
-						<input class="button" id="AddWPContentDir" name="AddWPUpgradeDir" type="button" value="<?php _e('Add WP-Upgrade Dir', $this->textdomain);?>" onClick="excluded.value = jQuery.trim( excluded.value ) + '\n<?php echo addslashes( $this->chg_directory_separator( WP_CONTENT_DIR . "/upgrade/", FALSE ) ); ?>';">&nbsp;
-						<input class="button" id="AddWPAdminDir" name="AddWPAdminDir" type="button" value="<?php _e('Add WP-Admin Dir', $this->textdomain);?>" onClick="excluded.value = jQuery.trim( excluded.value ) + '\n<?php echo addslashes( $this->chg_directory_separator($abspath . "wp-admin/", FALSE) ); ?>';">&nbsp;
+						<input class="button" id="AddWPContentDir" name="AddWPContentDir" type="button" value="<?php _e('Add WP-Content Dir', $this->textdomain);?>" onClick="excluded.value = jQuery.trim( excluded.value ) + '\n<?php echo addslashes( $content_dir ); ?>';">&nbsp;
+						<input class="button" id="AddWPContentDir" name="AddWPUpgradeDir" type="button" value="<?php _e('Add WP-Upgrade Dir', $this->textdomain);?>" onClick="excluded.value = jQuery.trim( excluded.value ) + '\n<?php echo addslashes( $this->chg_directory_separator( $content_dir . "upgrade/", FALSE ) ); ?>';">&nbsp;
+						<input class="button" id="AddWPAdminDir" name="AddWPAdminDir" type="button" value="<?php _e('Add WP-Admin Dir', $this->textdomain);?>" onClick="excluded.value = jQuery.trim( excluded.value ) + '\n<?php echo addslashes( $admin_dir ); ?>';">&nbsp;
 						<input class="button" id="AddWPIncludesDir" name="AddWPIncludesDir" type="button" value="<?php _e('Add WP-Includes Dir', $this->textdomain);?>" onClick="excluded.value = jQuery.trim( excluded.value ) + '\n<?php echo addslashes($this->chg_directory_separator($abspath . "wp-includes/", FALSE) )?>';">&nbsp;
 					</td>
 				</tr>
