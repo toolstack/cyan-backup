@@ -83,6 +83,12 @@ The progress bar uses AJAX requests to the site to get the status, the backup pr
 * None at this time.
 
 == Changelog == 
+= 1.4 =
+- Added: Remote storage to local FTP server.
+- Added: Help screen to the options page.
+- Added: Additional checks for bad configurations of the archive path, including the WordPress root and admin directories.
+- Fixed: Missing directory name in non-writable archive path error message.
+
 = 1.3 =
 * Added: E-Mail notifications.
 * Updated: Manual backups now add the log download link to the backup list.
