@@ -172,6 +172,12 @@
 			}
 		}
 
+		if ( isset($_POST['remote']) ) {
+			if( is_array( $_POST['remote'] ) ) {
+				$options['remote'] = $_POST['remote'];
+			}
+		}
+
 		// Remove the backup schedule if we've change it recurrence.
 		if( wp_next_scheduled('cyan_backup_hook') && ( $options['schedule']['type'] != $option['schedule']['type'] || $options['schedule']['interval'] != $option['schedule']['interval'] || $options['schedule']['tod'] != $option['schedule']['tod'] || $options['schedule']['dom'] != $option['schedule']['dom'] || $options['schedule']['dow'] != $option['schedule']['dow'] ) ) {
 		
@@ -605,6 +611,85 @@
 
 					<td><input type="text" name="prune[number]" size="5" value="<?php echo $option['prune']['number'];?>"></td>
 				</tr>
+			</tbody>
+		</table>
+
+		<h3><?php _e('Remote Storage', $this->textdomain);?></h3>
+
+		<table class="optiontable form-table" style="margin-top:0;">
+			<tbody>
+				<tr>
+					<th><?php _e('Enable remote storage', $this->textdomain);?></th>
+					
+					<td><input type="checkbox" name="remote[enabled]"<?php	if( $option['remote']['enabled'] == 'on' ) { echo' CHECKED'; }?>></td>
+				</tr>
+
+				<tr>
+					<th><?php _e('Protocol', $this->textdomain);?></th>
+
+					<td>
+<?php
+		echo "\t\t\t\t\t<select id=" . '"remote_protocol" name="remote[protocol]"><option value=""></option>';
+
+		//									'SFTP',
+		//									'FTPS',
+		//									'SCP',
+		//									'DropBox',
+		$remoteprotocols = array( 	'FTP',
+								);
+		
+		foreach( $remoteprotocols as $protocol ) 
+			{ 
+			echo '<option value="' . $protocol . '"';
+			if( $protocol == $option['remote']['protocol'] ) { echo ' SELECTED'; }
+			echo '>'. $protocol . '</option>'; 
+			}
+			
+		echo "</select>\n";
+?>
+					</td>
+				</tr>
+				
+				<tr>
+					<th><?php _e('Username', $this->textdomain);?></th>
+					
+					<td><input type="text" size="20" name="remote[username]" value="<?php echo $option['remote']['username'];?>"></td>
+				</tr>
+
+				<tr>
+					<th><?php _e('Password', $this->textdomain);?></th>
+					
+					<td><input type="password" size="20" name="remote[password]" value="<?php echo $option['remote']['password'];?>"></td>
+				</tr>
+
+				<tr>
+					<th><?php _e('Certificate', $this->textdomain);?></th>
+					
+					<td><input type="text" size="20" name="remote[certificate]" value="<?php echo $option['remote']['certificate'];?>"></td>
+				</tr>
+				
+				<tr>
+					<th><?php _e('Remote path', $this->textdomain);?></th>
+					
+					<td>
+						<input type="text" size="40" name="remote[path]" value="<?php echo $option['remote']['path'];?>"><br>
+						<br>
+						<?php _e( "You many use the follow place holders: %m = month (01-12), %d = day (01-31), %Y = year (XXXX), %M = month (Jan...Dec), %F = month (January...December)" );?>
+					</td>
+				</tr>
+
+				<tr>
+					<th><?php _e('Include log file', $this->textdomain);?></th>
+					
+					<td><input type="checkbox" name="remote[sendlog]"<?php	if( $option['remote']['sendlog'] == 'on' ) { echo' CHECKED'; }?>></td>
+				</tr>
+
+				<tr>
+					<th><?php _e('Delete local copy', $this->textdomain);?></th>
+					
+					<td><input type="checkbox" name="remote[deletelocal]"<?php	if( $option['remote']['deletelocal'] == 'on' ) { echo' CHECKED'; }?>></td>
+				</tr>
+				
 			</tbody>
 		</table>
 

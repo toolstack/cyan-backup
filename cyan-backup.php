@@ -581,6 +581,7 @@ class CYANBackup {
 		if ($backup_file && file_exists($backup_file)) {
 			$options = (array)get_option( $this->option_name );
 			$this->prune_backups( $options['prune']['number'] );
+			$this->transfer_backups( $backup_file, $options['remote'] );
 
 			$filesize = (int)sprintf('%u', filesize($backup_file)) / 1024 / 1024;
 			$temp_time = strtotime($this->get_filemtime($backup_file));
@@ -599,7 +600,7 @@ class CYANBackup {
 		$remote_backuper = $this->remote_backuper();
 
 		// Run the backup.
-		$remote_backuper->wp_backup();
+		$result = $remote_backuper->wp_backup();
 
 		// Get the options.
 		$options = (array)get_option($this->option_name);
@@ -607,10 +608,36 @@ class CYANBackup {
 		// Prune existing backup files as per the options.
 		$this->prune_backups( $options['prune']['number'] );
 		
-		// Determine the next backup time
+		// Determine the next backup time.
 		$this->schedule_next_backup();
+		
+		// Send the backup to remote storage.
+		$this->transfer_backups( $result['backup'], $options['remote'] );
 	}
 
+	private function transfer_backup( $archive, $remote_settings ) {
+		$final_dir = $remote_settings['path'];
+		$final_dir = str_replace( '%m', date('%m'), $final_dir );
+		$final_dir = str_replace( '%d', date('%d'), $final_dir );
+		$final_dir = str_replace( '%Y', date('%Y'), $final_dir );
+		$final_dir = str_replace( '%M', date('%M'), $final_dir );
+		$final_dir = str_replace( '%F', date('%F'), $final_dir );
+		$final_dir = $this->trailingslashit( $final_dir, FALSE );
+		
+		switch( $remote_settings['protocol'] )
+			{
+			case 'FTP':
+				transfer_backup_ftp( $final_dir, $archive, $remote_settings );
+				
+				break;
+			}
+
+		}
+	
+	private function transfer_backup_ftp( $remote_dir, $archive, $remote_settings ) {
+		
+	}
+	
 	//**************************************************************************************
 	// Add setting link
 	//**************************************************************************************

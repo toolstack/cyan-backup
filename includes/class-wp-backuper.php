@@ -388,7 +388,8 @@ class WP_Backuper {
 			
 			$this->statuslogfile = $archive_path . 'status.log';
 			$this->write_status_file( 0, __('Calculating backup size...', $this->textdomain) );
-			
+
+			$backup_start = time();
 			$this->open_log_file( $archive_path . $filename . '.log' );
 			$this->write_log_file( __('Calculating backup size...', $this->textdomain) );
 
@@ -456,6 +457,18 @@ class WP_Backuper {
 
 			$this->delete_transient(self::EXCLUSION_KEY);
 
+			$backup_elapsed = time() - $backup_start;
+			$backup_quantum = __('seconds', $this->textdomain);
+			if( $backup_elapsed > 60 ) {
+				$backup_elapsed = round( $backup_elapsed / 60, 1 );
+				$backup_quantum = __('minutes', $this->textdomain);
+			} else if( $backup_elapsed > 3600 ) {
+				$backup_elapsed = round( $backup_elapsed / 3600, 1 );
+				$backup_quantum = __('hours', $this->textdomain);
+			}
+			
+			$this->write_log_file( __('Elapsed Time', $this->textdomain ) . ': ' . $backup_elapsed . ' ' . $backup_quantum );
+			
 			if( count( $this->error ) > 0 )
 				{
 				$this->write_status_file( 100, __('ERROR:', $this->textdomain ) . implode( '<br>', $this->error ), 'error' );
@@ -464,17 +477,18 @@ class WP_Backuper {
 				
 				$this->close_log_file();
 
-				if( $this->email_sendto !== null ) {	$this->email_log_file( $this->email_sendto, $archive_path . $filename . '.log', $this->error ); }
+				if( $this->email_sendto !== null ) { $this->email_log_file( $this->email_sendto, $archive_path . $filename . '.log', $this->error ); }
 				}
 			else
 				{
 				$this->write_status_file( 100, __('Backup complete!', $this->textdomain ), 'complete' );
 				$this->write_log_file( __('Backup complete!', $this->textdomain) );
+				$this->write_log_file( __('Backup size', $this->textdomain) . ': ' . round( filesize($this->archive_file) / 1024 / 1024, 2 ) . 'MB' );
 				$this->statuslogfile = null;
 
 				$this->close_log_file();
 
-				if( $this->email_sendto !== null ) {	$this->email_log_file( $this->email_sendto, $archive_path . $filename . '.log', __('Backup complete!', $this->textdomain) ); }
+				if( $this->email_sendto !== null ) { $this->email_log_file( $this->email_sendto, $archive_path . $filename . '.log', __('Backup complete!', $this->textdomain) ); }
 				}
 			
 			unlink( $active_filename );
