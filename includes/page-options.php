@@ -157,6 +157,14 @@
 			$options['excluded'] = $excluded;
 		}
 
+		if( isset( $_POST['emaillog'] ) ) {
+			$options['emaillog'] = $_POST['emaillog'];
+		}
+		
+		if( isset( $_POST['sendto'] ) ) {
+			$options['sendto'] = $_POST['sendto'];
+		}
+
 		if ( isset($_POST['schedule']) ) {
 			if( is_array( $_POST['schedule'] ) ) {
 				$options['schedule'] = $_POST['schedule'];
@@ -414,6 +422,30 @@
 						<input class="button" id="AddWPContentDir" name="AddWPUpgradeDir" type="button" value="<?php _e('Add WP-Upgrade Dir', $this->textdomain);?>" onClick="excluded.value = jQuery.trim( excluded.value ) + '\n<?php echo addslashes( $this->chg_directory_separator( WP_CONTENT_DIR . "/upgrade/", FALSE ) ); ?>';">&nbsp;
 						<input class="button" id="AddWPAdminDir" name="AddWPAdminDir" type="button" value="<?php _e('Add WP-Admin Dir', $this->textdomain);?>" onClick="excluded.value = jQuery.trim( excluded.value ) + '\n<?php echo addslashes( $this->chg_directory_separator($abspath . "wp-admin/", FALSE) ); ?>';">&nbsp;
 						<input class="button" id="AddWPIncludesDir" name="AddWPIncludesDir" type="button" value="<?php _e('Add WP-Includes Dir', $this->textdomain);?>" onClick="excluded.value = jQuery.trim( excluded.value ) + '\n<?php echo addslashes($this->chg_directory_separator($abspath . "wp-includes/", FALSE) )?>';">&nbsp;
+					</td>
+				</tr>
+			</tbody>
+		</table>
+
+		<h3><?php _e('Log Options', $this->textdomain);?></h3>
+
+		<table class="optiontable form-table" style="margin-top:0;">
+			<tbody>
+				<tr>
+					<th><?php _e('E-Mail the log file', $this->textdomain);?></th>
+
+					<td>
+						<input type=checkbox id="emaillog_enabled" name="emaillog"<?php if( $option['emaillog'] == 'on' ) { echo ' CHECKED'; }?>>
+					</td>
+				</tr>
+
+				<tr>
+					<th><?php _e('Send to addresses', $this->textdomain);?></th>
+
+					<td>
+						<input type="input" size="60" id="emaillog_sendto" name="sendto" value="<?php echo $option['sendto'];?>"><br>
+					    <br>
+						<?php _e('This is a comma separated list of e-mail addresses to send the log file to, if blank it will be sent to the WordPress admin user.', $this->textdomain);?>
 					</td>
 				</tr>
 			</tbody>

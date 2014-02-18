@@ -70,10 +70,10 @@
 
 			<thead>
 				<tr>
-					<th><?php _e('File Name', $this->textdomain);?></th>
-					<th><?php _e('Date and Time', $this->textdomain);?></th>
-					<th><?php _e('Size', $this->textdomain);?></th>
-					<th style="text-align: center;"><input type="checkbox" id="switch_checkboxes" name="switch_checkboxes" style="margin: 0px 4px 0px 0px;" /></th>
+					<th style="width: 40%;"><?php _e('File Name', $this->textdomain);?></th>
+					<th style="width: 35%;"><?php _e('Date and Time', $this->textdomain);?></th>
+					<th style="width: 15%;"><?php _e('Size', $this->textdomain);?></th>
+					<th style="width: 10%;text-align: center;"><input type="checkbox" id="switch_checkboxes" name="switch_checkboxes" style="margin: 0px 4px 0px 0px;" /></th>
 				</tr>
 			</thead>
 

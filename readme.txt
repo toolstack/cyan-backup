@@ -5,7 +5,7 @@ Author URI: http://toolstack.com
 Tags: Backup, Schedule
 Requires at least: 2.9
 Tested up to: 3.8.1
-Stable tag: 1.2.1
+Stable tag: 1.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -83,6 +83,11 @@ The progress bar uses AJAX requests to the site to get the status, the backup pr
 * None at this time.
 
 == Changelog == 
+= 1.3 =
+* Added: E-Mail notifications.
+* Updated: Manual backups now add the log download link to the backup list.
+* Updated: Backup list formatting change for better display on smaller displays.
+
 = 1.2.1 =
 * Added: Log file deletion when zip is deleted.
 * Fixed: Deletion of files through the backups page now works again.
@@ -154,8 +159,6 @@ The progress bar uses AJAX requests to the site to get the status, the backup pr
 * Initial fork from Total Backup.
 
 == Road Map ==
-* 1.2 - Logging
-* 1.3 - email notifications/reporting
 * 1.4 - FTP support (local network only)
 * 1.5 - FTPS support
 * 1.6 - SFTP support

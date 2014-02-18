@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: CYAN Backup
-Version: 1.2.1
+Version: 1.3
 Plugin URI: http://toolstack.com/cyan-backup
 Description: Backup your entire WordPress site and its database into a zip file on a schedule.
 Author: Greg Ross
@@ -47,7 +47,7 @@ class CYANBackup {
 	const   NONCE_NAME   = '_wpnonce_CYAN_Backup';
 	const   TIME_LIMIT   = 900;			// 15min * 60sec
 	const	DEBUG_MODE   = FALSE;
-	const	VERSION      = "1.2.1";
+	const	VERSION      = "1.3";
 
 	function __construct() {
 		global $wpdb;
@@ -785,9 +785,17 @@ jQuery(function($){
 					var wrap = $('#img_wrap');
 
 					if( json.state == 'complete' ) {
+						var log_name = json.backup_file;
+						var log_file = '';
 						var backup_file = '<a href="?page=<?php echo $this->menu_base; ?>&download=' + encodeURIComponent(json.backup_file) + '<?php echo $nonces_2; ?>' + '" title="' + basename(json.backup_file) + '">' + basename(json.backup_file) + '</a>';
 						var rowCount = $('#backuplist tr').length - 2;
-						var tr = $('<tr><td>' + backup_file + '</td>' +
+						var tr = '';
+
+						log_name = log_name.replace(".zip",".log");
+						
+						log_file = ' [<a href="?page=<?php echo $this->menu_base; ?>&download=' + encodeURIComponent(log_name) + '<?php echo $nonces_2; ?>' + '" title="<?php _e('log', $this->textdomain);?>"><?php _e('log', $this->textdomain);?></a>]';
+							
+						tr = $('<tr><td>' + backup_file + log_file + '</td>' +
 							'<td>' + json.backup_date  + '</td>' +
 							'<td>' + json.backup_size  + '</td>' +
 							'<td style="text-align: center;"><input type="checkbox" name="remove[' + ( rowCount )  + ']" value="<?php echo addslashes($archive_path);?>' + basename(json.backup_file) +'"></td></tr>');

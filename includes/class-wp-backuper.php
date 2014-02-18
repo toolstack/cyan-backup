@@ -22,6 +22,7 @@ class WP_Backuper {
 	private $increment = 0;
 	private $percentage = 0;
 	private $last_percentage = 0;
+	private $email_sendto = null;
 
 	private $error = array();
 
@@ -57,6 +58,10 @@ class WP_Backuper {
 				),
 			$this->get_excluded_dir($excluded)
 			);
+		
+		if( $option['emaillog'] == 'on' ) {
+			$this->email_sendto = $option['sendto'];
+		}
 	}
 
 	//**************************************************************************************
@@ -242,6 +247,30 @@ class WP_Backuper {
 		return substr(wp_hash($i . $action, 'nonce'), -12, 10);
 	}
 
+	private function email_log_file( $addresses, $filename, $status ) {
+		$blogname = get_bloginfo('name');
+		$blogemail = get_bloginfo('admin_email');
+		
+		if( trim($addresses) == '' ) { $addresses = $blogemail; }
+		
+		$headers[] = "From: $blogname <$blogemail>";
+		$headers[] = "MIME-Version: 1.0";
+		$headers[] = "Content-type: text/html; charset=utf-8";
+		
+		$body  = __('Please find attached the backup log file for your reference.') . "\r\n";
+		$body .= "\r\n";
+		
+		if( is_array( $status ) ) {
+			foreach( $status as $key => $value ) {
+				$body .= "\t$key: $value\r\n";
+			}
+		} else {
+			$body .= $status . "\r\n";
+		}
+
+		wp_mail( $addresses, __('CYAN Backup Log', $this->textdomain), $body, $headers, $filename );
+	}
+	
 	//**************************************************************************************
 	// Get the total number of rows in the WordPress tables we're going to backup.
 	//**************************************************************************************
@@ -432,17 +461,23 @@ class WP_Backuper {
 				$this->write_status_file( 100, __('ERROR:', $this->textdomain ) . implode( '<br>', $this->error ), 'error' );
 				$this->write_log_file( __('ERROR:', $this->textdomain ) . implode( ' - ', $this->error ) );
 				$this->statuslogfile = null;
+				
+				$this->close_log_file();
+
+				if( $this->email_sendto !== null ) {	$this->email_log_file( $this->email_sendto, $archive_path . $filename . '.log', $this->error ); }
 				}
 			else
 				{
 				$this->write_status_file( 100, __('Backup complete!', $this->textdomain ), 'complete' );
 				$this->write_log_file( __('Backup complete!', $this->textdomain) );
 				$this->statuslogfile = null;
+
+				$this->close_log_file();
+
+				if( $this->email_sendto !== null ) {	$this->email_log_file( $this->email_sendto, $archive_path . $filename . '.log', __('Backup complete!', $this->textdomain) ); }
 				}
 			
 			unlink( $active_filename );
-			
-			$this->close_log_file();
 			
 			return array(
 				'backup'    => ($backup && file_exists($backup)) ? $this->archive_file : FALSE ,
