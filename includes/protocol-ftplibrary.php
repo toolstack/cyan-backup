@@ -13,8 +13,6 @@ if( function_exists( 'ftp_connect' ) ) {
 	if( $server_ip[0] == $remote_ip[0] && $server_ip[1] == $remote_ip[1] && $server_ip[2] == $remote_ip[2] && $server_ip !== FALSE && $remote_ip !== FALSE) {
 		$ftp_connection = ftp_connect( $remote_settings['host'] );
 		
-		$this->write_debug_log( "password: $final_password" );
-		
 		if( $ftp_connection !== FALSE ) {
 			if( @ftp_login( $ftp_connection, $remote_settings['username'], $final_password ) !== FALSE ) {
 				// Make sure the remote directory exists.

@@ -2,18 +2,18 @@
 Contributors: GregRoss
 Plugin URI: http://toolstack.com/cyan-backup
 Author URI: http://toolstack.com
-Tags: Backup, Schedule
+Tags: Backup, Schedule, FTP, SFTP, SCP, FTPS, remote storage
 Requires at least: 2.9
 Tested up to: 3.8.1
-Stable tag: 1.5
+Stable tag: 1.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Backup your entire WordPress site and its database into a zip file on a schedule.
+Backup your entire WordPress site and its database into a zip file on a schedule.  Remote storage options include FTP, SFTP and FTPS.
 
 == Description ==
 
-Backup your entire WordPress site and its database into a zip file on a schedule.
+Backup your entire WordPress site and its database into a zip file on a schedule.  Remote storage options include FTP, SFTP and FTPS.
 
 CYAN Backup is a fork of the great [Total Backup](http://wordpress.org/plugins/total-backup/) by [wokamoto](http://profiles.wordpress.org/wokamoto/).
 
@@ -85,10 +85,14 @@ Also the remote server MUST be on the same class 'C' subnet as your web server. 
 3. About page.
 
 == Upgrade Notice ==
-= 1.0 =
+= 1.6 =
 * None at this time.
 
 == Changelog == 
+= 1.6 =
+* Added: Remote storage provider: SFTP/SCP (Secure File Transfer via SSH).
+* Fixed: FTPS Library missing close brace.
+
 = 1.5 =
 * Added: Remote storage provider: FTPS (FTP via SSL/TLS).
 * Fixed: Log file not sending if the FTP server was still processing the zip file transfer.
@@ -176,8 +180,6 @@ Also the remote server MUST be on the same class 'C' subnet as your web server. 
 * Initial fork from Total Backup.
 
 == Road Map ==
-* 1.6 - SFTP support
-* 1.7 - SCP support
-* 1.8 - Dropbox support
+* 1.7 - Dropbox support
 * 2.0 - Restore support
 * 2.5 - Zip file creation without temp copy

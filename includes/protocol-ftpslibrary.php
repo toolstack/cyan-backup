@@ -8,8 +8,6 @@ if( function_exists( 'ftp_ssl_connect' ) ) {
 
 	$ftp_connection = ftp_ssl_connect( $remote_settings['host'] );
 	
-	$this->write_debug_log( "password: $final_password" );
-	
 	if( $ftp_connection !== FALSE ) {
 		if( @ftp_login( $ftp_connection, $remote_settings['username'], $final_password ) !== FALSE ) {
 			// Make sure the remote directory exists.
