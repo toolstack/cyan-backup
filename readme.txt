@@ -5,7 +5,7 @@ Author URI: http://toolstack.com
 Tags: Backup, Schedule
 Requires at least: 2.9
 Tested up to: 3.8.1
-Stable tag: 1.3
+Stable tag: 1.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -172,7 +172,6 @@ Also the remote server MUST be on the same class 'C' subnet as your web server. 
 * Initial fork from Total Backup.
 
 == Road Map ==
-* 1.4 - FTP support (local network only)
 * 1.5 - FTPS support
 * 1.6 - SFTP support
 * 1.7 - SCP support
