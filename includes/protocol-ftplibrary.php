@@ -20,9 +20,6 @@ if( function_exists( 'ftp_connect' ) ) {
 				// Make sure the remote directory exists.
 				@ftp_mkdir( $ftp_connection, $final_dir );
 				
-				// Take a quick nap to make sure the remote host finished creating the new directory before we start sending the zip file.
-				sleep( 2 );
-				
 				$result = ftp_put( $ftp_connection, $final_dir . $filename, $archive, FTP_BINARY );
 				
 				// If we have been told to send the log file as well, let's do that now.

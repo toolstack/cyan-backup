@@ -5,7 +5,7 @@ Author URI: http://toolstack.com
 Tags: Backup, Schedule
 Requires at least: 2.9
 Tested up to: 3.8.1
-Stable tag: 1.4
+Stable tag: 1.5
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -89,12 +89,16 @@ Also the remote server MUST be on the same class 'C' subnet as your web server. 
 * None at this time.
 
 == Changelog == 
+= 1.5 =
+* Added: Remote storage provider: FTPS (FTP via SSL/TLS).
+* Fixed: Log file not sending if the FTP server was still processing the zip file transfer.
+
 = 1.4 =
-- Added: Remote storage to local FTP server.
-- Added: Help screen to the options page.
-- Added: Additional checks for bad configurations of the archive path, including the WordPress root and admin directories.
-- Added: Help menu to the options page.
-- Fixed: Missing directory name in non-writable archive path error message.
+* Added: Remote storage to local FTP server.
+* Added: Help screen to the options page.
+* Added: Additional checks for bad configurations of the archive path, including the WordPress root and admin directories.
+* Added: Help menu to the options page.
+* Fixed: Missing directory name in non-writable archive path error message.
 
 = 1.3 =
 * Added: E-Mail notifications.
@@ -172,7 +176,6 @@ Also the remote server MUST be on the same class 'C' subnet as your web server. 
 * Initial fork from Total Backup.
 
 == Road Map ==
-* 1.5 - FTPS support
 * 1.6 - SFTP support
 * 1.7 - SCP support
 * 1.8 - Dropbox support

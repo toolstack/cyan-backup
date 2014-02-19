@@ -35,6 +35,9 @@ if( in_array( 'ftp', stream_get_wrappers() ) ) {
 				// Setup a connection string to send the log file to the remote host.
 				$connection = 'ftp://' . $remote_settings['username'] . ':' . $final_password . '@' . $remote_settings['host'] . $final_dir . $logname;
 				
+				// Take a quick nap to make sure the remote host finished receiving file before we start sending the log file.
+				sleep( 2 );
+
 				// Open the log file to stream to the remote host.
 				$filestream = fopen( $log, 'r' );
 

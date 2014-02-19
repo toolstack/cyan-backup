@@ -74,9 +74,7 @@
 			'title'    => 	__('Remote Storage', $this->textdomain),
 			'id'       => 	'remote_tab',
 			'content'  => 	'<p>' . __('<b>Enable remote storage</b>:  This will enable the remote storage of your backup files.  You should ALWAYS keep copies of your backup files on a different host than your main website as if your site is compromised or has a major hardware failure you may not be able to access your files on the primary host.', $this->textdomain) . '</p>' .
-							'<p>' . __('<b>Protocol</b>:  Select the transfer protocol to use.  At this time only FTP is supported', $this->textdomain) . '</p>' .
-							'<p>' . __('<b>Protocol - FTP Wrappers</b>:  FTP IS INSECURE.  DO NOT USE THIS ON PRODUCTION SYSTEMS.  FTP is included here only for testing purposes.  FTP connections will only be allowed to remote systems on your local subnet.  FTP Wrappers use the built in wrappers code to transfer the backups.  If your hosting provider has disabled wrappers this will not work and you should use FTP Library instead.', $this->textdomain) . '</p>' .
-							'<p>' . __('<b>Protocol - FTP Library</b>:  FTP IS INSECURE.  DO NOT USE THIS ON PRODUCTION SYSTEMS.  FTP is included here only for testing purposes.  FTP connections will only be allowed to remote systems on your local subnet.  FTP Library use the PHP Library to transfer the backups.  If your installation of PHP does not have the the FTP library installed you should use FTP Wrappers instead.', $this->textdomain) . '</p>' .
+							'<p>' . __('<b>Protocol</b>:  Select the transfer protocol to use.  See Protocol Types to the left with details.', $this->textdomain) . '</p>' .
 							'<p>' . __('<b>Username</b>:  The username to login to the remote server with.  Ideally this user will only be able to write files to the remote location, not read.  This will ensure that even if your site is compromised, your remote storage cannot be used to as a distribution point for hackers.', $this->textdomain) . '</p>' .
 							'<p>' . __('<b>Password</b>:  The password to login to the remote server with.  The password is encrypted before being stored in the database, however if someone gets both database and file access to your server it could be recovered.', $this->textdomain) . '</p>' .
 							'<p>' . __('<b>Remote path</b>:  This is the remote path to use to store the backup.', $this->textdomain) . __( "You many use the follow place holders: %m = month (01-12), %d = day (01-31), %Y = year (XXXX), %M = month (Jan...Dec), %F = month (January...December)" ) . '.  ' . __('This path will be created if the protocol supports it during the transfer of the file.', $this->textdomain) . '</p>' .
@@ -88,6 +86,21 @@
 		)
 	);
 
+	$help_screen->add_help_tab(
+		array(
+			'title'    => 	__('Protocol Types', $this->textdomain),
+			'id'       => 	'protocol_tab',
+			'content'  => 	'<p>' . __('There are multiple protocol providers available for remote storage, but only those that your system supports will be available in the protocol drop down.', $this->textdomain) . '</p>' .
+							'<p>' . __('<b>FTP Wrappers</b>:  FTP IS INSECURE.  DO NOT USE THIS ON PRODUCTION SYSTEMS.  FTP is included here only for testing purposes.  FTP connections will only be allowed to remote systems on your local subnet.  FTP Wrappers use the built in wrappers code to transfer the backups.  If your hosting provider has disabled wrappers this will not work and you should use FTP Library instead.', $this->textdomain) . '</p>' .
+							'<p>' . __('<b>FTP Library</b>:  FTP IS INSECURE.  DO NOT USE THIS ON PRODUCTION SYSTEMS.  FTP is included here only for testing purposes.  FTP connections will only be allowed to remote systems on your local subnet.  FTP Library use the PHP Library to transfer the backups.  If your installation of PHP does not have the the FTP library installed you should use FTP Wrappers instead.', $this->textdomain) . '</p>' .
+							'<p>' . __('<b>FTPS Wrappers</b>:  FTPS Wrappers use the built in wrappers code to transfer the backups.  FTPS is FTP over SSL/TLS.  If your hosting provider has disabled wrappers this will not work and you should use FTPS Library instead.', $this->textdomain) . '</p>' .
+							'<p>' . __('<b>FTPS Library</b>:  FTPS Library use the PHP Library to transfer the backups.  FTPS is FTP over SSL/TLS.  If your installation of PHP does not have the the FTPS library installed you should use FTP Wrappers instead.', $this->textdomain) . '</p>'
+			,
+			'callback' => 	false
+		)
+	);
+
+	
 	$help_screen->add_help_tab(
 		array(
 			'title'    => 	__('Clear Active Backup', $this->textdomain),

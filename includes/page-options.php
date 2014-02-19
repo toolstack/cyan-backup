@@ -656,11 +656,12 @@
 		$wrappers = stream_get_wrappers();
 		
 		//									'sftp' => __('SFTP', $this->textdomain),
-		//									'ftps' => __('FTPS', $this->textdomain),
 		//									'scp'  => __('SCP', $this->textdomain),
 		//									'dropbox' => __('DropBox', $this->textdomain),
-		if( in_array( 'ftp', $wrappers ) ) 		{ $remoteprotocols['ftpwrappers'] 	= __('FTP Wrappers', $this->textdomain); }
-		if( function_exists( 'ftp_connect' ) ) 	{ $remoteprotocols['ftplibrary'] 	= __('FTP Library', $this->textdomain); }
+		if( in_array( 'ftp', $wrappers ) ) 			{ $remoteprotocols['ftpwrappers'] 	= __('FTP Wrappers', $this->textdomain); }
+		if( function_exists( 'ftp_connect' ) ) 		{ $remoteprotocols['ftplibrary'] 	= __('FTP Library', $this->textdomain); }
+		if( in_array( 'ftps', $wrappers ) ) 		{ $remoteprotocols['ftpswrappers'] 	= __('FTPS Wrappers', $this->textdomain); }
+		if( function_exists( 'ftp_ssl_connect' ) ) 	{ $remoteprotocols['ftpslibrary'] 	= __('FTPS Library', $this->textdomain); }
 								
 		foreach( $remoteprotocols as $key => $protocol ) 
 			{ 
