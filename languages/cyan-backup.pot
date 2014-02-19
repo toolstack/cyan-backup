@@ -2,9 +2,9 @@
 # This file is distributed under the same license as the CYAN Backup package.
 msgid ""
 msgstr ""
-"Project-Id-Version: CYAN Backup 1.4\n"
+"Project-Id-Version: CYAN Backup 1.5\n"
 "Report-Msgid-Bugs-To: http://wordpress.org/tag/cyan-backup\n"
-"POT-Creation-Date: 2014-02-19 00:58:32+00:00\n"
+"POT-Creation-Date: 2014-02-19 02:21:02+00:00\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -24,50 +24,50 @@ msgstr ""
 msgid "Method not found!"
 msgstr ""
 
-#: cyan-backup.php:739
+#: cyan-backup.php:747
 msgid "Settings"
 msgstr ""
 
-#: cyan-backup.php:913
+#: cyan-backup.php:921
 msgid "log"
 msgstr ""
 
-#: cyan-backup.php:977
+#: cyan-backup.php:985
 msgid "Starting Backup..."
 msgstr ""
 
-#: cyan-backup.php:991 includes/class-wp-backuper.php:484
+#: cyan-backup.php:999 includes/class-wp-backuper.php:484
 #: includes/class-wp-backuper.php:485 includes/class-wp-backuper.php:491
 msgid "Backup complete!"
 msgstr ""
 
-#: cyan-backup.php:1000
+#: cyan-backup.php:1008
 msgid "Backup failed!"
 msgstr ""
 
-#. #-#-#-#-#  plugin.pot (CYAN Backup 1.4)  #-#-#-#-#
+#. #-#-#-#-#  plugin.pot (CYAN Backup 1.5)  #-#-#-#-#
 #. Plugin Name of the plugin/theme
-#: cyan-backup.php:1024 cyan-backup.php:1025 includes/page-backups.php:48
+#: cyan-backup.php:1032 cyan-backup.php:1033 includes/page-backups.php:48
 msgid "CYAN Backup"
 msgstr ""
 
-#: cyan-backup.php:1038 cyan-backup.php:1039
+#: cyan-backup.php:1046 cyan-backup.php:1047
 msgid "Backups"
 msgstr ""
 
-#: cyan-backup.php:1047
+#: cyan-backup.php:1055
 msgid "Options &gt; CYAN Backup"
 msgstr ""
 
-#: cyan-backup.php:1048
+#: cyan-backup.php:1056
 msgid "Options"
 msgstr ""
 
-#: cyan-backup.php:1062
+#: cyan-backup.php:1070
 msgid "About &gt; CYAN Backup"
 msgstr ""
 
-#: cyan-backup.php:1063
+#: cyan-backup.php:1071
 msgid "About"
 msgstr ""
 
@@ -394,31 +394,11 @@ msgstr ""
 
 #: includes/help-options.php:77
 msgid ""
-"<b>Protocol</b>:  Select the transfer protocol to use.  At this time only "
-"FTP is supported"
+"<b>Protocol</b>:  Select the transfer protocol to use.  See Protocol Types "
+"to the left with details."
 msgstr ""
 
 #: includes/help-options.php:78
-msgid ""
-"<b>Protocol - FTP Wrappers</b>:  FTP IS INSECURE.  DO NOT USE THIS ON "
-"PRODUCTION SYSTEMS.  FTP is included here only for testing purposes.  FTP "
-"connections will only be allowed to remote systems on your local subnet.  "
-"FTP Wrappers use the built in wrappers code to transfer the backups.  If "
-"your hosting provider has disabled wrappers this will not work and you "
-"should use FTP Library instead."
-msgstr ""
-
-#: includes/help-options.php:79
-msgid ""
-"<b>Protocol - FTP Library</b>:  FTP IS INSECURE.  DO NOT USE THIS ON "
-"PRODUCTION SYSTEMS.  FTP is included here only for testing purposes.  FTP "
-"connections will only be allowed to remote systems on your local subnet.  "
-"FTP Library use the PHP Library to transfer the backups.  If your "
-"installation of PHP does not have the the FTP library installed you should "
-"use FTP Wrappers instead."
-msgstr ""
-
-#: includes/help-options.php:80
 msgid ""
 "<b>Username</b>:  The username to login to the remote server with.  Ideally "
 "this user will only be able to write files to the remote location, not "
@@ -426,7 +406,7 @@ msgid ""
 "storage cannot be used to as a distribution point for hackers."
 msgstr ""
 
-#: includes/help-options.php:81
+#: includes/help-options.php:79
 msgid ""
 "<b>Password</b>:  The password to login to the remote server with.  The "
 "password is encrypted before being stored in the database, however if "
@@ -434,48 +414,93 @@ msgid ""
 "recovered."
 msgstr ""
 
-#: includes/help-options.php:82
+#: includes/help-options.php:80
 msgid ""
 "<b>Remote path</b>:  This is the remote path to use to store the backup."
 msgstr ""
 
-#: includes/help-options.php:82 includes/page-options.php:701
+#: includes/help-options.php:80 includes/page-options.php:702
 msgid ""
 "You many use the follow place holders: %m = month (01-12), %d = day (01-31), "
 "%Y = year (XXXX), %M = month (Jan...Dec), %F = month (January...December)"
 msgstr ""
 
-#: includes/help-options.php:82
+#: includes/help-options.php:80
 msgid ""
 "This path will be created if the protocol supports it during the transfer of "
 "the file."
 msgstr ""
 
-#: includes/help-options.php:83
+#: includes/help-options.php:81
 msgid ""
 "<b>Include log file</b>:  By default, only the archive log is sent to the "
 "remote server, selecting this option will also send the log file."
 msgstr ""
 
-#: includes/help-options.php:84
+#: includes/help-options.php:82
 msgid ""
 "<b>Delete local copy during scheduled backup</b>:  Once the transfer is "
 "successful after a scheduled backup, this option will automatically delete "
 "the local copy of the backup and log file."
 msgstr ""
 
-#: includes/help-options.php:85
+#: includes/help-options.php:83
 msgid ""
 "<b>Delete local copy during manual backup</b>:  Once the transfer is "
 "successful after a manual backup, this option will automatically delete the "
 "local copy of the backup and log file."
 msgstr ""
 
-#: includes/help-options.php:93 includes/page-options.php:726
-msgid "Clear Active Backup"
+#: includes/help-options.php:91
+msgid "Protocol Types"
+msgstr ""
+
+#: includes/help-options.php:93
+msgid ""
+"There are multiple protocol providers available for remote storage, but only "
+"those that your system supports will be available in the protocol drop down."
+msgstr ""
+
+#: includes/help-options.php:94
+msgid ""
+"<b>FTP Wrappers</b>:  FTP IS INSECURE.  DO NOT USE THIS ON PRODUCTION "
+"SYSTEMS.  FTP is included here only for testing purposes.  FTP connections "
+"will only be allowed to remote systems on your local subnet.  FTP Wrappers "
+"use the built in wrappers code to transfer the backups.  If your hosting "
+"provider has disabled wrappers this will not work and you should use FTP "
+"Library instead."
 msgstr ""
 
 #: includes/help-options.php:95
+msgid ""
+"<b>FTP Library</b>:  FTP IS INSECURE.  DO NOT USE THIS ON PRODUCTION "
+"SYSTEMS.  FTP is included here only for testing purposes.  FTP connections "
+"will only be allowed to remote systems on your local subnet.  FTP Library "
+"use the PHP Library to transfer the backups.  If your installation of PHP "
+"does not have the the FTP library installed you should use FTP Wrappers "
+"instead."
+msgstr ""
+
+#: includes/help-options.php:96
+msgid ""
+"<b>FTPS Wrappers</b>:  FTPS Wrappers use the built in wrappers code to "
+"transfer the backups.  FTPS is FTP over SSL/TLS.  If your hosting provider "
+"has disabled wrappers this will not work and you should use FTPS Library "
+"instead."
+msgstr ""
+
+#: includes/help-options.php:97
+msgid ""
+"<b>FTPS Library</b>:  FTPS Library use the PHP Library to transfer the "
+"backups.  FTPS is FTP over SSL/TLS.  If your installation of PHP does not "
+"have the the FTPS library installed you should use FTP Wrappers instead."
+msgstr ""
+
+#: includes/help-options.php:106 includes/page-options.php:727
+msgid "Clear Active Backup"
+msgstr ""
+
+#: includes/help-options.php:108
 msgid ""
 "<b>Clear active backup status</b>:  Only check this if a backup has hung and "
 "you can no longer execute backups.  CYAN Backup uses a status file to tell "
@@ -761,53 +786,61 @@ msgstr ""
 msgid "Protocol"
 msgstr ""
 
-#: includes/page-options.php:662
+#: includes/page-options.php:661
 msgid "FTP Wrappers"
 msgstr ""
 
-#: includes/page-options.php:663
+#: includes/page-options.php:662
 msgid "FTP Library"
 msgstr ""
 
-#: includes/page-options.php:678
+#: includes/page-options.php:663
+msgid "FTPS Wrappers"
+msgstr ""
+
+#: includes/page-options.php:664
+msgid "FTPS Library"
+msgstr ""
+
+#: includes/page-options.php:679
 msgid "Host"
 msgstr ""
 
-#: includes/page-options.php:684
+#: includes/page-options.php:685
 msgid "Username"
 msgstr ""
 
-#: includes/page-options.php:690
+#: includes/page-options.php:691
 msgid "Password"
 msgstr ""
 
-#: includes/page-options.php:696
+#: includes/page-options.php:697
 msgid "Remote path"
 msgstr ""
 
-#: includes/page-options.php:706
+#: includes/page-options.php:707
 msgid "Include log file"
 msgstr ""
 
-#: includes/page-options.php:712
+#: includes/page-options.php:713
 msgid "Delete local copy during scheduled backup"
 msgstr ""
 
-#: includes/page-options.php:718
+#: includes/page-options.php:719
 msgid "Delete local copy during manual backup"
 msgstr ""
 
-#: includes/page-options.php:731
+#: includes/page-options.php:732
 msgid "Clear active backup status"
 msgstr ""
 
-#: includes/page-options.php:733
+#: includes/page-options.php:734
 msgid ""
 "WARNING: Only check this if a backup has hung and you can no longer execute "
 "backups."
 msgstr ""
 
-#: includes/page-options.php:739
+#: includes/page-options.php:740
 msgid "Update Options"
 msgstr ""
 
