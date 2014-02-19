@@ -188,6 +188,13 @@
 		if ( isset($_POST['remote']) ) {
 			if( is_array( $_POST['remote'] ) ) {
 				$options['remote'] = $_POST['remote'];
+
+				if( !function_exists( 'mcrypt_encrypt' ) ) {
+					$notes[] = array( "<strong>". __('WARNING: mcrypt library is not installed so passwords cannot be encrypted before being stored in the database.  Your remote storage password will be stored in clear text!  Please install mcrypt and re-save your configuration.', $this->textdomain)."</strong>", 1);
+				}
+				
+				// Encrpyt the password for storage in the database.
+				$options['remote']['password'] = $this->encrypt_password( $options['remote']['password'] );
 			}
 		}
 
@@ -220,7 +227,6 @@
 				$options['prune'] = $_POST['prune'];
 			}
 		}
-		
 		update_option($this->option_name, $options);
 
 		$option = $options;
@@ -231,6 +237,10 @@
 		$notes[] = array("<strong>".__('Configuration saved!', $this->textdomain)."</strong>", 0);
 	}
 
+	// Decrypt the password for use on the form.
+	$decrypted_pw = $this->decrypt_password( $option['remote']['password'] );
+	$option['remote']['password'] = $decrypted_pw;
+	
 	$schedule_types = array( 'Once', 'Hourly', 'Daily', 'Weekly', 'Monthly' );
 
 	if( self::DEBUG_MODE == TRUE ) {
@@ -643,17 +653,19 @@
 <?php
 		echo "\t\t\t\t\t<select id=" . '"remote_protocol" name="remote[protocol]"><option value=""></option>';
 
-		//									'SFTP',
-		//									'FTPS',
-		//									'SCP',
-		//									'DropBox',
-		$remoteprotocols = array( 	'FTP',
-								);
+		$wrappers = stream_get_wrappers();
 		
-		foreach( $remoteprotocols as $protocol ) 
+		//									'sftp' => __('SFTP', $this->textdomain),
+		//									'ftps' => __('FTPS', $this->textdomain),
+		//									'scp'  => __('SCP', $this->textdomain),
+		//									'dropbox' => __('DropBox', $this->textdomain),
+		if( in_array( 'ftp', $wrappers ) ) 		{ $remoteprotocols['ftpwrappers'] 	= __('FTP Wrappers', $this->textdomain); }
+		if( function_exists( 'ftp_connect' ) ) 	{ $remoteprotocols['ftplibrary'] 	= __('FTP Library', $this->textdomain); }
+								
+		foreach( $remoteprotocols as $key => $protocol ) 
 			{ 
-			echo '<option value="' . $protocol . '"';
-			if( $protocol == $option['remote']['protocol'] ) { echo ' SELECTED'; }
+			echo '<option value="' . $key . '"';
+			if( $key == $option['remote']['protocol'] ) { echo ' SELECTED'; }
 			echo '>'. $protocol . '</option>'; 
 			}
 			
@@ -662,6 +674,12 @@
 					</td>
 				</tr>
 				
+				<tr>
+					<th><?php _e('Host', $this->textdomain);?></th>
+					
+					<td><input type="text" size="40" name="remote[host]" value="<?php echo $option['remote']['host'];?>"></td>
+				</tr>
+
 				<tr>
 					<th><?php _e('Username', $this->textdomain);?></th>
 					
@@ -674,12 +692,6 @@
 					<td><input type="password" size="20" name="remote[password]" value="<?php echo $option['remote']['password'];?>"></td>
 				</tr>
 
-				<tr>
-					<th><?php _e('Certificate', $this->textdomain);?></th>
-					
-					<td><input type="text" size="20" name="remote[certificate]" value="<?php echo $option['remote']['certificate'];?>"></td>
-				</tr>
-				
 				<tr>
 					<th><?php _e('Remote path', $this->textdomain);?></th>
 					
@@ -697,11 +709,17 @@
 				</tr>
 
 				<tr>
-					<th><?php _e('Delete local copy', $this->textdomain);?></th>
+					<th><?php _e('Delete local copy during scheduled backup', $this->textdomain);?></th>
 					
-					<td><input type="checkbox" name="remote[deletelocal]"<?php	if( $option['remote']['deletelocal'] == 'on' ) { echo' CHECKED'; }?>></td>
+					<td><input type="checkbox" name="remote[deletelocalschedule]"<?php	if( $option['remote']['deletelocalschedule'] == 'on' ) { echo' CHECKED'; }?>></td>
 				</tr>
 				
+				<tr>
+					<th><?php _e('Delete local copy during manual backup', $this->textdomain);?></th>
+					
+					<td><input type="checkbox" name="remote[deletelocalmanual]"<?php	if( $option['remote']['deletelocalmanual'] == 'on' ) { echo' CHECKED'; }?>></td>
+				</tr>
+
 			</tbody>
 		</table>
 

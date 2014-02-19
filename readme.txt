@@ -72,6 +72,12 @@ CYAN Backup uses a status file to tell if a backup is running or not, if this fi
 
 The progress bar uses AJAX requests to the site to get the status, the backup process is pretty resource intensive, if your host cannot respond to the AJAX calls while the backup is running then you won't see the progress bar move until it does.
 
+= I've selected an FTP server to send my backups to but they don't transfer? =
+
+There are a few things to check, make sure the user name and password are correct.  Make sure the host name is correct and resolvable from your web server.  Make sure the user has write access to your destination path.
+
+Also the remote server MUST be on the same class 'C' subnet as your web server.  FTP is insecure and you should not be sending files outside of the network you control.  Honestly, you shouldn't even be doing then ;)
+
 == Screenshots ==
 
 1. Backups page.
@@ -87,6 +93,7 @@ The progress bar uses AJAX requests to the site to get the status, the backup pr
 - Added: Remote storage to local FTP server.
 - Added: Help screen to the options page.
 - Added: Additional checks for bad configurations of the archive path, including the WordPress root and admin directories.
+- Added: Help menu to the options page.
 - Fixed: Missing directory name in non-writable archive path error message.
 
 = 1.3 =

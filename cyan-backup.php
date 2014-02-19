@@ -583,16 +583,20 @@ class CYANBackup {
 		$backup_file = isset($result['backup']) ? $result['backup'] : FALSE;
 		if ($backup_file && file_exists($backup_file)) {
 			$options = (array)get_option( $this->option_name );
-			$this->prune_backups( $options['prune']['number'] );
-			$this->transfer_backups( $backup_file, $options['remote'] );
 
 			$filesize = (int)sprintf('%u', filesize($backup_file)) / 1024 / 1024;
 			$temp_time = strtotime($this->get_filemtime($backup_file));
 			$filedate = date( get_option('date_format'), $temp_time ) . ' @ ' . date( get_option('time_format'), $temp_time );
+
+			$this->transfer_backups( $backup_file, $options['remote'], 'manual' );
+
+			$this->prune_backups( $options['prune']['number'] );
+
 			return array(
 				'backup_file' => $backup_file,
 				'backup_date' => $filedate,
 				'backup_size' => number_format($filesize, 2) . ' MB',
+				'backup_deleted' => $options['remote']['deletelocal'],
 				);
 		} else {
 			return $result;
@@ -608,38 +612,121 @@ class CYANBackup {
 		// Get the options.
 		$options = (array)get_option($this->option_name);
 
-		// Prune existing backup files as per the options.
-		$this->prune_backups( $options['prune']['number'] );
-		
 		// Determine the next backup time.
 		$this->schedule_next_backup();
 		
 		// Send the backup to remote storage.
-		$this->transfer_backups( $result['backup'], $options['remote'] );
+		$this->transfer_backups( $result['backup'], $options['remote'], 'schedule' );
+
+		// Prune existing backup files as per the options.
+		$this->prune_backups( $options['prune']['number'] );
 	}
 
-	private function transfer_backup( $archive, $remote_settings ) {
+	private function transfer_backups( $archive, $remote_settings, $source ) {
+		// We need to create the final remote directory to store the backup in.
 		$final_dir = $remote_settings['path'];
-		$final_dir = str_replace( '%m', date('%m'), $final_dir );
-		$final_dir = str_replace( '%d', date('%d'), $final_dir );
-		$final_dir = str_replace( '%Y', date('%Y'), $final_dir );
-		$final_dir = str_replace( '%M', date('%M'), $final_dir );
-		$final_dir = str_replace( '%F', date('%F'), $final_dir );
+		$final_dir = str_replace( '%m', date('m'), $final_dir );
+		$final_dir = str_replace( '%d', date('d'), $final_dir );
+		$final_dir = str_replace( '%Y', date('Y'), $final_dir );
+		$final_dir = str_replace( '%M', date('M'), $final_dir );
+		$final_dir = str_replace( '%F', date('F'), $final_dir );
 		$final_dir = $this->trailingslashit( $final_dir, FALSE );
 		
+		// Let's make sure we don't have a funky archive path.
+		$archive = realpath($archive);
+		
+		// Decrypt the password from the settings.
+		$final_password = $this->decrypt_password( $remote_settings['password'] );
+		
+		// Get the basename of the archive for later.
+		$filename = basename( $archive );
+
+		// We need to find the log file path and name.
+		$log = str_ireplace( '.zip', '.log', $archive );
+
+		// Find the basename of the log file.
+		$logname = basename( $log );
+		
+		// Do the work now.
 		switch( $remote_settings['protocol'] )
 			{
-			case 'FTP':
-				transfer_backup_ftp( $final_dir, $archive, $remote_settings );
+			case 'ftpwrappers':
+				include_once( 'includes/protocol-ftpwrappers.php');
+				
+				break;
+			case 'ftplibrary':
+				include_once( 'includes/protocol-ftplibrary.php');
 				
 				break;
 			}
-
+			
+		// If the send of the zip file worked and we've been told to delete the local copies of the zip and log, do so now.
+		if( $result !== FALSE ) {
+			if( ( $remote_settings['deletelocalmanual'] == 'on' && $source == 'manual' ) || ( $remote_settings['deletelocalschedule'] == 'on' && $source == 'schedule' ) ) {
+				@unlink( $archive );
+				@unlink( $log );
+			}
 		}
-	
-	private function transfer_backup_ftp( $remote_dir, $archive, $remote_settings ) {
-		
 	}
+	
+	private function get_encrypt_key() {
+		// First determine how large of key we need.
+		$key_size = mcrypt_get_key_size(MCRYPT_RIJNDAEL_128, MCRYPT_MODE_CBC);
+	
+		// Use WordPress's generated constant for the key, trimming it to the length we need.
+		$key = substr( SECURE_AUTH_KEY, 0, $key_size );
+		
+		return $key;
+	}
+	
+	private function encrypt_password( $password ) {
+		// If mcrypt isn't supported or it's a blank password, don't encrypt it.
+		if( function_exists( 'mcrypt_encrypt' ) && $password != '' ) {
+			// Get the encryption key we're going to use.
+			$key = $this->get_encrypt_key();
+
+			// Create a random IV (with the specific length we need) to use with CBC encoding.
+			$iv_size = mcrypt_get_iv_size(MCRYPT_RIJNDAEL_128, MCRYPT_MODE_CBC);
+			$iv = mcrypt_create_iv($iv_size, MCRYPT_RAND);
+
+			// Paste the IV and newly encrypted string together.
+			$cpassword = $iv . mcrypt_encrypt( MCRYPT_RIJNDAEL_128, $key, $password, MCRYPT_MODE_CBC, $iv );
+
+			// Return a nice base64 encoded string to make it all look nice.
+			return base64_encode( $cpassword );
+		} else {
+			return $password;
+		}
+	}
+	
+	private function decrypt_password( $password ) {
+		// If mcrypt isn't supported or it's a blank password, don't decrypt it.
+		if( function_exists( 'mcrypt_encrypt' ) && $password != '') {
+			// Get the encryption key we're going to use.
+			$key = $this->get_encrypt_key();
+
+			// Since we made it look nice with base64 while encrypting it, make it look messy again.
+			$password = base64_decode( $password );
+			
+			// Retrieves the IV from the combined string.
+			$iv_size = mcrypt_get_iv_size(MCRYPT_RIJNDAEL_128, MCRYPT_MODE_CBC);
+			$iv = substr($password, 0, $iv_size);
+			
+			// Retrieves the cipher text (everything except the $iv_size in the front).
+			$password = substr($password, $iv_size);
+
+			// Decrypt the password.
+			$dpassword = mcrypt_decrypt( MCRYPT_RIJNDAEL_128, $key, $password, MCRYPT_MODE_CBC, $iv );
+			
+			// may have to remove 00h valued characters from the end of plain text
+			$dpassword = str_replace( chr(0), '', $dpassword );
+			
+			return $dpassword;
+		} else {
+			return $password;
+		}
+	}
+	
 	
 	//**************************************************************************************
 	// Add setting link
