@@ -2,9 +2,9 @@
 # This file is distributed under the same license as the CYAN Backup package.
 msgid ""
 msgstr ""
-"Project-Id-Version: CYAN Backup 1.5\n"
+"Project-Id-Version: CYAN Backup 1.6\n"
 "Report-Msgid-Bugs-To: http://wordpress.org/tag/cyan-backup\n"
-"POT-Creation-Date: 2014-02-19 02:21:02+00:00\n"
+"POT-Creation-Date: 2014-02-19 05:26:11+00:00\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -24,50 +24,50 @@ msgstr ""
 msgid "Method not found!"
 msgstr ""
 
-#: cyan-backup.php:747
+#: cyan-backup.php:755
 msgid "Settings"
 msgstr ""
 
-#: cyan-backup.php:921
+#: cyan-backup.php:929
 msgid "log"
 msgstr ""
 
-#: cyan-backup.php:985
+#: cyan-backup.php:993
 msgid "Starting Backup..."
 msgstr ""
 
-#: cyan-backup.php:999 includes/class-wp-backuper.php:484
+#: cyan-backup.php:1007 includes/class-wp-backuper.php:484
 #: includes/class-wp-backuper.php:485 includes/class-wp-backuper.php:491
 msgid "Backup complete!"
 msgstr ""
 
-#: cyan-backup.php:1008
+#: cyan-backup.php:1016
 msgid "Backup failed!"
 msgstr ""
 
-#. #-#-#-#-#  plugin.pot (CYAN Backup 1.5)  #-#-#-#-#
+#. #-#-#-#-#  plugin.pot (CYAN Backup 1.6)  #-#-#-#-#
 #. Plugin Name of the plugin/theme
-#: cyan-backup.php:1032 cyan-backup.php:1033 includes/page-backups.php:48
+#: cyan-backup.php:1040 cyan-backup.php:1041 includes/page-backups.php:48
 msgid "CYAN Backup"
 msgstr ""
 
-#: cyan-backup.php:1046 cyan-backup.php:1047
+#: cyan-backup.php:1054 cyan-backup.php:1055
 msgid "Backups"
 msgstr ""
 
-#: cyan-backup.php:1055
+#: cyan-backup.php:1063
 msgid "Options &gt; CYAN Backup"
 msgstr ""
 
-#: cyan-backup.php:1056
+#: cyan-backup.php:1064
 msgid "Options"
 msgstr ""
 
-#: cyan-backup.php:1070
+#: cyan-backup.php:1078
 msgid "About &gt; CYAN Backup"
 msgstr ""
 
-#: cyan-backup.php:1071
+#: cyan-backup.php:1079
 msgid "About"
 msgstr ""
 
@@ -493,14 +493,30 @@ msgstr ""
 msgid ""
 "<b>FTPS Library</b>:  FTPS Library use the PHP Library to transfer the "
 "backups.  FTPS is FTP over SSL/TLS.  If your installation of PHP does not "
-"have the the FTPS library installed you should use FTP Wrappers instead."
+"have the the FTPS library installed you should use SFTP Wrappers instead."
 msgstr ""
 
-#: includes/help-options.php:106 includes/page-options.php:727
+#: includes/help-options.php:98
+msgid ""
+"<b>SFTP/SCP Wrappers</b>:  SFTP/SCP Wrappers use the built in wrappers code "
+"to transfer the backups.  SFTP/SCP is Secure File Transfer over SSH.  If "
+"your hosting provider has disabled wrappers this will not work and you "
+"should use SFTP/SCP Library instead."
+msgstr ""
+
+#: includes/help-options.php:99
+msgid ""
+"<b>SFTP/SCP Library</b>:  SFTP/SCP Library use the PHP Library to transfer "
+"the backups.  SFTP/SCP is Secure File Transfer over SSH.  If your "
+"installation of PHP does not have the the SSH2 library installed you should "
+"use SFTP/SCP Wrappers instead."
+msgstr ""
+
+#: includes/help-options.php:108 includes/page-options.php:727
 msgid "Clear Active Backup"
 msgstr ""
 
-#: includes/help-options.php:108
+#: includes/help-options.php:110
 msgid ""
 "<b>Clear active backup status</b>:  Only check this if a backup has hung and "
 "you can no longer execute backups.  CYAN Backup uses a status file to tell "
@@ -786,20 +802,28 @@ msgstr ""
 msgid "Protocol"
 msgstr ""
 
-#: includes/page-options.php:661
+#: includes/page-options.php:659
 msgid "FTP Wrappers"
 msgstr ""
 
-#: includes/page-options.php:662
+#: includes/page-options.php:660
 msgid "FTP Library"
 msgstr ""
 
-#: includes/page-options.php:663
+#: includes/page-options.php:661
 msgid "FTPS Wrappers"
 msgstr ""
 
-#: includes/page-options.php:664
+#: includes/page-options.php:662
 msgid "FTPS Library"
+msgstr ""
+
+#: includes/page-options.php:663
+msgid "SFTP Wrappers"
+msgstr ""
+
+#: includes/page-options.php:664
+msgid "SFTP Library"
 msgstr ""
 
 #: includes/page-options.php:679
