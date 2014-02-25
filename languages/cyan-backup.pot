@@ -2,9 +2,9 @@
 # This file is distributed under the same license as the CYAN Backup package.
 msgid ""
 msgstr ""
-"Project-Id-Version: CYAN Backup 1.6\n"
+"Project-Id-Version: CYAN Backup 1.6.1\n"
 "Report-Msgid-Bugs-To: http://wordpress.org/tag/cyan-backup\n"
-"POT-Creation-Date: 2014-02-19 05:26:11+00:00\n"
+"POT-Creation-Date: 2014-02-25 21:13:27+00:00\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -45,7 +45,7 @@ msgstr ""
 msgid "Backup failed!"
 msgstr ""
 
-#. #-#-#-#-#  plugin.pot (CYAN Backup 1.6)  #-#-#-#-#
+#. #-#-#-#-#  plugin.pot (CYAN Backup 1.6.1)  #-#-#-#-#
 #. Plugin Name of the plugin/theme
 #: cyan-backup.php:1040 cyan-backup.php:1041 includes/page-backups.php:48
 msgid "CYAN Backup"
@@ -556,8 +556,8 @@ msgstr ""
 msgid "Don't forget to %srate and review%s it too!"
 msgstr ""
 
-#: includes/page-backups.php:27
-msgid "ERROR: Failed to delete backup Files!"
+#: includes/page-backups.php:24
+msgid "ERROR: Failed to delete backup file: %s"
 msgstr ""
 
 #: includes/page-backups.php:50
