@@ -5,7 +5,7 @@ Author URI: http://toolstack.com
 Tags: Backup, Schedule, FTP, SFTP, SCP, FTPS, remote storage
 Requires at least: 2.9
 Tested up to: 3.8.1
-Stable tag: 1.6
+Stable tag: 1.6.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -23,7 +23,7 @@ Currently support schedules are hourly, daily, weekly and monthly with intervals
 
 = Localization =
 
-CYAN Backup is fully ready to be translated in to any supported languaged, if you have translated into your language, please let me know.
+CYAN Backup is fully ready to be translated in to any supported languages, if you have translated into your language, please let me know.
 
 = Usage =
 
@@ -87,6 +87,7 @@ Also the remote server MUST be on the same class 'C' subnet as your web server. 
 == Upgrade Notice ==
 = 1.6.1 =
 * Fixed: Deletion of backups failed on some platforms depending on the version of PHP.
+* Fixed: FTPS Library code not executing.
 
 = 1.6 =
 * None at this time.
