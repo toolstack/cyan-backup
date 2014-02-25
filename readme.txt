@@ -85,6 +85,9 @@ Also the remote server MUST be on the same class 'C' subnet as your web server. 
 3. About page.
 
 == Upgrade Notice ==
+= 1.6.1 =
+* Fixed: Deletion of backups failed on some platforms depending on the version of PHP.
+
 = 1.6 =
 * None at this time.
 
