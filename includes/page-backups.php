@@ -13,18 +13,18 @@
 			$postdata = $this->get_real_post_data();
 			$count = 0;
 			foreach((array)$_POST['remove'] as $index => $bfile) {
-				$file = $postdata['remove[' . $index . ']'];
+				// Some version of PHP parse the postdata in to arrays before we get it, other's don't.  Handle both cases.
+				if( isset($postdata['remove'][$index]) ) { $file = $postdata['remove'][$index]; }
+				else { $file = $postdata['remove[' . $index . ']']; }
+
 				if (($file = realpath($file)) !== FALSE) {
 					$logfile = str_ireplace( '.zip', '.log', $file );
 
 					if (@unlink($file) === FALSE)
-						$count ++;
+						$notes[] = "<strong>".sprintf(__('ERROR: Failed to delete backup file: %s', $this->textdomain),$file)."</strong>";
 						
 					@unlink($logfile);
 				}
-			}
-			if ($count > 0) {
-				$notes[] = "<strong>".__('ERROR: Failed to delete backup Files!', $this->textdomain)."</strong>";
 			}
 		}
 	}
