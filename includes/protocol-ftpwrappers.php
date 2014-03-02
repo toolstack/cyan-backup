@@ -13,7 +13,7 @@ if( in_array( 'ftp', stream_get_wrappers() ) ) {
 	if( $server_ip[0] == $remote_ip[0] && $server_ip[1] == $remote_ip[1] && $server_ip[2] == $remote_ip[2] && $server_ip !== FALSE && $remote_ip !== FALSE) {
 		// Setup a connection string and make sure the remote directory exists.
 		$connection = 'ftp://' . $remote_settings['username'] . ':' . $final_password . '@' . $remote_settings['host'] . $final_dir;
-		@mkdir( $connection );
+		@mkdir( $connection, null, true );
 		
 		// Take a quick nap to make sure the remote host finished creating the new directory before we start sending the zip file.
 		sleep( 2 );
