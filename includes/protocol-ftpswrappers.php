@@ -8,7 +8,7 @@ if( in_array( 'ftps', stream_get_wrappers() ) ) {
 	
 	// Setup a connection string and make sure the remote directory exists.
 	$connection = 'ftps://' . $remote_settings['username'] . ':' . $final_password . '@' . $remote_settings['host'] . $final_dir;
-	@mkdir( $connection );
+	@mkdir( $connection, null, true );
 	
 	// Take a quick nap to make sure the remote host finished creating the new directory before we start sending the zip file.
 	sleep( 2 );
@@ -39,7 +39,7 @@ if( in_array( 'ftps', stream_get_wrappers() ) ) {
 			// If we opened the log successfully, go ahead and send it.
 			if( $filestream !== FALSE ) {
 				// Send the file and close it once done.  Don't save the result for use later as we only care that the zip file made it successfully.
-				file_put_contents( $connection, $filestream );
+				@file_put_contents( $connection, $filestream );
 				fclose( $filestream );
 			}
 		}
