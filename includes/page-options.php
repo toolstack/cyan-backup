@@ -87,6 +87,7 @@
 
 		if( isset( $_POST['clear_backup'] ) ) {
 			@unlink( $archive_path . 'backup.active' );
+			@unlink( $archive_path . 'status.log' );
 			$notes[] = array( __('Active backup state cleared!', $this->textdomain), 0);
 		}
 

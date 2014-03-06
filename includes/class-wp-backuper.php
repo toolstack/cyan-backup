@@ -557,14 +557,18 @@ class WP_Backuper {
 	// WP Files Backup
 	//**************************************************************************************
 	private function files_backup($source_dir, $files, $dest_dir) {
-		if (!$this->can_user_backup())
+		if (!$this->can_user_backup()) {
+			$this->write_log_file(__('Could not backup!', $this->textdomain));
 			throw new Exception(__('Could not backup!', $this->textdomain));
-
+		}
+		
 		try {
 			if ( !file_exists($dest_dir) )
 				mkdir($dest_dir, 0700);
-			if (!is_writable($dest_dir))
+			if (!is_writable($dest_dir)) {
+				$this->write_log_file(__('Could not open the backup file for writing!', $this->textdomain));
 				throw new Exception(__('Could not open the backup file for writing!', $this->textdomain));
+			}
 
 			$dest_dir = trailingslashit($dest_dir);
 			if ( file_exists($this->dump_file) )
@@ -574,9 +578,12 @@ class WP_Backuper {
 			$dest_dir = $this->chg_directory_separator($dest_dir);
 			if ( !file_exists($dest_dir) )
 				mkdir($dest_dir, 0700);
-			if (!is_writable($dest_dir))
+				
+			if (!is_writable($dest_dir)) {
+				$this->write_log_file(__('Could not open the backup file for writing!', $this->textdomain));
 				throw new Exception(__('Could not open the backup file for writing!', $this->textdomain));
-
+			}
+			
 			$source_dir = $this->chg_directory_separator(trailingslashit($source_dir));
 
 			foreach ($files as $file) {
@@ -598,6 +605,7 @@ class WP_Backuper {
 				}
 			}
 		} catch(Exception $e) {
+			$this->write_log_file($e->getMessage());
 			throw new Exception($e->getMessage());
 		}
 
@@ -640,8 +648,10 @@ class WP_Backuper {
 	// WP Files Archive
 	//**************************************************************************************
 	private function files_archive($source_dir, $files, $zip_file) {
-		if (!$this->can_user_backup())
+		if (!$this->can_user_backup()) {
+			$this->write_log_file(__('Could not backup!', $this->textdomain));
 			throw new Exception(__('Could not backup!', $this->textdomain));
+		}
 
 		if (file_exists($zip_file))
 			@unlink($zip_file);
@@ -681,6 +691,7 @@ class WP_Backuper {
 
 					$zip->close();
 				} else {
+					$this->write_log_file( __('Could not open the backup file for writing!', $this->textdomain) );
 					throw new Exception(__('Could not open the backup file for writing!', $this->textdomain));
 				}
 
@@ -721,6 +732,7 @@ class WP_Backuper {
 				}
 			}
 		} catch(Exception $e) {
+			$this->write_log_file($e->getMessage());
 			throw new Exception($e->getMessage());
 		}
 
@@ -728,6 +740,7 @@ class WP_Backuper {
 			chmod($zip_file, 0600);
 			return $zip_file;
 		} else {
+			$this->write_log_file(__('Could not open the backup file for writing!', $this->textdomain));
 			throw new Exception(__('Could not open the backup file for writing!', $this->textdomain));
 		}
 	}
