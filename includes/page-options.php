@@ -21,7 +21,7 @@
 		if( isset($_POST['CreateWebConfig']) )
 			{
 			if( $abspath == $archive_path || $admin_dir == $archive_path) {
-				$notes[] = array( "<strong>". __('ERROR: Archive path set to WordPress root or admin folder, Web.Config not written!', $this->textdomain)."</strong>", 2);
+				$notes[] = array( "<strong>". __('Archive path set to WordPress root or admin folder, Web.Config not written!', $this->textdomain)."</strong>", 2);
 			} else {
 				$access_filename = $archive_path . 'Web.config';
 				
@@ -43,11 +43,11 @@
 					
 					fclose( $access_file );
 					
-					$notes[] = array( "<strong>". __('Web.Config written!', $this->textdomain)."</strong>", 0);
+					$notes[] = array( __('Web.Config written!', $this->textdomain), 0);
 					}
 				else 
 					{
-					$notes[] = array( "<strong>". __('WARNING: Web.Config already exists, please edit it manually!', $this->textdomain)."</strong>", 1);
+					$notes[] = array( __('Web.Config already exists, please edit it manually!', $this->textdomain), 1);
 					}
 				}
 			}
@@ -55,7 +55,7 @@
 		if( isset($_POST['Createhtaccess']) )
 			{
 			if( $abspath == $archive_path || $admin_dir == $archive_path ) {
-				$notes[] = array( "<strong>". __('ERROR: Archive path set to WordPress root or admin folder, .htaccess not written!', $this->textdomain)."</strong>", 2);
+				$notes[] = array( __('Archive path set to WordPress root or admin folder, .htaccess not written!', $this->textdomain), 2);
 			} else {
 				$access_filename = $archive_path . '.htaccess';
 				
@@ -70,11 +70,11 @@
 					
 					fclose( $access_file );
 
-					$notes[] = array( "<strong>". __('.htaccess written!', $this->textdomain)."</strong>", 0);
+					$notes[] = array( __('.htaccess written!', $this->textdomain), 0);
 					}
 				else 
 					{
-					$notes[] = array( "<strong>". __('WARNING: .htaccess already exists, please edit it manually!', $this->textdomain)."</strong>", 1);
+					$notes[] = array( __('.htaccess already exists, please edit it manually!', $this->textdomain), 1);
 					}
 				}
 			}
@@ -87,7 +87,20 @@
 
 		if( isset( $_POST['clear_backup'] ) ) {
 			@unlink( $archive_path . 'backup.active' );
-			$notes[] = array( "<strong>". __('Active backup state cleared!', $this->textdomain)."</strong>", 0);
+			$notes[] = array( __('Active backup state cleared!', $this->textdomain), 0);
+		}
+
+		if( isset( $_POST['clear_files'] ) ) {
+			$archive_pre = basename(ABSPATH);
+			$current_files = scandir($archive_path);
+
+			foreach( $current_files as $this_file ) {
+				$this_file_ext = strtolower(substr( $this_file, -4 ));
+				if( substr( $this_file, 0, strlen( $archive_pre ) ) == $archive_pre && $this_file_ext != ".zip" && $this_file_ext != ".log" ) {
+					@unlink( $archive_path . $this_file );
+					$notes[] = array( $this_file . __(' deleted from the archive directory.', $this->textdomain), 0);
+				}
+			}
 		}
 
 		$postdata = $this->get_real_post_data();
@@ -101,7 +114,7 @@
 					$realpath = $this->trailingslashit($realpath, FALSE);
 					
 				if( $realpath == $abspath || $realpath == $admin_dir ) {
-					$notes[] = array( "<strong>". __('ERROR: Archive path set to WordPress root or admin folder, this is not a valid option!', $this->textdomain)."</strong>", 2);
+					$notes[] = array( __('Archive path set to WordPress root or admin folder, this is not a valid option!', $this->textdomain), 2);
 				} else {
 					$options['archive_path'] = $realpath;
 					
@@ -121,15 +134,15 @@
 							@unlink( $test_name );
 							
 							if( $test_read == $test_text ) {
-								$notes[] = array( "<strong>". sprintf(__('WARNING: Archive directory ("%s") is a subdirectory in the WordPress root and is accessible via the web, this is an insecure configuration!', $this->textdomain), $realpath)."</strong>", 1);
+								$notes[] = array( sprintf(__('Archive directory ("%s") is a subdirectory in the WordPress root and is accessible via the web, this is an insecure configuration!', $this->textdomain), $realpath), 1);
 							}
 						} else {
-							$notes[] = array( "<strong>". sprintf(__('ERROR: Archive directory ("%s") is not writeable!', $this->textdomain), $realpath)."</strong>", 2);
+							$notes[] = array( sprintf(__('Archive directory ("%s") is not writeable!', $this->textdomain), $realpath), 2);
 						}
 					}
 				}
 			} else {
-				$notes[] = array( "<strong>". sprintf(__('ERROR: Archive directory ("%s") does not exist!', $this->textdomain), $realpath)."</strong>", 2);
+				$notes[] = array( sprintf(__('Archive directory ("%s") does not exist!', $this->textdomain), $realpath), 2);
 			}
 		}
 		
@@ -154,7 +167,7 @@
 						$realpath = $this->trailingslashit($realpath, FALSE);
 						if( $check_archive_excluded && $realpath == $archive_path ) { $archive_path_found = TRUE; }
 					} else {
-						$notes[] = array("<strong>". sprintf(__('WARNING: Excluded directory ("%s") is not found, removed from exclusions.', $this->textdomain), $dir)."</strong>", 1);
+						$notes[] = array(sprintf(__('Excluded directory ("%s") is not found, removed from exclusions.', $this->textdomain), $dir), 1);
 					}
 				}
 			}
@@ -164,7 +177,7 @@
 				$excluded[] = $archive_dir;
 				$excluded_dir[] = $archive_dir;
 
-				$notes[] = array( "<strong>". __('INFO: Archive path is in the WordPress directory tree but was not found in the exclusions, it has automatically been added.', $this->textdomain)."</strong>", 0);
+				$notes[] = array( __('Archive path is in the WordPress directory tree but was not found in the exclusions, it has automatically been added.', $this->textdomain), 0);
 			}
 			
 			$options['excluded'] = $excluded;
@@ -190,7 +203,7 @@
 				$options['remote'] = $_POST['remote'];
 
 				if( !function_exists( 'mcrypt_encrypt' ) ) {
-					$notes[] = array( "<strong>". __('WARNING: mcrypt library is not installed so passwords cannot be encrypted before being stored in the database.  Your remote storage password will be stored in clear text!  Please install mcrypt and re-save your configuration.', $this->textdomain)."</strong>", 1);
+					$notes[] = array( __('mcrypt library is not installed so passwords cannot be encrypted before being stored in the database.  Your remote storage password will be stored in clear text!  Please install mcrypt and re-save your configuration.', $this->textdomain), 1);
 				}
 				
 				// Encrpyt the password for storage in the database.
@@ -212,7 +225,7 @@
 				wp_schedule_single_event($next_backup_time, 'cyan_backup_hook');
 				$options['next_backup_time'] = $next_backup_time;
 			} else {
-				$notes[] = array( __('ERROR: Schedule not set, failed to determine the next scheduled time to backup!', $this->textdomain), 2);
+				$notes[] = array( __('Schedule not set, failed to determine the next scheduled time to backup!', $this->textdomain), 2);
 			}
 		}
 
@@ -234,7 +247,7 @@
 		$excluded_dir = $this->get_excluded_dir($option, array());
 
 		// Done!
-		$notes[] = array("<strong>".__('Configuration saved!', $this->textdomain)."</strong>", 0);
+		$notes[] = array(__('Configuration saved!', $this->textdomain), 0);
 	}
 
 	// Decrypt the password for use on the form.
@@ -365,15 +378,15 @@
 	echo '<script type="text/javascript">//<![CDATA[' . "\n";
 	
 	echo 'function set_schedule_display() {' . "\n";
-	echo 'var display_type_settings = new Array() ' . "\n\n";
+	echo '        var display_type_settings = new Array() ' . "\n\n";
 
 	foreach( $display_type_settings as $key => $value ) {
-		echo 'display_type_settings[\'' . $key . '\'] = new Array();' . "\n";
+		echo '        display_type_settings[\'' . $key . '\'] = new Array();' . "\n";
 	}
 	
 	foreach( $display_type_settings as $key => $value ) {
 		foreach( $value as $subkey => $subvalue ) {
-			echo 'display_type_settings[\'' . $key . '\'][\'' . $subkey . '\'] = \'';
+			echo '        display_type_settings[\'' . $key . '\'][\'' . $subkey . '\'] = \'';
 			if( $subvalue == "display: none;" ) { echo '0'; } else { echo '1'; }
 			echo '\';' . "\n";
 		}
@@ -381,16 +394,51 @@
 	
 	echo "\n";
 	
-	echo 'var type = jQuery("#schedule_type").val();' . "\n";
+	echo '        var type = jQuery("#schedule_type").val();' . "\n";
 	echo "\n";
-	echo 'for( var i in display_type_settings[type] ) {' . "\n";
-	echo 'if( display_type_settings[type][i] == 0 ) { jQuery("#" + i).css( "display", "none" ); } else { jQuery("#" + i).css( "display", "" ); }' . "\n";
+	echo '        for( var i in display_type_settings[type] ) {' . "\n";
+	echo '                if( display_type_settings[type][i] == 0 ) { jQuery("#" + i).css( "display", "none" ); } else { jQuery("#" + i).css( "display", "" ); }' . "\n";
+	echo '        }' . "\n";
 	echo '}' . "\n";
+	echo "\n";
 	
-	echo '}' . "\n";
+	echo 'jQuery(document).ready(function() {' . "\n";
+	echo '        jQuery("#clear_files").change(function(){' . "\n";
+	echo "\n";	
+	echo '                if(!this.checked)' . "\n";
+	echo '                        return;' . "\n";
+	echo "\n";	
+	echo "                var agree = confirm('" . __('Are you sure you want to delete all temporary files in the archive directory?', $this->textdomain) . "')\n";
+	echo "\n";	
+	echo '                if(!agree)' . "\n";
+	echo '                        jQuery("#clear_files").attr("checked", false);' . "\n";
+	echo "\n";	
+	echo '        });' . "\n";
+	echo "\n";
+	echo '        jQuery("#clear_backup").change(function(){' . "\n";
+	echo "\n";	
+	echo '                if(!this.checked)' . "\n";
+	echo '                        return;' . "\n";
+	echo "\n";	
+	echo "                var agree = confirm('" . __('Are you sure you want to clear the active state?', $this->textdomain) . "')\n";
+	echo "\n";	
+	echo '                if(!agree)' . "\n";
+	echo '                        jQuery("#clear_backup").attr("checked", false);' . "\n";
+	echo "\n";	
+	echo '        });' . "\n";
+	echo '});' . "\n";
 	
 	echo '//]]></script>' . "\n";
 
+	// Find the next scheduled backup in WP Cron.
+	$next_schedule = wp_next_scheduled('cyan_backup_hook');
+	$current_time = time();
+	
+	// If the next scheduled backup is over an hour in the past, it's probably broken, let the user know.
+	if( $next_schedule < $current_time - 3600 ) {
+		$notes[] = array( __('The next scheduled backup job is in the past, WP Cron may be broken.  If it does not execute shortly, you may want to disable and then re-enable scheduled backup jobs to re-create the WP Cron entry.', $this->textdomain), 1 );
+	}
+	
 	// Output
 	foreach( $notes as $note ) {
 		switch( $note[1] )
@@ -399,10 +447,10 @@
 				echo '<div id="message" class="updated fade"><p>' . $note[0] . '</p></div>';
 				break;
 			case 1:
-				echo '<div id="message" class="updated fade" style="border-left: 4px solid #fbff1c;"><p>' . $note[0] . '</p></div>';
+				echo '<div id="message" class="updated fade" style="border-left: 4px solid #fbff1c;"><p>' . __('Warning') . ': ' . $note[0] . '</p></div>';
 				break;
 			case 2:
-				echo '<div id="message" class="error fade"><p>' . $note[0] . '</p></div>';
+				echo '<div id="message" class="error fade"><p>' . __('ERROR') . ': ' . $note[0] . '</p></div>';
 				break;
 			}
 			
@@ -486,8 +534,7 @@
 				<tr>
 					<td class="description" style="width: auto; text-align: right; vertical-align: top;"><span class="description"><?php _e('Current server time', $this->textdomain);?></span>:</td><td style="width: auto; text-align: left; vertical-align: top;"><code>
 <?php
-	$next_schedule = time();
-	echo date( get_option('date_format'), $next_schedule ) . ' @ ' . date( get_option('time_format'), $next_schedule );
+			echo date( get_option('date_format'), $current_time ) . ' @ ' . date( get_option('time_format'), $current_time );
 ?></code>
 					</td>
 				</tr>
@@ -496,8 +543,6 @@
 		
 				<td style="width: auto; text-align: right; vertical-align: top;"><span class="description"><?php _e('Next backup scheduled for', $this->textdomain);?></span>:</td><td style="width: auto; text-align: left; vertical-align: top;"><code>
 <?php
-			$next_schedule = wp_next_scheduled('cyan_backup_hook');
-
 			if( $next_schedule ) {
 				echo date( get_option('date_format'), $next_schedule ) . ' @ ' . date( get_option('time_format'), $next_schedule );
 			}
@@ -731,9 +776,14 @@
 				<tr>
 					<th><?php _e('Clear active backup status', $this->textdomain);?></th>
 
-					<td><input type="checkbox" name="clear_backup"><br><br><?php _e('WARNING: Only check this if a backup has hung and you can no longer execute backups.', $this->textdomain);?></td>
+					<td><input type="checkbox" id="clear_backup" name="clear_backup"><br><br><?php _e('WARNING: Only check this if a backup has hung and you can no longer execute backups.', $this->textdomain);?></td>
 				</tr>
 
+				<tr>
+					<th><?php _e('Delete temporary files and directories', $this->textdomain);?></th>
+
+					<td><input type="checkbox" id="clear_files" name="clear_files"><br><br><?php echo sprintf(__('WARNING: Only check this if no backup is running.  This will delete any file in the archive path that starts with "%s" but is not a zip/log file.', $this->textdomain), basename(ABSPATH) );?></td>
+				</tr>
 			</tbody>
 		</table>
 
