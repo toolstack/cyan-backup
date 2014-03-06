@@ -427,6 +427,9 @@
 	echo '                        jQuery("#clear_backup").attr("checked", false);' . "\n";
 	echo "\n";	
 	echo '        });' . "\n";
+	echo "\n";	
+	echo '        jQuery("#tabs").tabs();' . "\n";
+	echo "\n";	
 	echo '});' . "\n";
 	
 	echo '//]]></script>' . "\n";
@@ -465,84 +468,92 @@
 
 	<h2><?php _e('CYAN Backup Options', $this->textdomain);?></h2>
 
-	<h3><?php _e('Directory Options', $this->textdomain);?></h3>
-
 	<form method="post" id="option_update" action="<?php echo $this->admin_action;?>-options">
+	<div id="tabs">
+		<ul>
+			<li><a href="#fragment-1"><span><?php _e('Directory Options', $this->textdomain);?></span></a></li>
+			<li><a href="#fragment-2"><span><?php _e('Log Options', $this->textdomain);?></span></a></li>
+			<li><a href="#fragment-3"><span><?php _e('Schedule Options', $this->textdomain);?></span></a></li>
+			<li><a href="#fragment-4"><span><?php _e('Storage Maintenance', $this->textdomain);?></span></a></li>
+			<li><a href="#fragment-5"><span><?php _e('Remote Storage', $this->textdomain);?></span></a></li>
+			<li><a href="#fragment-6"><span><?php _e('Clear Active Backup', $this->textdomain);?></span></a></li>
+		</ul>
+
+		<div id="fragment-1">
 <?php if ($this->wp_version_check('2.5') && function_exists('wp_nonce_field') )
 		echo wp_nonce_field($nonce_field, self::NONCE_NAME, true, false);
 ?>
+			<table class="optiontable form-table" style="margin-top:0;">
+				<tbody>
+					<tr>
+						<th><?php _e('Archive path', $this->textdomain);?></th>
 
-		<table class="optiontable form-table" style="margin-top:0;">
-			<tbody>
-				<tr>
-					<th><?php _e('Archive path', $this->textdomain);?></th>
+						<td>
+							<input type="text" name="archive_path" id="archive_path" size="100" value="<?php echo htmlentities($archive_path);?>" /><br><br>
+							<input class="button" id="Createhtaccess" name="Createhtaccess" type="submit" value="<?php _e('Create .htaccess File', $this->textdomain);?>">&nbsp;
+							<input class="button" id="CreateWebConfig" name="CreateWebConfig" type="submit" value="<?php _e('Create WebConfig File', $this->textdomain);?>">
+						</td>
+					</tr>
 
-					<td>
-						<input type="text" name="archive_path" id="archive_path" size="100" value="<?php echo htmlentities($archive_path);?>" /><br><br>
-						<input class="button" id="Createhtaccess" name="Createhtaccess" type="submit" value="<?php _e('Create .htaccess File', $this->textdomain);?>">&nbsp;
-						<input class="button" id="CreateWebConfig" name="CreateWebConfig" type="submit" value="<?php _e('Create WebConfig File', $this->textdomain);?>">
-					</td>
-				</tr>
-
-				<tr>
-					<th><?php _e('Excluded dir', $this->textdomain);?></th>
-					
-					<td><textarea name="excluded" id="excluded" rows="5" cols="100">
+					<tr>
+						<th><?php _e('Excluded dir', $this->textdomain);?></th>
+						
+						<td><textarea name="excluded" id="excluded" rows="5" cols="100">
 <?php
 	foreach ($excluded_dir as $dir) {
 		echo htmlentities($this->chg_directory_separator($abspath.$dir,FALSE)) . "\n";
 	}
 ?></textarea><br><br>
 
-						<input class="button" id="AddArchiveDir" name="AddArchiveDir" type="button" value="<?php _e('Add Archive Dir', $this->textdomain);?>" onClick="excluded.value = jQuery.trim( excluded.value ) + '\n<?php echo addslashes( $archive_path ); ?>';">&nbsp;
-						<input class="button" id="AddWPContentDir" name="AddWPContentDir" type="button" value="<?php _e('Add WP-Content Dir', $this->textdomain);?>" onClick="excluded.value = jQuery.trim( excluded.value ) + '\n<?php echo addslashes( $content_dir ); ?>';">&nbsp;
-						<input class="button" id="AddWPContentDir" name="AddWPUpgradeDir" type="button" value="<?php _e('Add WP-Upgrade Dir', $this->textdomain);?>" onClick="excluded.value = jQuery.trim( excluded.value ) + '\n<?php echo addslashes( $this->chg_directory_separator( $content_dir . "upgrade/", FALSE ) ); ?>';">&nbsp;
-						<input class="button" id="AddWPAdminDir" name="AddWPAdminDir" type="button" value="<?php _e('Add WP-Admin Dir', $this->textdomain);?>" onClick="excluded.value = jQuery.trim( excluded.value ) + '\n<?php echo addslashes( $admin_dir ); ?>';">&nbsp;
-						<input class="button" id="AddWPIncludesDir" name="AddWPIncludesDir" type="button" value="<?php _e('Add WP-Includes Dir', $this->textdomain);?>" onClick="excluded.value = jQuery.trim( excluded.value ) + '\n<?php echo addslashes($this->chg_directory_separator($abspath . "wp-includes/", FALSE) )?>';">&nbsp;
-					</td>
-				</tr>
-			</tbody>
-		</table>
+							<input class="button" id="AddArchiveDir" name="AddArchiveDir" type="button" value="<?php _e('Add Archive Dir', $this->textdomain);?>" onClick="excluded.value = jQuery.trim( excluded.value ) + '\n<?php echo addslashes( $archive_path ); ?>';">&nbsp;
+							<input class="button" id="AddWPContentDir" name="AddWPContentDir" type="button" value="<?php _e('Add WP-Content Dir', $this->textdomain);?>" onClick="excluded.value = jQuery.trim( excluded.value ) + '\n<?php echo addslashes( $content_dir ); ?>';">&nbsp;
+							<input class="button" id="AddWPContentDir" name="AddWPUpgradeDir" type="button" value="<?php _e('Add WP-Upgrade Dir', $this->textdomain);?>" onClick="excluded.value = jQuery.trim( excluded.value ) + '\n<?php echo addslashes( $this->chg_directory_separator( $content_dir . "upgrade/", FALSE ) ); ?>';">&nbsp;
+							<input class="button" id="AddWPAdminDir" name="AddWPAdminDir" type="button" value="<?php _e('Add WP-Admin Dir', $this->textdomain);?>" onClick="excluded.value = jQuery.trim( excluded.value ) + '\n<?php echo addslashes( $admin_dir ); ?>';">&nbsp;
+							<input class="button" id="AddWPIncludesDir" name="AddWPIncludesDir" type="button" value="<?php _e('Add WP-Includes Dir', $this->textdomain);?>" onClick="excluded.value = jQuery.trim( excluded.value ) + '\n<?php echo addslashes($this->chg_directory_separator($abspath . "wp-includes/", FALSE) )?>';">&nbsp;
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
 
-		<h3><?php _e('Log Options', $this->textdomain);?></h3>
+		<div id="fragment-2">
+			<table class="optiontable form-table" style="margin-top:0;">
+				<tbody>
+					<tr>
+						<th><?php _e('E-Mail the log file', $this->textdomain);?></th>
 
-		<table class="optiontable form-table" style="margin-top:0;">
-			<tbody>
-				<tr>
-					<th><?php _e('E-Mail the log file', $this->textdomain);?></th>
+						<td>
+							<input type=checkbox id="emaillog_enabled" name="emaillog"<?php if( $option['emaillog'] == 'on' ) { echo ' CHECKED'; }?>>
+						</td>
+					</tr>
 
-					<td>
-						<input type=checkbox id="emaillog_enabled" name="emaillog"<?php if( $option['emaillog'] == 'on' ) { echo ' CHECKED'; }?>>
-					</td>
-				</tr>
+					<tr>
+						<th><?php _e('Send to addresses', $this->textdomain);?></th>
 
-				<tr>
-					<th><?php _e('Send to addresses', $this->textdomain);?></th>
+						<td>
+							<input type="input" size="60" id="emaillog_sendto" name="sendto" value="<?php echo $option['sendto'];?>"><br>
+							<br>
+							<?php _e('This is a comma separated list of e-mail addresses to send the log file to, if blank it will be sent to the WordPress admin user.', $this->textdomain);?>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
 
-					<td>
-						<input type="input" size="60" id="emaillog_sendto" name="sendto" value="<?php echo $option['sendto'];?>"><br>
-					    <br>
-						<?php _e('This is a comma separated list of e-mail addresses to send the log file to, if blank it will be sent to the WordPress admin user.', $this->textdomain);?>
-					</td>
-				</tr>
-			</tbody>
-		</table>
-
-		<h3><?php _e('Schedule Options', $this->textdomain);?></h3>
-
-		<table style=\"margin-top:0; width: auto;\">
-			<tbody>
-				<tr>
-					<td class="description" style="width: auto; text-align: right; vertical-align: top;"><span class="description"><?php _e('Current server time', $this->textdomain);?></span>:</td><td style="width: auto; text-align: left; vertical-align: top;"><code>
+		<div id="fragment-3">
+			<table style=\"margin-top:0; width: auto;\">
+				<tbody>
+					<tr>
+						<td class="description" style="width: auto; text-align: right; vertical-align: top;"><span class="description"><?php _e('Current server time', $this->textdomain);?></span>:</td><td style="width: auto; text-align: left; vertical-align: top;"><code>
 <?php
 			echo date( get_option('date_format'), $current_time ) . ' @ ' . date( get_option('time_format'), $current_time );
 ?></code>
-					</td>
-				</tr>
+						</td>
+					</tr>
 <?php if( $option['schedule']['enabled'] == 'on' ) { ?>
-				<tr>
-		
-				<td style="width: auto; text-align: right; vertical-align: top;"><span class="description"><?php _e('Next backup scheduled for', $this->textdomain);?></span>:</td><td style="width: auto; text-align: left; vertical-align: top;"><code>
+					<tr>
+			
+					<td style="width: auto; text-align: right; vertical-align: top;"><span class="description"><?php _e('Next backup scheduled for', $this->textdomain);?></span>:</td><td style="width: auto; text-align: left; vertical-align: top;"><code>
 <?php
 			if( $next_schedule ) {
 				echo date( get_option('date_format'), $next_schedule ) . ' @ ' . date( get_option('time_format'), $next_schedule );
@@ -551,51 +562,51 @@
 				_e('None', $this->textdomain );
 			}
 ?></code>
-				</td>
-			</tr>
-<?php	}?>
-			</tbody>
-		</table>
-		
-		<table class="optiontable form-table" style="margin-top:0;">
-			<tbody>
-				<tr>
-					<th><?php _e('Enable', $this->textdomain);?></th>
-
-					<td><input type=checkbox id="schedule_enabled" name="schedule[enabled]"<?php if( $option['schedule']['enabled'] == 'on' ) { echo ' CHECKED'; }?>></td>
+					</td>
 				</tr>
+<?php	}?>
+				</tbody>
+			</table>
+			
+			<table class="optiontable form-table" style="margin-top:0;">
+				<tbody>
+					<tr>
+						<th><?php _e('Enable', $this->textdomain);?></th>
 
-				<tr>
-					<th><?php _e('Type', $this->textdomain);?></th>
+						<td><input type=checkbox id="schedule_enabled" name="schedule[enabled]"<?php if( $option['schedule']['enabled'] == 'on' ) { echo ' CHECKED'; }?>></td>
+					</tr>
 
-					<td>
-						<select id="schedule_type" onChange="set_schedule_display();" name="schedule[type]">
+					<tr>
+						<th><?php _e('Type', $this->textdomain);?></th>
+
+						<td>
+							<select id="schedule_type" onChange="set_schedule_display();" name="schedule[type]">
 <?php		
 		foreach( $schedule_types as $type ) {
-			echo "\t\t\t\t\t<option value=\"" . $type . '"';
+			echo "\t\t\t\t\t\t<option value=\"" . $type . '"';
 
 			if( $option['schedule']['type'] == $type ) { echo ' SELECTED'; $display_settings = $display_type_settings[$type]; }
 			
 			echo '>' . __($type, $this->textdomain) . '</option>';
 		}
 ?>		
-						</select>
-					</td>
-				</tr>
+							</select>
+						</td>
+					</tr>
 
-				<tr>
-					<th><?php _e('Schedule', $this->textdomain);?></th>
-					
-					<td>
+					<tr>
+						<th><?php _e('Schedule', $this->textdomain);?></th>
+						
+						<td>
 <?php		
 		if( self::DEBUG_MODE == TRUE ) {
-			echo "\t\t\t\t\t" . '<span id="schedule_debug" style="' . $display_settings['schedule_debug'] . '">' . __('Every minute, for debugging only', $this->textdomain) . '</span>';
+			echo "\t\t\t\t\t\t" . '<span id="schedule_debug" style="' . $display_settings['schedule_debug'] . '">' . __('Every minute, for debugging only', $this->textdomain) . '</span>';
 		}
 ?>		
-						<span id="schedule_once" style="<?php echo $display_settings['schedule_once'];?>"><?php _e('Only once', $this->textdomain);?></span>
-						<span id="schedule_before" style="<?php echo $display_settings['schedule_before'];?>"><?php _e('Run backup every', $this->textdomain);?> </span>
+							<span id="schedule_once" style="<?php echo $display_settings['schedule_once'];?>"><?php _e('Only once', $this->textdomain);?></span>
+							<span id="schedule_before" style="<?php echo $display_settings['schedule_before'];?>"><?php _e('Run backup every', $this->textdomain);?> </span>
 <?php
-		echo "\t\t\t\t\t<select id=" . '"schedule_interval" name="schedule[interval]">';
+		echo "\t\t\t\t\t\t<select id=" . '"schedule_interval" name="schedule[interval]">';
 		for( $i = 1; $i < 32; $i++ ) 
 			{ 
 			echo '<option value="' . $i . '"';
@@ -604,41 +615,41 @@
 			}
 		echo "</select>\n";
 ?>
-						<span id="schedule_hours_label" style="<?php echo $display_settings['schedule_hours_label'];?>"> <?php _e('hour(s)', $this->textdomain);?></span><span id="schedule_days" style="<?php echo $display_settings['schedule_days'];?>"> <?php _e('day(s)', $this->textdomain);?></span><span id="schedule_weeks" style="<?php echo $display_settings['schedule_weeks'];?>"> <?php _e('week(s)', $this->textdomain);?></span><span id="schedule_months" style="<?php echo $display_settings['schedule_months'];?>"> <?php _e('month(s)', $this->textdomain);?></span>
-						<span id="schedule_on" style="<?php echo $display_settings['schedule_on'];?>"> <?php _e('on', $this->textdomain);?></span>
+							<span id="schedule_hours_label" style="<?php echo $display_settings['schedule_hours_label'];?>"> <?php _e('hour(s)', $this->textdomain);?></span><span id="schedule_days" style="<?php echo $display_settings['schedule_days'];?>"> <?php _e('day(s)', $this->textdomain);?></span><span id="schedule_weeks" style="<?php echo $display_settings['schedule_weeks'];?>"> <?php _e('week(s)', $this->textdomain);?></span><span id="schedule_months" style="<?php echo $display_settings['schedule_months'];?>"> <?php _e('month(s)', $this->textdomain);?></span>
+							<span id="schedule_on" style="<?php echo $display_settings['schedule_on'];?>"> <?php _e('on', $this->textdomain);?></span>
 
-						<select id="schedule_dow" name="schedule[dow]" style="<?php echo $display_settings['schedule_dow'];?>">
-							<option value=""></option>
+							<select id="schedule_dow" name="schedule[dow]" style="<?php echo $display_settings['schedule_dow'];?>">
+								<option value=""></option>
 <?php		
 		$weekdays = array( 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday' );
 		foreach( $weekdays as $day ) {
-			echo "\t\t\t\t\t\t\t" . '<option value="' . $day . '"';
+			echo "\t\t\t\t\t\t\t\t" . '<option value="' . $day . '"';
 
 			if( $option['schedule']['dow'] == $day ) { echo' SELECTED'; }
 			
 			echo '>' . __($day, $this->textdomain) . '</option>';
 		}
 ?>		
-						</select>
+							</select>
 
-						<span id="schedule_the" style="<?php echo $display_settings['schedule_the'];?>"> <?php _e('the', $this->textdomain);?></span>
-			
-						<select id="schedule_dom" name="schedule[dom]" style="<?php echo $display_settings['schedule_dom'];?>">
-							<option value=""></option>
+							<span id="schedule_the" style="<?php echo $display_settings['schedule_the'];?>"> <?php _e('the', $this->textdomain);?></span>
+				
+							<select id="schedule_dom" name="schedule[dom]" style="<?php echo $display_settings['schedule_dom'];?>">
+								<option value=""></option>
 <?php		
 		for( $i = 1; $i < 28; $i++ ) {
-			echo "\t\t\t\t\t\t\t" . '<option value="' . $i . '"';
+			echo "\t\t\t\t\t\t\t\t" . '<option value="' . $i . '"';
 
 			if( $option['schedule']['dom'] == $i ) { echo' SELECTED'; }
 			
 			echo '>' . $i . '</option>';
 		}
 ?>
-						</select>
+							</select>
 			
-						<span id="schedule_at" style="<?php echo $display_settings['schedule_at'];?>"> <?php _e('at', $this->textdomain);?></span>
+							<span id="schedule_at" style="<?php echo $display_settings['schedule_at'];?>"> <?php _e('at', $this->textdomain);?></span>
 <?php
-		echo "\t\t\t\t\t<select id=" . '"schedule_hours" name="schedule[hours]"><option value=""></option>';
+		echo "\t\t\t\t\t\t<select id=" . '"schedule_hours" name="schedule[hours]"><option value=""></option>';
 		for( $i = 1; $i < 13; $i++ ) 
 			{ 
 			echo '<option value="' . $i . '"';
@@ -647,7 +658,7 @@
 			}
 		echo "</select>\n";
 
-		echo "\t\t\t\t\t<select id=" . '"schedule_minutes" name="schedule[minutes]"><option value=""></option>';
+		echo "\t\t\t\t\t\t<select id=" . '"schedule_minutes" name="schedule[minutes]"><option value=""></option>';
 		for( $i = 0; $i < 60; $i++ ) 
 			{ 
 			echo '<option value="' . $i . '"';
@@ -658,46 +669,46 @@
 			}
 		echo "</select>\n";
 ?>
-						<select id="schedule_ampm" name="schedule[ampm]"><option value="am"<?php if( $option['schedule']['ampm'] == 'am' ) { echo ' SELECTED'; } ?>>am</option><option value="pm"<?php if( $option['schedule']['ampm'] == 'pm' ) { echo ' SELECTED'; } ?>>pm</option></select>.
-					</td>
-				</tr>
-			</tbody>
-		</table>
+							<select id="schedule_ampm" name="schedule[ampm]"><option value="am"<?php if( $option['schedule']['ampm'] == 'am' ) { echo ' SELECTED'; } ?>>am</option><option value="pm"<?php if( $option['schedule']['ampm'] == 'pm' ) { echo ' SELECTED'; } ?>>pm</option></select>.
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
 
-		<h3><?php _e('Storage Maintenance', $this->textdomain);?></h3>
+		<div id="fragment-4">
+			<table class="optiontable form-table" style="margin-top:0;">
+				<tbody>
+					<tr>
+						<th><?php _e('Enable backup pruning', $this->textdomain);?></th>
+						
+						<td><input type="checkbox" name="prune[enabled]"<?php	if( $option['prune']['enabled'] == 'on' ) { echo' CHECKED'; }?>></td>
+					</tr>
 
-		<table class="optiontable form-table" style="margin-top:0;">
-			<tbody>
-				<tr>
-					<th><?php _e('Enable backup pruning', $this->textdomain);?></th>
-					
-					<td><input type="checkbox" name="prune[enabled]"<?php	if( $option['prune']['enabled'] == 'on' ) { echo' CHECKED'; }?>></td>
-				</tr>
+					<tr>
+						<th><?php _e('Number of backups to keep', $this->textdomain);?></th>
 
-				<tr>
-					<th><?php _e('Number of backups to keep', $this->textdomain);?></th>
+						<td><input type="text" name="prune[number]" size="5" value="<?php echo $option['prune']['number'];?>"></td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
 
-					<td><input type="text" name="prune[number]" size="5" value="<?php echo $option['prune']['number'];?>"></td>
-				</tr>
-			</tbody>
-		</table>
+		<div id="fragment-5">
+			<table class="optiontable form-table" style="margin-top:0;">
+				<tbody>
+					<tr>
+						<th><?php _e('Enable remote storage', $this->textdomain);?></th>
+						
+						<td><input type="checkbox" name="remote[enabled]"<?php	if( $option['remote']['enabled'] == 'on' ) { echo' CHECKED'; }?>></td>
+					</tr>
 
-		<h3><?php _e('Remote Storage', $this->textdomain);?></h3>
+					<tr>
+						<th><?php _e('Protocol', $this->textdomain);?></th>
 
-		<table class="optiontable form-table" style="margin-top:0;">
-			<tbody>
-				<tr>
-					<th><?php _e('Enable remote storage', $this->textdomain);?></th>
-					
-					<td><input type="checkbox" name="remote[enabled]"<?php	if( $option['remote']['enabled'] == 'on' ) { echo' CHECKED'; }?>></td>
-				</tr>
-
-				<tr>
-					<th><?php _e('Protocol', $this->textdomain);?></th>
-
-					<td>
+						<td>
 <?php
-		echo "\t\t\t\t\t<select id=" . '"remote_protocol" name="remote[protocol]"><option value=""></option>';
+		echo "\t\t\t\t\t\t<select id=" . '"remote_protocol" name="remote[protocol]"><option value=""></option>';
 
 		$wrappers = stream_get_wrappers();
 		
@@ -718,77 +729,79 @@
 			
 		echo "</select>\n";
 ?>
-					</td>
-				</tr>
-				
-				<tr>
-					<th><?php _e('Host', $this->textdomain);?></th>
+						</td>
+					</tr>
 					
-					<td><input type="text" size="40" name="remote[host]" value="<?php echo $option['remote']['host'];?>"></td>
-				</tr>
+					<tr>
+						<th><?php _e('Host', $this->textdomain);?></th>
+						
+						<td><input type="text" size="40" name="remote[host]" value="<?php echo $option['remote']['host'];?>"></td>
+					</tr>
 
-				<tr>
-					<th><?php _e('Username', $this->textdomain);?></th>
+					<tr>
+						<th><?php _e('Username', $this->textdomain);?></th>
+						
+						<td><input type="text" size="20" name="remote[username]" value="<?php echo $option['remote']['username'];?>"></td>
+					</tr>
+
+					<tr>
+						<th><?php _e('Password', $this->textdomain);?></th>
+						
+						<td><input type="password" size="20" name="remote[password]" value="<?php echo $option['remote']['password'];?>"></td>
+					</tr>
+
+					<tr>
+						<th><?php _e('Remote path', $this->textdomain);?></th>
+						
+						<td>
+							<input type="text" size="40" name="remote[path]" value="<?php echo $option['remote']['path'];?>"><br>
+							<br>
+							<?php _e( "You many use the follow place holders: %m = month (01-12), %d = day (01-31), %Y = year (XXXX), %M = month (Jan...Dec), %F = month (January...December)" );?>
+						</td>
+					</tr>
+
+					<tr>
+						<th><?php _e('Include log file', $this->textdomain);?></th>
+						
+						<td><input type="checkbox" name="remote[sendlog]"<?php	if( $option['remote']['sendlog'] == 'on' ) { echo' CHECKED'; }?>></td>
+					</tr>
+
+					<tr>
+						<th><?php _e('Delete local copy during scheduled backup', $this->textdomain);?></th>
+						
+						<td><input type="checkbox" name="remote[deletelocalschedule]"<?php	if( $option['remote']['deletelocalschedule'] == 'on' ) { echo' CHECKED'; }?>></td>
+					</tr>
 					
-					<td><input type="text" size="20" name="remote[username]" value="<?php echo $option['remote']['username'];?>"></td>
-				</tr>
+					<tr>
+						<th><?php _e('Delete local copy during manual backup', $this->textdomain);?></th>
+						
+						<td><input type="checkbox" name="remote[deletelocalmanual]"<?php	if( $option['remote']['deletelocalmanual'] == 'on' ) { echo' CHECKED'; }?>></td>
+					</tr>
 
-				<tr>
-					<th><?php _e('Password', $this->textdomain);?></th>
-					
-					<td><input type="password" size="20" name="remote[password]" value="<?php echo $option['remote']['password'];?>"></td>
-				</tr>
+				</tbody>
+			</table>
+		</div>
 
-				<tr>
-					<th><?php _e('Remote path', $this->textdomain);?></th>
-					
-					<td>
-						<input type="text" size="40" name="remote[path]" value="<?php echo $option['remote']['path'];?>"><br>
-						<br>
-						<?php _e( "You many use the follow place holders: %m = month (01-12), %d = day (01-31), %Y = year (XXXX), %M = month (Jan...Dec), %F = month (January...December)" );?>
-					</td>
-				</tr>
+		<div id="fragment-6">
+			<table class="optiontable form-table" style="margin-top:0;">
+				<tbody>
+					<tr>
+						<th><?php _e('Clear active backup status', $this->textdomain);?></th>
 
-				<tr>
-					<th><?php _e('Include log file', $this->textdomain);?></th>
-					
-					<td><input type="checkbox" name="remote[sendlog]"<?php	if( $option['remote']['sendlog'] == 'on' ) { echo' CHECKED'; }?>></td>
-				</tr>
+						<td><input type="checkbox" id="clear_backup" name="clear_backup"><br><br><?php _e('WARNING: Only check this if a backup has hung and you can no longer execute backups.', $this->textdomain);?></td>
+					</tr>
 
-				<tr>
-					<th><?php _e('Delete local copy during scheduled backup', $this->textdomain);?></th>
-					
-					<td><input type="checkbox" name="remote[deletelocalschedule]"<?php	if( $option['remote']['deletelocalschedule'] == 'on' ) { echo' CHECKED'; }?>></td>
-				</tr>
-				
-				<tr>
-					<th><?php _e('Delete local copy during manual backup', $this->textdomain);?></th>
-					
-					<td><input type="checkbox" name="remote[deletelocalmanual]"<?php	if( $option['remote']['deletelocalmanual'] == 'on' ) { echo' CHECKED'; }?>></td>
-				</tr>
+					<tr>
+						<th><?php _e('Delete temporary files and directories', $this->textdomain);?></th>
 
-			</tbody>
-		</table>
+						<td><input type="checkbox" id="clear_files" name="clear_files"><br><br><?php echo sprintf(__('WARNING: Only check this if no backup is running.  This will delete any file in the archive path that starts with "%s" but is not a zip/log file.', $this->textdomain), basename(ABSPATH) );?></td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
 
-		<h3><?php _e('Clear Active Backup', $this->textdomain);?></h3>
-
-		<table class="optiontable form-table" style="margin-top:0;">
-			<tbody>
-				<tr>
-					<th><?php _e('Clear active backup status', $this->textdomain);?></th>
-
-					<td><input type="checkbox" id="clear_backup" name="clear_backup"><br><br><?php _e('WARNING: Only check this if a backup has hung and you can no longer execute backups.', $this->textdomain);?></td>
-				</tr>
-
-				<tr>
-					<th><?php _e('Delete temporary files and directories', $this->textdomain);?></th>
-
-					<td><input type="checkbox" id="clear_files" name="clear_files"><br><br><?php echo sprintf(__('WARNING: Only check this if no backup is running.  This will delete any file in the archive path that starts with "%s" but is not a zip/log file.', $this->textdomain), basename(ABSPATH) );?></td>
-				</tr>
-			</tbody>
-		</table>
-
-		<p style="margin-top:1em;"><input type="submit" name="options_update" class="button-primary" value="<?php _e('Update Options', $this->textdomain);?>" class="button" /></p>
+	<p style="margin-top:1em;"><input type="submit" name="options_update" class="button-primary" value="<?php _e('Update Options', $this->textdomain);?>" class="button" /></p>
 
 	</form>
 

@@ -764,8 +764,10 @@ class CYANBackup {
 	//**************************************************************************************
 	public function add_admin_scripts() {
 		wp_enqueue_script('jquery');
+		wp_enqueue_script('jquery-ui-core');
+		wp_enqueue_script('jquery-ui-tabs');
 		wp_enqueue_script('jquery-ui-progressbar');
-
+		
 		global $wp_scripts; 
 		wp_register_style("jquery-ui-css", plugin_dir_url(__FILE__) . "css/jquery-ui-1.10.4.custom.css");
 		wp_enqueue_style("jquery-ui-css");
@@ -1035,6 +1037,12 @@ jQuery(function($){
 <?php
 	}
 
+	public function add_admin_tabs() {
+?>
+<link rel="stylesheet" type="text/css" href="<?php echo $this->plugin_url; ?>css/jquery-ui-cyan-tabs.css" />
+<?php
+	}
+
 	public function admin_menu() {
 		$this->backup_page = add_menu_page(
 			__('CYAN Backup', $this->textdomain) ,
@@ -1071,6 +1079,7 @@ jQuery(function($){
 		add_action('admin_head-'.$this->option_page, array($this,'add_admin_head'));
 		add_action('admin_head-'.$this->option_page, array($this,'add_admin_head_option'));
 		add_action('admin_print_styles-'.$this->option_page, array($this, 'icon_style'));
+		add_action('admin_print_styles-'.$this->option_page, array($this, 'add_admin_tabs'));
 		add_action('load-'.$this->option_page,array(&$this,'create_help_screen'));
 		
 		$this->about_page = add_submenu_page(

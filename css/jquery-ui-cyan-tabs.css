@@ -1,0 +1,4 @@
+#tabs { border:none;  padding:0px; margin:0px; }
+
+.ui-widget-header { border-left: none !important; border-top: none !important; border-right: none !important; background-color: transparent !important; }
+.ui-widget-content  { background-color: transparent !important; }
