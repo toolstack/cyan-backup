@@ -5,7 +5,7 @@ Author URI: http://toolstack.com
 Tags: Backup, Schedule, FTP, SFTP, SCP, FTPS, remote storage
 Requires at least: 2.9
 Tested up to: 3.8.1
-Stable tag: 1.6.1
+Stable tag: 1.6.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -85,14 +85,23 @@ Also the remote server MUST be on the same class 'C' subnet as your web server. 
 3. About page.
 
 == Upgrade Notice ==
+= 1.6.2 =
+* None at this time.
+
+== Changelog == 
+= 1.6.2 =
+- Added: Option to delete temporary files from failed backups.
+- Added: More error messages to the log file.
+- Updated: Clear active backup status now also deletes the status.log file.
+- Updated: Clear active backup status and delete temporary files both display a confirmation message when checked.
+- Updated: Log messages for SQL dump file.
+- Fixed: Issue with ftp-wrappers not creating subdirectories recursively.
+- Fixed: Issue with ftps-wrappers not creating subdirectories recursively.
+
 = 1.6.1 =
 * Fixed: Deletion of backups failed on some platforms depending on the version of PHP.
 * Fixed: FTPS Library code not executing.
 
-= 1.6 =
-* None at this time.
-
-== Changelog == 
 = 1.6 =
 * Added: Remote storage provider: SFTP/SCP (Secure File Transfer via SSH).
 * Fixed: FTPS Library missing close brace.
