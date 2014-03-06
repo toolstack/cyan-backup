@@ -673,7 +673,9 @@ class WP_Backuper {
 					}
 
 					if (file_exists($dump_file)) {
+						$this->write_log_file( __("Archiving SQL dump...", $this->textdomain) );
 						$this->write_status_file( $this->last_percentage, __("Archiving SQL dump...", $this->textdomain) );
+
 						$zip->addFile($dump_file, basename($this->dump_file));
 					}
 
@@ -712,8 +714,8 @@ class WP_Backuper {
 				}
 
 				if (file_exists($dump_file)) {
+					$this->write_log_file( __("Archiving SQL dump...", $this->textdomain) );
 					$this->write_status_file( $this->last_percentage, __("Archiving SQL dump...", $this->textdomain) );
-					$this->write_log_file( sprintf( __("Archiving SQL dump...", $this->textdomain), realpath($file) ) );
 					
 					$zip->add($dump_file, PCLZIP_OPT_REMOVE_PATH, dirname($this->dump_file));
 				}
