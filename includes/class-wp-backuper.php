@@ -451,6 +451,7 @@ class WP_Backuper {
 				$db_backup = FALSE;
 				$this->archive_file = FALSE;
 			}
+			
 			if ( file_exists($backup_dir) ) {
 				$this->recursive_rmdir($backup_dir);
 			}
@@ -540,10 +541,10 @@ class WP_Backuper {
 					if (is_dir($dir.$file)) {
 						$file .= DIRECTORY_SEPARATOR;
 						$result[] = $pre.$file;
-						if (!(in_array($file, $excluded) || in_array($pre.$file, $excluded))) {
+						if (!in_array($pre.$file, $excluded)) {
 							$result = array_merge($result, $this->get_files($dir.$file,$excluded,$pre.$file));
 						}
-					} else if (!(in_array($file, $excluded) || in_array($pre.$file, $excluded))) {
+					} else if (!in_array($pre.$file, $excluded)) {
 						$result[] = $pre.$file;
 					}
 				}
@@ -664,6 +665,7 @@ class WP_Backuper {
 			$source_dir = $source_dir . DIRECTORY_SEPARATOR . $wp_dir;
 
 			if (class_exists('ZipArchive')) {
+				$this->write_log_file( __('Using ZipArchive class.', $this->textdomain) );
 				$zip = new ZipArchive;
 				if ( $zip->open($zip_file, ZipArchive::CREATE) === TRUE ) {
 					$zip->addEmptyDir($parent);
@@ -698,6 +700,8 @@ class WP_Backuper {
 			} else {
 				if (!class_exists('PclZip'))
 					require_once 'class-pclzip.php';
+
+				$this->write_log_file( __('Using PclZip class.', $this->textdomain) );
 
 				$zip = new PclZip($zip_file);
 				$backup_files = array();
@@ -737,7 +741,10 @@ class WP_Backuper {
 		}
 
 		if (file_exists($zip_file)) {
+			$this->write_log_file( __('Updating permission on zip file.', $this->textdomain) );
+
 			chmod($zip_file, 0600);
+			
 			return $zip_file;
 		} else {
 			$this->write_log_file(__('Could not open the backup file for writing!', $this->textdomain));

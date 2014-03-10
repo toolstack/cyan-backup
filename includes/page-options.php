@@ -2,8 +2,11 @@
 
 	if( !is_admin() )
 		wp_die(__('Access denied!', $this->textdomain));
+
+	include_once('class-cyan-utilities.php');
+	
+	$CYANUtil = new CYAN_Utilities;
 		
-	$notes = array();
 	$nonce_field = 'option_update';
 
 	$option = (array)get_option($this->option_name);
@@ -21,7 +24,7 @@
 		if( isset($_POST['CreateWebConfig']) )
 			{
 			if( $abspath == $archive_path || $admin_dir == $archive_path) {
-				$notes[] = array( "<strong>". __('Archive path set to WordPress root or admin folder, Web.Config not written!', $this->textdomain)."</strong>", 2);
+				$CYANUtil->record_notes( "<strong>". __('Archive path set to WordPress root or admin folder, Web.Config not written!', $this->textdomain)."</strong>", 2);
 			} else {
 				$access_filename = $archive_path . 'Web.config';
 				
@@ -43,11 +46,11 @@
 					
 					fclose( $access_file );
 					
-					$notes[] = array( __('Web.Config written!', $this->textdomain), 0);
+					$CYANUtil->record_notes( __('Web.Config written!', $this->textdomain), 0);
 					}
 				else 
 					{
-					$notes[] = array( __('Web.Config already exists, please edit it manually!', $this->textdomain), 1);
+					$CYANUtil->record_notes( __('Web.Config already exists, please edit it manually!', $this->textdomain), 1);
 					}
 				}
 			}
@@ -55,7 +58,7 @@
 		if( isset($_POST['Createhtaccess']) )
 			{
 			if( $abspath == $archive_path || $admin_dir == $archive_path ) {
-				$notes[] = array( __('Archive path set to WordPress root or admin folder, .htaccess not written!', $this->textdomain), 2);
+				$CYANUtil->record_notes( __('Archive path set to WordPress root or admin folder, .htaccess not written!', $this->textdomain), 2);
 			} else {
 				$access_filename = $archive_path . '.htaccess';
 				
@@ -70,11 +73,11 @@
 					
 					fclose( $access_file );
 
-					$notes[] = array( __('.htaccess written!', $this->textdomain), 0);
+					$CYANUtil->record_notes( __('.htaccess written!', $this->textdomain), 0);
 					}
 				else 
 					{
-					$notes[] = array( __('.htaccess already exists, please edit it manually!', $this->textdomain), 1);
+					$CYANUtil->record_notes( __('.htaccess already exists, please edit it manually!', $this->textdomain), 1);
 					}
 				}
 			}
@@ -88,7 +91,7 @@
 		if( isset( $_POST['clear_backup'] ) ) {
 			@unlink( $archive_path . 'backup.active' );
 			@unlink( $archive_path . 'status.log' );
-			$notes[] = array( __('Active backup state cleared!', $this->textdomain), 0);
+			$CYANUtil->record_notes( __('Active backup state cleared!', $this->textdomain), 0);
 		}
 
 		if( isset( $_POST['clear_files'] ) ) {
@@ -98,8 +101,8 @@
 			foreach( $current_files as $this_file ) {
 				$this_file_ext = strtolower(substr( $this_file, -4 ));
 				if( substr( $this_file, 0, strlen( $archive_pre ) ) == $archive_pre && $this_file_ext != ".zip" && $this_file_ext != ".log" ) {
-					@unlink( $archive_path . $this_file );
-					$notes[] = array( $this_file . __(' deleted from the archive directory.', $this->textdomain), 0);
+					$CYANUtil->recursive_remove( $archive_path . $this_file );
+					$CYANUtil->record_notes( sprintf( __('%s deleted from the archive directory.', $this->textdomain), $this_file ), 0);
 				}
 			}
 		}
@@ -115,7 +118,7 @@
 					$realpath = $this->trailingslashit($realpath, FALSE);
 					
 				if( $realpath == $abspath || $realpath == $admin_dir ) {
-					$notes[] = array( __('Archive path set to WordPress root or admin folder, this is not a valid option!', $this->textdomain), 2);
+					$CYANUtil->record_notes( __('Archive path set to WordPress root or admin folder, this is not a valid option!', $this->textdomain), 2);
 				} else {
 					$options['archive_path'] = $realpath;
 					
@@ -135,15 +138,15 @@
 							@unlink( $test_name );
 							
 							if( $test_read == $test_text ) {
-								$notes[] = array( sprintf(__('Archive directory ("%s") is a subdirectory in the WordPress root and is accessible via the web, this is an insecure configuration!', $this->textdomain), $realpath), 1);
+								$CYANUtil->record_notes( sprintf(__('Archive directory ("%s") is a subdirectory in the WordPress root and is accessible via the web, this is an insecure configuration!', $this->textdomain), $realpath), 1);
 							}
 						} else {
-							$notes[] = array( sprintf(__('Archive directory ("%s") is not writeable!', $this->textdomain), $realpath), 2);
+							$CYANUtil->record_notes( sprintf(__('Archive directory ("%s") is not writeable!', $this->textdomain), $realpath), 2);
 						}
 					}
 				}
 			} else {
-				$notes[] = array( sprintf(__('Archive directory ("%s") does not exist!', $this->textdomain), $realpath), 2);
+				$CYANUtil->record_notes( sprintf(__('Archive directory ("%s") does not exist!', $this->textdomain), $realpath), 2);
 			}
 		}
 		
@@ -168,7 +171,7 @@
 						$realpath = $this->trailingslashit($realpath, FALSE);
 						if( $check_archive_excluded && $realpath == $archive_path ) { $archive_path_found = TRUE; }
 					} else {
-						$notes[] = array(sprintf(__('Excluded directory ("%s") is not found, removed from exclusions.', $this->textdomain), $dir), 1);
+						$CYANUtil->record_notes(sprintf(__('Excluded directory ("%s") is not found, removed from exclusions.', $this->textdomain), $dir), 1);
 					}
 				}
 			}
@@ -178,7 +181,7 @@
 				$excluded[] = $archive_dir;
 				$excluded_dir[] = $archive_dir;
 
-				$notes[] = array( __('Archive path is in the WordPress directory tree but was not found in the exclusions, it has automatically been added.', $this->textdomain), 0);
+				$CYANUtil->record_notes( __('Archive path is in the WordPress directory tree but was not found in the exclusions, it has automatically been added.', $this->textdomain), 0);
 			}
 			
 			$options['excluded'] = $excluded;
@@ -204,7 +207,7 @@
 				$options['remote'] = $_POST['remote'];
 
 				if( !function_exists( 'mcrypt_encrypt' ) ) {
-					$notes[] = array( __('mcrypt library is not installed so passwords cannot be encrypted before being stored in the database.  Your remote storage password will be stored in clear text!  Please install mcrypt and re-save your configuration.', $this->textdomain), 1);
+					$CYANUtil->record_notes( __('mcrypt library is not installed so passwords cannot be encrypted before being stored in the database.  Your remote storage password will be stored in clear text!  Please install mcrypt and re-save your configuration.', $this->textdomain), 1);
 				}
 				
 				// Encrpyt the password for storage in the database.
@@ -226,7 +229,7 @@
 				wp_schedule_single_event($next_backup_time, 'cyan_backup_hook');
 				$options['next_backup_time'] = $next_backup_time;
 			} else {
-				$notes[] = array( __('Schedule not set, failed to determine the next scheduled time to backup!', $this->textdomain), 2);
+				$CYANUtil->record_notes( __('Schedule not set, failed to determine the next scheduled time to backup!', $this->textdomain), 2);
 			}
 		}
 
@@ -248,7 +251,7 @@
 		$excluded_dir = $this->get_excluded_dir($option, array());
 
 		// Done!
-		$notes[] = array(__('Configuration saved!', $this->textdomain), 0);
+		$CYANUtil->record_notes(__('Configuration saved!', $this->textdomain), 0);
 	}
 
 	// Decrypt the password for use on the form.
@@ -440,26 +443,11 @@
 	
 	// If the next scheduled backup is over an hour in the past, it's probably broken, let the user know.
 	if( $next_schedule < $current_time - 3600 ) {
-		$notes[] = array( __('The next scheduled backup job is in the past, WP Cron may be broken.  If it does not execute shortly, you may want to disable and then re-enable scheduled backup jobs to re-create the WP Cron entry.', $this->textdomain), 1 );
+		$CYANUtil->record_notes( __('The next scheduled backup job is in the past, WP Cron may be broken.  If it does not execute shortly, you may want to disable and then re-enable scheduled backup jobs to re-create the WP Cron entry.', $this->textdomain), 1 );
 	}
 	
-	// Output
-	foreach( $notes as $note ) {
-		switch( $note[1] )
-			{
-			case 0:
-				echo '<div id="message" class="updated fade"><p>' . $note[0] . '</p></div>';
-				break;
-			case 1:
-				echo '<div id="message" class="updated fade" style="border-left: 4px solid #fbff1c;"><p>' . __('Warning') . ': ' . $note[0] . '</p></div>';
-				break;
-			case 2:
-				echo '<div id="message" class="error fade"><p>' . __('ERROR') . ': ' . $note[0] . '</p></div>';
-				break;
-			}
-			
-		echo "\n";
-	}
+	echo $CYANUtil->output_notes();
+	$CYANUtil->clear_notes();
 ?>
 
 <div class="wrap">

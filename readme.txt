@@ -89,14 +89,19 @@ Also the remote server MUST be on the same class 'C' subnet as your web server. 
 * None at this time.
 
 == Changelog == 
+= 1.6.3 =
+* Added: Settings page now divided in to tabs.
+* Updated: Added additional logging during backups.
+* Fixed: Excluded root directories would also match sub directories of the same name.
+
 = 1.6.2 =
-- Added: Option to delete temporary files from failed backups.
-- Added: More error messages to the log file.
-- Updated: Clear active backup status now also deletes the status.log file.
-- Updated: Clear active backup status and delete temporary files both display a confirmation message when checked.
-- Updated: Log messages for SQL dump file.
-- Fixed: Issue with ftp-wrappers not creating subdirectories recursively.
-- Fixed: Issue with ftps-wrappers not creating subdirectories recursively.
+* Added: Option to delete temporary files from failed backups.
+* Added: More error messages to the log file.
+* Updated: Clear active backup status now also deletes the status.log file.
+* Updated: Clear active backup status and delete temporary files both display a confirmation message when checked.
+* Updated: Log messages for SQL dump file.
+* Fixed: Issue with ftp-wrappers not creating subdirectories recursively.
+* Fixed: Issue with ftps-wrappers not creating subdirectories recursively.
 
 = 1.6.1 =
 * Fixed: Deletion of backups failed on some platforms depending on the version of PHP.
