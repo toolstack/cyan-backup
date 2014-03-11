@@ -791,6 +791,11 @@ class CYANBackup {
 		$userid = (int)$userid;
 
 		$site_url = trailingslashit(function_exists('home_url') ? home_url() : get_option('home'));
+		
+		if( get_option('forcessl') ) {
+			$site_url = str_ireplace( 'http://', 'https://', $site_url );
+		}
+		
 		$json_backup_url  = $site_url;
 		$json_status_url  = $site_url;
 		$json_backup_args = "userid:{$userid},\n";

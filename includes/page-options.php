@@ -85,7 +85,7 @@
 	
 	// option update
 	if (isset($_POST['options_update'])) {
-		if ( $this->wp_version_check('2.5') && function_exists('check_admin_referer') )
+		if( $this->wp_version_check('2.5') && function_exists('check_admin_referer') )
 			check_admin_referer($nonce_field, self::NONCE_NAME);
 
 		if( isset( $_POST['clear_backup'] ) ) {
@@ -105,6 +105,10 @@
 					$CYANUtil->record_notes( sprintf( __('%s deleted from the archive directory.', $this->textdomain), $this_file ), 0);
 				}
 			}
+		}
+
+		if( isset( $_POST['forcessl'] ) ) {
+			$options['forcessl'] = $_POST['forcessl'];
 		}
 
 		$postdata = $this->get_real_post_data();
@@ -129,7 +133,7 @@
 						
 						if( $test_file ) {
 							fwrite($test_file, $test_text);
-							fclose( $test_file );
+							fclose($test_file);
 					
 							$test_url = $this->wp_site_url( substr( $realpath, strlen( $abspath ) ) . 'test.zip' );
 					
@@ -473,6 +477,14 @@
 ?>
 			<table class="optiontable form-table" style="margin-top:0;">
 				<tbody>
+					<tr>
+						<th><?php _e('Force SSL', $this->textdomain);?></th>
+
+						<td>
+							<input type=checkbox id="forcessl" name="forcessl"<?php if( $option['forcessl'] == 'on' ) { echo ' CHECKED'; }?>>
+						</td>
+					</tr>
+
 					<tr>
 						<th><?php _e('Archive path', $this->textdomain);?></th>
 
