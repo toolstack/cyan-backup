@@ -5,7 +5,7 @@ Author URI: http://toolstack.com
 Tags: Backup, Schedule, FTP, SFTP, SCP, FTPS, remote storage
 Requires at least: 2.9
 Tested up to: 3.8.1
-Stable tag: 1.6.4
+Stable tag: 1.6.5
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -85,10 +85,13 @@ Also the remote server MUST be on the same class 'C' subnet as your web server. 
 3. About page.
 
 == Upgrade Notice ==
-= 1.6.4 =
+= 1.6.5 =
 * None at this time.
 
 == Changelog == 
+= 1.6.5 =
+* Fixed: Bug with new recursive remove function on the option page.
+
 = 1.6.4 =
 * Fixed: Issue with getting file list to backup including '.' and '..'.
 
