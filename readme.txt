@@ -5,7 +5,7 @@ Author URI: http://toolstack.com
 Tags: Backup, Schedule, FTP, SFTP, SCP, FTPS, remote storage
 Requires at least: 2.9
 Tested up to: 3.8.1
-Stable tag: 1.6.5
+Stable tag: 1.6.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -89,6 +89,9 @@ Also the remote server MUST be on the same class 'C' subnet as your web server. 
 * None at this time.
 
 == Changelog == 
+= 1.6.6 =
+* Added: Option to force SSL connections for AJAX backups.
+
 = 1.6.5 =
 * Fixed: Bug with new recursive remove function on the option page.
 
