@@ -37,7 +37,7 @@ class CYAN_Utilities {
 			$files = scandir($dir);
 			foreach ($files as $file) {
 				if ($file != "." && $file != "..")
-					$this->recursive_rmdir($dir . DIRECTORY_SEPARATOR . $file);
+					$this->recursive_remove($dir . DIRECTORY_SEPARATOR . $file);
 			}
 			
 			rmdir($dir);
