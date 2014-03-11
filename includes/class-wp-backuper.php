@@ -539,6 +539,7 @@ class WP_Backuper {
 			if ($dh = opendir($dir)) {
 				while (($file = readdir($dh)) !== false) {
 					if (is_dir($dir.$file)) {
+						if( $file == '.' || $file == '..' ) { continue; }
 						$file .= DIRECTORY_SEPARATOR;
 						$result[] = $pre.$file;
 						if (!in_array($pre.$file, $excluded)) {
