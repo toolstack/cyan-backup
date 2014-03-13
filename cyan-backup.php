@@ -14,7 +14,7 @@ Read the accompanying readme.txt file for instructions and documentation.
 	Original Total Backup code Copyright 2011-2012 wokamoto (wokamoto1973@gmail.com)
 	All additional code Copyright 2014 Greg Ross (greg@toolstack.com)
 
-This software is released under the GPL v2.0, see license.txt for details
+This software is released under the GPL v2.0, see license.txt for details.
 
 */
 if (!class_exists('CYANBackup')) {
@@ -672,6 +672,10 @@ class CYANBackup {
 				break;
 			case 'sftplibrary':
 				include_once( 'includes/protocol-sftplibrary.php');
+				
+				break;
+			case 'sftpphpseclib':
+				include_once( 'includes/protocol-sftpphpseclib.php');
 				
 				break;
 			}

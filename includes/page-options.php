@@ -719,6 +719,7 @@
 		if( function_exists( 'ftp_ssl_connect' ) ) 	{ $remoteprotocols['ftpslibrary'] 	= __('FTPS Library', $this->textdomain); }
 		if( in_array( 'ssh2', $wrappers ) ) 		{ $remoteprotocols['sftpwrappers'] 	= __('SFTP Wrappers', $this->textdomain); }
 		if( function_exists( 'ssh2_connect' ) ) 	{ $remoteprotocols['sftplibrary'] 	= __('SFTP Library', $this->textdomain); }
+		$remoteprotocols['sftpphpseclib'] = __('SFTP phpseclib', $this->textdomain);
 								
 		foreach( $remoteprotocols as $key => $protocol ) 
 			{ 

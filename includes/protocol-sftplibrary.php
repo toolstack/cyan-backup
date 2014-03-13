@@ -9,9 +9,9 @@ if( function_exists( 'ssh2_connect' ) ) {
 	$sftp_connection = ssh2_connect( $remote_settings['host'] );
 	
 	if( $sftp_connection !== FALSE ) {
-		if( @ssh2_auth_password( $ftp_connection, $remote_settings['username'], $final_password ) !== FALSE ) {
+		if( @ssh2_auth_password( $sftp_connection, $remote_settings['username'], $final_password ) !== FALSE ) {
 			// Start a SFTP session.
-			$sftp = ssh2_sftp($connection);
+			$sftp = ssh2_sftp($sftp_connection);
 
 			// Make sure the remote directory exists.
 			@ssh2_sftp_mkdir( $sftp, $final_dir );
