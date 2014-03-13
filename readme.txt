@@ -5,7 +5,7 @@ Author URI: http://toolstack.com
 Tags: Backup, Schedule, FTP, SFTP, SCP, FTPS, remote storage
 Requires at least: 2.9
 Tested up to: 3.8.1
-Stable tag: 1.6.7
+Stable tag: 1.6.8
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -86,10 +86,14 @@ Also the remote server MUST be on the same class 'C' subnet as your web server. 
 4. About page.
 
 == Upgrade Notice ==
-= 1.6.7 =
+= 1.6.8 =
 * None at this time.
 
 == Changelog == 
+= 1.6.8 =
+* Added: Option to disable use ZipArchive of extension and use PclZip instead.
+* Fixed: PclZip now functions correctly.
+
 = 1.6.7 =
 * Added: phplibsec SFTP implantation, this library does not require any PHP modules so it is available on all installations.
 * Fixed: Incorrect variable name in SFTP Library code.
