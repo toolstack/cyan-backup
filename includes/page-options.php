@@ -111,6 +111,10 @@
 			$options['forcessl'] = $_POST['forcessl'];
 		}
 
+		if( isset( $_POST['disableziparchive'] ) ) {
+			$options['disableziparchive'] = $_POST['disableziparchive'];
+		}
+
 		$postdata = $this->get_real_post_data();
 
 		if ( isset($postdata['archive_path']) ) {
@@ -484,7 +488,15 @@
 							<input type=checkbox id="forcessl" name="forcessl"<?php if( $option['forcessl'] == 'on' ) { echo ' CHECKED'; }?>>
 						</td>
 					</tr>
+<?php if( class_exists('ZipArchive') ) {?>
+					<tr>
+						<th><?php _e('Disable ZipArchive', $this->textdomain);?></th>
 
+						<td>
+							<input type=checkbox id="disableziparchive" name="disableziparchive"<?php if( $option['disableziparchive'] == 'on' ) { echo ' CHECKED'; }?>>
+						</td>
+					</tr>
+<?php }?>
 					<tr>
 						<th><?php _e('Archive path', $this->textdomain);?></th>
 

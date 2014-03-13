@@ -23,6 +23,7 @@ class WP_Backuper {
 	private $percentage = 0;
 	private $last_percentage = 0;
 	private $email_sendto = null;
+	private $option = array();
 
 	private $error = array();
 
@@ -36,14 +37,14 @@ class WP_Backuper {
 	// Constructor
 	//**************************************************************************************
 	function __construct($archive_path = FALSE, $archive_prefix = FALSE, $wp_dir = FALSE, $excluded = FALSE){
-		$option = (array)get_option(self::OPTION_NAME);
+		$this->option = (array)get_option(self::OPTION_NAME);
 		$archive_path = 
-			($archive_path === FALSE && isset($option["archive_path"]) && is_dir($option["archive_path"]))
-			? $option["archive_path"]
+			($archive_path === FALSE && isset($this->option["archive_path"]) && is_dir($this->option["archive_path"]))
+			? $this->option["archive_path"]
 			: $archive_path ;
 		$excluded = (array)
-			($excluded === FALSE && isset($option["excluded"]) && is_array($option["excluded"]))
-			? $option["excluded"]
+			($excluded === FALSE && isset($this->option["excluded"]) && is_array($this->option["excluded"]))
+			? $this->option["excluded"]
 			: $excluded ;
 
 		$this->archive_path = $this->get_archive_path($archive_path);
@@ -59,8 +60,8 @@ class WP_Backuper {
 			$this->get_excluded_dir($excluded)
 			);
 		
-		if( $option['emaillog'] == 'on' ) {
-			$this->email_sendto = $option['sendto'];
+		if( $this->option['emaillog'] == 'on' ) {
+			$this->email_sendto = $this->option['sendto'];
 		}
 	}
 
@@ -665,7 +666,7 @@ class WP_Backuper {
 			$dump_file  = $source_dir . DIRECTORY_SEPARATOR . $dump_file;
 			$source_dir = $source_dir . DIRECTORY_SEPARATOR . $wp_dir;
 
-			if (class_exists('ZipArchive')) {
+			if (class_exists('ZipArchive') && $this->option['disableziparchive'] != 'on') {
 				$this->write_log_file( __('Using ZipArchive class.', $this->textdomain) );
 				$zip = new ZipArchive;
 				if ( $zip->open($zip_file, ZipArchive::CREATE) === TRUE ) {
@@ -705,6 +706,10 @@ class WP_Backuper {
 				$this->write_log_file( __('Using PclZip class.', $this->textdomain) );
 
 				$zip = new PclZip($zip_file);
+				
+				$dir_to_strip = $zip_file;
+				$dir_to_strip = realpath( str_replace( '.zip', '', $dir_to_strip ) );
+				
 				$backup_files = array();
 				foreach ($files as $file) {
 					$this->currentcount++;
@@ -718,22 +723,28 @@ class WP_Backuper {
 					$this->write_log_file( sprintf( __("Archiving %s...", $this->textdomain), realpath($file) ) );
 					
 					if ( !is_dir($source_dir.$file) )
-						$backup_files[] = $source_dir.$file;
+						$backup_files[] = str_replace( '\\', '/', realpath($source_dir.$file) );
 
 					if (count($backup_files) > self::ROWS_PER_SEGMENT) {
-						$zip->add(implode(',', $backup_files), PCLZIP_OPT_REMOVE_PATH, $this->wp_dir, PCLZIP_OPT_ADD_PATH, $wp_dir);
+						$this->write_log_file( 'files: ' . serialize( $backup_files ) );
+						$this->write_log_file( 'dir_to_strip: ' . $dir_to_strip );
+						$this->write_log_file( 'wp_dir: ' . $wp_dir );
+						$zip->add(implode(',', $backup_files), PCLZIP_OPT_REMOVE_PATH, $dir_to_strip);
 						$backup_files = array();
 					}
 				}
 				if (count($backup_files) > 0) {
-					$zip->add(implode(',', $backup_files), PCLZIP_OPT_REMOVE_PATH, $this->wp_dir, PCLZIP_OPT_ADD_PATH, $parent);
+					$this->write_log_file( 'files: ' . serialize( $backup_files ) );
+					$this->write_log_file( 'dir_to_strip: ' . $dir_to_strip );
+					$this->write_log_file( 'wp_dir: ' . $wp_dir );
+					$zip->add(implode(',', $backup_files), PCLZIP_OPT_REMOVE_PATH, $dir_to_strip);
 				}
 
 				if (file_exists($dump_file)) {
 					$this->write_log_file( __("Archiving SQL dump...", $this->textdomain) );
 					$this->write_status_file( $this->last_percentage, __("Archiving SQL dump...", $this->textdomain) );
 					
-					$zip->add($dump_file, PCLZIP_OPT_REMOVE_PATH, dirname($this->dump_file));
+					$zip->add($dump_file, PCLZIP_OPT_REMOVE_PATH, $dir_to_strip);
 				}
 			}
 		} catch(Exception $e) {
