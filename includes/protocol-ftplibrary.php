@@ -11,23 +11,23 @@ if( function_exists( 'ftp_connect' ) ) {
 	
 	// FTP is insecure, make sure we're in the same class 'C' subnet as the remote server we're connecting to.  Also make sure we actually got a result from the explode calls.
 	if( $server_ip[0] == $remote_ip[0] && $server_ip[1] == $remote_ip[1] && $server_ip[2] == $remote_ip[2] && $server_ip !== FALSE && $remote_ip !== FALSE) {
-		$ftp_connection = ftp_connect( $remote_settings['host'] );
+		$ftp_connection = @ftp_connect( $remote_settings['host'] );
 		
 		if( $ftp_connection !== FALSE ) {
 			if( @ftp_login( $ftp_connection, $remote_settings['username'], $final_password ) !== FALSE ) {
 				// Make sure the remote directory exists.
 				@ftp_mkdir( $ftp_connection, $final_dir );
 				
-				$result = ftp_put( $ftp_connection, $final_dir . $filename, $archive, FTP_BINARY );
+				$result = @ftp_put( $ftp_connection, $final_dir . $filename, $archive, FTP_BINARY );
 				
 				// If we have been told to send the log file as well, let's do that now.
 				if( $remote_settings['sendlog'] == 'on' ) {
-					ftp_put( $ftp_connection, $final_dir . $logname, $log, FTP_ASCII );
+					@ftp_put( $ftp_connection, $final_dir . $logname, $log, FTP_ASCII );
 				}
 
 			}
 			
-			ftp_close( $ftp_connection );
+			@ftp_close( $ftp_connection );
 		}
 	}
 }	

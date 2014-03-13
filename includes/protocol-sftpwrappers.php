@@ -39,7 +39,7 @@ if( in_array( 'ssh2', stream_get_wrappers() ) ) {
 			// If we opened the log successfully, go ahead and send it.
 			if( $filestream !== FALSE ) {
 				// Send the file and close it once done.  Don't save the result for use later as we only care that the zip file made it successfully.
-				file_put_contents( $connection, $filestream );
+				@file_put_contents( $connection, $filestream );
 				fclose( $filestream );
 			}
 		}
