@@ -5,7 +5,7 @@ Author URI: http://toolstack.com
 Tags: Backup, Schedule, FTP, SFTP, SCP, FTPS, remote storage
 Requires at least: 2.9
 Tested up to: 3.8.1
-Stable tag: 1.6.6
+Stable tag: 1.6.7
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -81,14 +81,19 @@ Also the remote server MUST be on the same class 'C' subnet as your web server. 
 == Screenshots ==
 
 1. Backups page.
-2. Options page.
-3. About page.
+2. Directory options page.
+3. Schedule options page.
+4. About page.
 
 == Upgrade Notice ==
-= 1.6.5 =
+= 1.6.7 =
 * None at this time.
 
 == Changelog == 
+= 1.6.7 =
+* Added: phplibsec SFTP implantation, this library does not require any PHP modules so it is available on all installations.
+* Fixed: Incorrect variable name in SFTP Library code.
+
 = 1.6.6 =
 * Added: Option to force SSL connections for AJAX backups.
 
