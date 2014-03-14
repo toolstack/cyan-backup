@@ -726,17 +726,11 @@ class WP_Backuper {
 						$backup_files[] = str_replace( '\\', '/', realpath($source_dir.$file) );
 
 					if (count($backup_files) > self::ROWS_PER_SEGMENT) {
-						$this->write_log_file( 'files: ' . serialize( $backup_files ) );
-						$this->write_log_file( 'dir_to_strip: ' . $dir_to_strip );
-						$this->write_log_file( 'wp_dir: ' . $wp_dir );
 						$zip->add(implode(',', $backup_files), PCLZIP_OPT_REMOVE_PATH, $dir_to_strip);
 						$backup_files = array();
 					}
 				}
 				if (count($backup_files) > 0) {
-					$this->write_log_file( 'files: ' . serialize( $backup_files ) );
-					$this->write_log_file( 'dir_to_strip: ' . $dir_to_strip );
-					$this->write_log_file( 'wp_dir: ' . $wp_dir );
 					$zip->add(implode(',', $backup_files), PCLZIP_OPT_REMOVE_PATH, $dir_to_strip);
 				}
 
