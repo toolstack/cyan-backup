@@ -371,7 +371,7 @@ class WP_Backuper {
 				$active_filetime = strtotime( $this->get_filemtime($active_filename) );
 				
 				// Check to see if the active state is stale ( >30 minutes old )
-				if( time() - $active_filetime > (60 * 30) ) {
+				if( time() - $active_filetime > (60 * 10) ) {
 					unlink( $active_filename );
 				} else {
 					$this->error[] = __('Another backup is already running!', $this->textdomain);

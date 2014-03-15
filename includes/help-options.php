@@ -110,7 +110,8 @@
 		array(
 			'title'    => 	__('Clear Active Backup', $this->textdomain),
 			'id'       => 	'active_tab',
-			'content'  => 	'<p>' . __("<b>Clear active backup status</b>: Only check this if a backup has hung and you can no longer execute backups.  CYAN Backup uses a status file to tell if a backup is running or not, if this file hasn't been deleted after a backup is complete you won't be able to run another backup for 30 minutes.  If you wish to force the deletion of the file check this option and save the settings.  This will force the deletion of the file.", $this->textdomain) . '</p>'
+			'content'  => 	'<p>' . __("<b>Clear active backup status</b>: Only check this if a backup has hung and you can no longer execute backups.  CYAN Backup uses a status file to tell if a backup is running or not, if this file hasn't been deleted after a backup is complete you won't be able to run another backup for 10 minutes.  If you wish to force the deletion of the file check this option and save the settings.  This will force the deletion of the file.", $this->textdomain) . '</p>' .
+							'<p>' . __('<b>Delete temporary files and directories</b>: If a backup has failed it will sometimes leave temporary files and subdirectories behind in the archive directory, this option will delete any file in the archive path that starts with your site directory name but is not a zip/log file.', $this->textdomain) . '</p>'
 			,
 			'callback' => 	false
 		)

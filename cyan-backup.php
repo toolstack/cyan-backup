@@ -525,30 +525,34 @@ class CYANBackup {
 				$result = $this->json_backup($userid);
 				break;
 			case 'status':
-				$status = @file_get_contents( $this->get_archive_path() . 'status.log' );
-				
-				if( $status === FALSE ) 
-					{ 
-					$result = array( 
-						'result' => FALSE,
-						'method' => $method_name,
-						'message' => __('No backup running!', $this->textdomain),
-						);
-					}
-				else
-					{
-					list( $result['percentage'], $result['message'], $result['state'], $result['backup_file'], $result['backup_date'], $result['backup_size'] ) = explode( "\n", $status );
-					$result['percentage'] = trim( $result['percentage'] );
-					$result['message'] = trim( $result['message'] );
-					$result['state'] = trim( $result['state'] );
-					$result['backup_file'] = trim( $result['backup_file'] );
-					$result['backup_date'] = trim( $result['backup_date'] );
-					$result['backup_size'] = trim( $result['backup_size'] );
+				if( time() - filemtime( $this->get_archive_path() . 'backup.active' ) > (60 * 10) ) {
+					unlink( $this->get_archive_path() . 'backup.active' );
+				} else {
+					$status = @file_get_contents( $this->get_archive_path() . 'status.log' );
+					
+					if( $status === FALSE ) 
+						{ 
+						$result = array( 
+							'result' => FALSE,
+							'method' => $method_name,
+							'message' => __('No backup running!', $this->textdomain),
+							);
+						}
+					else
+						{
+						list( $result['percentage'], $result['message'], $result['state'], $result['backup_file'], $result['backup_date'], $result['backup_size'] ) = explode( "\n", $status );
+						$result['percentage'] = trim( $result['percentage'] );
+						$result['message'] = trim( $result['message'] );
+						$result['state'] = trim( $result['state'] );
+						$result['backup_file'] = trim( $result['backup_file'] );
+						$result['backup_date'] = trim( $result['backup_date'] );
+						$result['backup_size'] = trim( $result['backup_size'] );
 
-					$temp_time = strtotime($result['backup_date']);
-					$result['backup_date'] = date( get_option('date_format'), $temp_time ) . ' @ ' . date( get_option('time_format'), $temp_time );
+						$temp_time = strtotime($result['backup_date']);
+						$result['backup_date'] = date( get_option('date_format'), $temp_time ) . ' @ ' . date( get_option('time_format'), $temp_time );
 
-					$result['backup_size'] = number_format((float)$result['backup_size'], 2) . ' MB';
+						$result['backup_size'] = number_format((float)$result['backup_size'], 2) . ' MB';
+						}
 					}
 					
 				break;
