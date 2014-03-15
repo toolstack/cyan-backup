@@ -5,7 +5,7 @@ Author URI: http://toolstack.com
 Tags: Backup, Schedule, FTP, SFTP, SCP, FTPS, remote storage
 Requires at least: 2.9
 Tested up to: 3.8.1
-Stable tag: 1.6.8
+Stable tag: 1.6.9
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -86,10 +86,15 @@ Also the remote server MUST be on the same class 'C' subnet as your web server. 
 4. About page.
 
 == Upgrade Notice ==
-= 1.6.8 =
+= 1.6.9 =
 * None at this time.
 
 == Changelog == 
+= 1.6.9 =
+* Added: Check during json activity check to remove inactive backup.active file.
+* Updated: Reduced the default timeout to keep a backup active without activity to 10 minutes from 30.
+* Removed: Debug logging if PclZip routine was used.
+
 = 1.6.8 =
 * Added: Option to disable use ZipArchive of extension and use PclZip instead.
 * Fixed: PclZip now functions correctly.
