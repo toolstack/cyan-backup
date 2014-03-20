@@ -115,6 +115,10 @@
 			$options['disableziparchive'] = $_POST['disableziparchive'];
 		}
 
+		if( isset( $_POST['artificialdelay'] ) ) {
+			$options['artificialdelay'] = $_POST['artificialdelay'];
+		}
+		
 		$postdata = $this->get_real_post_data();
 
 		if ( isset($postdata['archive_path']) ) {
@@ -486,6 +490,13 @@
 
 						<td>
 							<input type=checkbox id="forcessl" name="forcessl"<?php if( $option['forcessl'] == 'on' ) { echo ' CHECKED'; }?>>
+						</td>
+					</tr>
+					<tr>
+						<th><?php _e('Artificial Delay', $this->textdomain);?></th>
+
+						<td>
+							<input type=checkbox id="artificialdelay" name="artificialdelay"<?php if( $option['artificialdelay'] == 'on' ) { echo ' CHECKED'; }?>>
 						</td>
 					</tr>
 <?php if( class_exists('ZipArchive') ) {?>

@@ -28,7 +28,6 @@ class WP_Backuper {
 	private $error = array();
 
 	const ROWS_PER_SEGMENT = 100;
-	const MAINTENANCE_MODE = '.maintenance';
 	const TIME_LIMIT       = 900;		// 15min * 60sec
 	const EXCLUSION_KEY    = 'WP_Backuper::wp_backup';
 	const OPTION_NAME      = 'CYAN Backup Option';
@@ -55,7 +54,6 @@ class WP_Backuper {
 			array(
 				'.'.DIRECTORY_SEPARATOR ,
 				'..'.DIRECTORY_SEPARATOR ,
-				self::MAINTENANCE_MODE ,
 				),
 			$this->get_excluded_dir($excluded)
 			);
@@ -210,22 +208,6 @@ class WP_Backuper {
 			function_exists('delete_site_transient')
 			? delete_site_transient($key)
 			: delete_transient($key);
-	}
-
-	// maintenance mode
-	private function maintenance_mode($enable = FALSE) {
-		$file = $this->wp_dir . self::MAINTENANCE_MODE;
-		if ( $enable ) {
-			// Create maintenance file to signal that we are upgrading
-			$maintenance_string = '<?php $upgrading = ' . time() . '; ?>';
-			if (file_exists($file))
-				@unlink($file);
-			file_put_contents($file, $maintenance_string);
-		} else if ( !$enable && file_exists($file) ) {
-			@unlink($file);
-		}
-
-		return $enable;
 	}
 
 	// verify nonce if no logged in
@@ -394,9 +376,6 @@ class WP_Backuper {
 			$this->open_log_file( $archive_path . $filename . '.log' );
 			$this->write_log_file( __('Calculating backup size...', $this->textdomain) );
 
-			// Maintenance mode ON
-			//$this->maintenance_mode(TRUE);
-
 			// get SQL rows.
 			$sqlrowcount = $this->get_sql_row_count();
 			
@@ -404,37 +383,24 @@ class WP_Backuper {
 			$this->files = $files = $this->get_files($this->wp_dir, $this->excluded);
 			$filecount = count( $files );
 			
-			// Total count is the sqlrowcount + 3 times through the file tree
-			// pass 1: copy to temp directory
-			// pass 2: add to zip
-			// pass 3: remove temp directory
-			$total_count = $sqlrowcount + ( $filecount * 3 );
+			// Total count is the sqlrowcount + once through the file tree
+			$total_count = $sqlrowcount + $filecount;
 			
 			$this->increment = 100 / $total_count;
 
 			$this->write_status_file( 0, __('Backup started, processing SQL tables...', $this->textdomain));
 			$this->write_log_file( __('Backup started, processing SQL tables...', $this->textdomain) );
-			
+
 			// DB backup
 			if ($db_backup)
 				$this->dump_file = $this->wpdb_dump($archive_path, $archive_prefix);
-
-			$this->write_status_file( $this->last_percentage, __('Making temporary copying of WordPress...', $this->textdomain));
-			$this->write_log_file( __('Making temporary copying of WordPress...', $this->textdomain) );
-
-			// WP Core files backup
-			$backup_dir = trailingslashit(trailingslashit($archive_path).$filename);
-			$this->files_backup($this->wp_dir, $files, $backup_dir);
-
-			// Maintenance mode OFF
-			//$this->maintenance_mode(FALSE);
 
 			$this->write_status_file( $this->last_percentage, __('Archiving files...', $this->textdomain));
 			$this->write_log_file( __('Archiving files...', $this->textdomain) );
 
 			// WP Core files archive
 			$zip_file = $this->chg_directory_separator(trailingslashit($archive_path).$filename.'.zip');
-			$backup = $this->files_archive($backup_dir, $files, $zip_file);
+			$backup = $this->files_archive($this->wp_dir, $files, $zip_file);
 
 			$this->write_status_file( $this->last_percentage, __('Removing temporary files...', $this->textdomain));
 			$this->write_log_file( __('Removing temporary files...', $this->textdomain) );
@@ -453,10 +419,6 @@ class WP_Backuper {
 				$this->archive_file = FALSE;
 			}
 			
-			if ( file_exists($backup_dir) ) {
-				$this->recursive_rmdir($backup_dir);
-			}
-
 			$this->delete_transient(self::EXCLUSION_KEY);
 
 			$backup_elapsed = time() - $backup_start;
@@ -499,14 +461,9 @@ class WP_Backuper {
 				'backup'    => ($backup && file_exists($backup)) ? $this->archive_file : FALSE ,
 				'db_backup' => $db_backup ? basename($this->dump_file) : FALSE ,
 				'errors'    => $this->error ,
-//				'wp_dir'    => $this->wp_dir ,
-//				'excluded'  => $this->excluded ,
-//				'files'     => $this->files ,
 				);
 
 		} catch(Exception $e) {
-			// Maintenance mode OFF
-			//$this->maintenance_mode(FALSE);
 			$this->delete_transient(self::EXCLUSION_KEY);
 			$this->error[] = $e->getMessage();
 			return array(
@@ -547,7 +504,9 @@ class WP_Backuper {
 							$result = array_merge($result, $this->get_files($dir.$file,$excluded,$pre.$file));
 						}
 					} else if (!in_array($pre.$file, $excluded)) {
-						$result[] = $pre.$file;
+						if( !(substr( $file, 0, 7 ) == 'pclzip-' && substr( $file, -4 ) == '.tmp' ) ) {
+							$result[] = $pre.$file;
+						}
 					}
 				}
 				closedir($dh);
@@ -566,13 +525,6 @@ class WP_Backuper {
 		}
 		
 		try {
-			if ( !file_exists($dest_dir) )
-				mkdir($dest_dir, 0700);
-			if (!is_writable($dest_dir)) {
-				$this->write_log_file(__('Could not open the backup file for writing!', $this->textdomain));
-				throw new Exception(__('Could not open the backup file for writing!', $this->textdomain));
-			}
-
 			$dest_dir = trailingslashit($dest_dir);
 			if ( file_exists($this->dump_file) )
 				copy( $this->dump_file, $dest_dir.basename($this->dump_file) );
@@ -583,8 +535,8 @@ class WP_Backuper {
 				mkdir($dest_dir, 0700);
 				
 			if (!is_writable($dest_dir)) {
-				$this->write_log_file(__('Could not open the backup file for writing!', $this->textdomain));
-				throw new Exception(__('Could not open the backup file for writing!', $this->textdomain));
+				$this->write_log_file(__('Could not open the destination directory for writing!', $this->textdomain));
+				throw new Exception(__('Could not open the destination directory for writing!', $this->textdomain));
 			}
 			
 			$source_dir = $this->chg_directory_separator(trailingslashit($source_dir));
@@ -659,15 +611,20 @@ class WP_Backuper {
 		if (file_exists($zip_file))
 			@unlink($zip_file);
 
+		if( $this->options['artificialdelay'] ) {
+			$last_time = time();
+		} else {
+			$last_time = false;
+		}
+			
 		$wp_dir    = basename($this->wp_dir) . DIRECTORY_SEPARATOR;
-		$dump_file = basename($this->dump_file);
-
+		$last_time = time();
+		
 		try {
-			$dump_file  = $source_dir . DIRECTORY_SEPARATOR . $dump_file;
-			$source_dir = $source_dir . DIRECTORY_SEPARATOR . $wp_dir;
-
 			if (class_exists('ZipArchive') && $this->option['disableziparchive'] != 'on') {
 				$this->write_log_file( __('Using ZipArchive class.', $this->textdomain) );
+				$this->write_log_file( sprintf( __('Creating %s.', $this->textdomain), $zip_file ) );
+				
 				$zip = new ZipArchive;
 				if ( $zip->open($zip_file, ZipArchive::CREATE) === TRUE ) {
 					$zip->addEmptyDir($parent);
@@ -675,28 +632,40 @@ class WP_Backuper {
 						$this->currentcount++;
 						$this->percentage += $this->increment;
 						
-						if( round( $this->percentage ) > $this->last_percentage ) {
-							$this->last_percentage = round( $this->percentage );
-							$this->write_status_file( $this->last_percentage, sprintf( __("Archiving %s...", $this->textdomain), realpath($file) ) );
+						$current_file = realpath( $file );
+
+						if( $last_time != false ) {
+							$cur_time = time();
+							if( $cur_time - $last_time > 10 ) {
+								$this->write_log_file( __("Artificial delay of .25 sec...", $this->textdomain) );
+								$last_time = $cur_time;
+								usleep(250000);
+							}
 						}
 					
-						$this->write_log_file( sprintf( __("Archiving %s...", $this->textdomain), realpath($file) ) );
+						if( round( $this->percentage ) > $this->last_percentage ) {
+							$this->last_percentage = round( $this->percentage );
+							$this->write_status_file( $this->last_percentage, sprintf( __("Archiving %s...", $this->textdomain), $current_file ) );
+						}
 					
-						if ( !is_dir($source_dir.$file) )
-							$zip->addFile($source_dir.$file, $wp_dir.$file);
+						$this->write_log_file( sprintf( __("Archiving %s...", $this->textdomain), $current_file ) );
+					
+						if ( !is_dir($current_file) )
+							$zip->addFile($current_file, $wp_dir.$file);
 					}
 
-					if (file_exists($dump_file)) {
+					if (file_exists($this->dump_file)) {
 						$this->write_log_file( __("Archiving SQL dump...", $this->textdomain) );
 						$this->write_status_file( $this->last_percentage, __("Archiving SQL dump...", $this->textdomain) );
 
-						$zip->addFile($dump_file, basename($this->dump_file));
+						$this->write_log_file( sprintf( __("src: %s dst: %s", $this->textdomain), $this->dump_file, basename($this->dump_file ) ) );
+						$zip->addFile($this->dump_file, basename($this->dump_file));
 					}
 
 					$zip->close();
 				} else {
-					$this->write_log_file( __('Could not open the backup file for writing!', $this->textdomain) );
-					throw new Exception(__('Could not open the backup file for writing!', $this->textdomain));
+					$this->write_log_file( __('Could not create the archive file!', $this->textdomain) );
+					throw new Exception(__('Could not create the archive file!', $this->textdomain));
 				}
 
 			} else {
@@ -705,40 +674,53 @@ class WP_Backuper {
 
 				$this->write_log_file( __('Using PclZip class.', $this->textdomain) );
 
+				$dir_list = scandir($this->wp_dir);
+				
+				foreach( $dir_list as $file ) {
+					if( substr( $file, 0, 7 ) == 'pclzip-' && substr( $file, -4 ) == '.tmp' ) {
+						$this->write_log_file( sprintf(__('Removing existing PclZip temp file %s...', $this->textdomain), $this->wp_dir.$file ) );
+						@unlink( $this->wp_dir . $file );
+					}
+				}
+					
+				$this->write_log_file( sprintf( __('Creating %s.', $this->textdomain), $zip_file ) );
+
 				$zip = new PclZip($zip_file);
 				
-				$dir_to_strip = $zip_file;
-				$dir_to_strip = realpath( str_replace( '.zip', '', $dir_to_strip ) );
+				$dir_to_strip = dirname($this->wp_dir);
 				
-				$backup_files = array();
 				foreach ($files as $file) {
 					$this->currentcount++;
 					$this->percentage += $this->increment;
+
+					$current_file = realpath( $file );
+					
+						if( $last_time != false ) {
+							$cur_time = time();
+							if( $cur_time - $last_time > 10 ) {
+								$this->write_log_file( __("Artificial delay of .25 sec...", $this->textdomain) );
+								$last_time = $cur_time;
+								usleep(250000);
+							}
+						}
 					
 					if( round( $this->percentage ) > $this->last_percentage ) {
 						$this->last_percentage = round( $this->percentage );
-						$this->write_status_file( $this->last_percentage, sprintf( __("Archiving %s...", $this->textdomain), realpath($file) ) );
+						$this->write_status_file( $this->last_percentage, sprintf( __("Archiving %s...", $this->textdomain), $current_file ) );
 					}
 
-					$this->write_log_file( sprintf( __("Archiving %s...", $this->textdomain), realpath($file) ) );
+					$this->write_log_file( sprintf( __("Archiving %s...", $this->textdomain), $current_file ) );
 					
-					if ( !is_dir($source_dir.$file) )
-						$backup_files[] = str_replace( '\\', '/', realpath($source_dir.$file) );
-
-					if (count($backup_files) > self::ROWS_PER_SEGMENT) {
-						$zip->add(implode(',', $backup_files), PCLZIP_OPT_REMOVE_PATH, $dir_to_strip);
-						$backup_files = array();
-					}
+					if ( !is_dir($current_file) )
+						$zip->add($current_file, PCLZIP_OPT_REMOVE_PATH, $dir_to_strip);
+					
 				}
-				if (count($backup_files) > 0) {
-					$zip->add(implode(',', $backup_files), PCLZIP_OPT_REMOVE_PATH, $dir_to_strip);
-				}
-
-				if (file_exists($dump_file)) {
+				
+				if (file_exists($this->dump_file)) {
 					$this->write_log_file( __("Archiving SQL dump...", $this->textdomain) );
 					$this->write_status_file( $this->last_percentage, __("Archiving SQL dump...", $this->textdomain) );
 					
-					$zip->add($dump_file, PCLZIP_OPT_REMOVE_PATH, $dir_to_strip);
+					$zip->add($this->dump_file, PCLZIP_OPT_REMOVE_PATH, dirname( $this->dump_file ) );
 				}
 			}
 		} catch(Exception $e) {
@@ -753,8 +735,8 @@ class WP_Backuper {
 			
 			return $zip_file;
 		} else {
-			$this->write_log_file(__('Could not open the backup file for writing!', $this->textdomain));
-			throw new Exception(__('Could not open the backup file for writing!', $this->textdomain));
+			$this->write_log_file(__('Archive file does not exist after the backup is complete!', $this->textdomain));
+			throw new Exception(__('Archive file does not exist after the backup is complete!', $this->textdomain));
 		}
 	}
 

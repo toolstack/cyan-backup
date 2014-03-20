@@ -86,10 +86,18 @@ Also the remote server MUST be on the same class 'C' subnet as your web server. 
 4. About page.
 
 == Upgrade Notice ==
-= 1.6.9 =
+= 2.0 =
 * None at this time.
 
 == Changelog == 
+= 2.0 =
+* Added: Artificial delay option for hosting providers that watch CPU usage.
+* Added: PclZip temporary files are both excluded and deleted when found.
+* Updated: Handling of error conditions with the active backup file.
+* Updated: Error messages when generating the zip file now reflect real cause of error.
+* Removed: Requirement for temporary copy of the WordPress directory.
+* Removed: Old code that is no longer used.
+
 = 1.6.9 =
 * Added: Check during json activity check to remove inactive backup.active file.
 * Updated: Reduced the default timeout to keep a backup active without activity to 10 minutes from 30.
@@ -221,6 +229,5 @@ Also the remote server MUST be on the same class 'C' subnet as your web server. 
 * Initial fork from Total Backup.
 
 == Road Map ==
-* 1.7 - Dropbox support
-* 2.0 - Restore support
-* 2.5 - Zip file creation without temp copy
+* 2.5 - Dropbox support
+* 3.0 - Restore support

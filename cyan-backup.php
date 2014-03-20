@@ -415,7 +415,6 @@ class CYANBackup {
 			? array(
 				'./' ,
 				'../' ,
-				WP_Backuper::MAINTENANCE_MODE ,
 				)
 			: (array) $special
 			);
@@ -525,11 +524,17 @@ class CYANBackup {
 				$result = $this->json_backup($userid);
 				break;
 			case 'status':
-				if( time() - filemtime( $this->get_archive_path() . 'backup.active' ) > (60 * 10) ) {
-					unlink( $this->get_archive_path() . 'backup.active' );
-				} else {
 					$status = @file_get_contents( $this->get_archive_path() . 'status.log' );
-					
+
+					if( $status !== FALSE ) {
+						if( file_exists( $this->get_archive_path() . 'backup.active' ) ) {
+							if( time() - filemtime( $this->get_archive_path() . 'backup.active' ) > (60 * 10) ) {
+								unlink( $this->get_archive_path() . 'backup.active' );
+								$status == FALSE;
+							}
+						}
+					}
+
 					if( $status === FALSE ) 
 						{ 
 						$result = array( 
@@ -553,7 +558,6 @@ class CYANBackup {
 
 						$result['backup_size'] = number_format((float)$result['backup_size'], 2) . ' MB';
 						}
-					}
 					
 				break;
 			default:
