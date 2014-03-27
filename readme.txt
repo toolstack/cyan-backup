@@ -5,7 +5,7 @@ Author URI: http://toolstack.com
 Tags: Backup, Schedule, FTP, SFTP, SCP, FTPS, remote storage
 Requires at least: 2.9
 Tested up to: 3.8.1
-Stable tag: 2.0
+Stable tag: 2.0.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -90,6 +90,9 @@ Also the remote server MUST be on the same class 'C' subnet as your web server. 
 * None at this time.
 
 == Changelog == 
+= 2.0.1 =
+* Fixed: Force ssl code checking the wrong option.
+
 = 2.0 =
 * Added: Artificial delay option for hosting providers that watch CPU usage.
 * Added: PclZip temporary files are both excluded and deleted when found.
