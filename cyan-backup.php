@@ -801,10 +801,11 @@ class CYANBackup {
 	public function add_admin_head_main() {
 		list($userid, $username) = $this->get_current_user();
 		$userid = (int)$userid;
+		$option = (array)get_option($this->option_name);
 
 		$site_url = trailingslashit(function_exists('home_url') ? home_url() : get_option('home'));
 		
-		if( get_option('forcessl') ) {
+		if( $option['forcessl'] == 'on' ) {
 			$site_url = str_ireplace( 'http://', 'https://', $site_url );
 		}
 		
@@ -846,7 +847,6 @@ class CYANBackup {
 			$nonces_3 .= "'{$key}':'{$val}',\n";
 		}
 		
-		$option = (array)get_option($this->option_name);
 		$archive_path = $this->get_archive_path($option);
 
 ?>
