@@ -5,7 +5,7 @@ Author URI: http://toolstack.com
 Tags: Backup, Schedule, FTP, SFTP, SCP, FTPS, remote storage
 Requires at least: 2.9
 Tested up to: 3.8.1
-Stable tag: 2.0.1
+Stable tag: 2.0.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -86,10 +86,14 @@ Also the remote server MUST be on the same class 'C' subnet as your web server. 
 4. About page.
 
 == Upgrade Notice ==
-= 2.0 =
+= 2.0.2 =
 * None at this time.
 
 == Changelog == 
+= 2.0.2 =
+* Fixed: Recursive remote directory creation in phpseclib SFTP protocol provider.
+* Removed: Spurious debug log message in backup log file.
+
 = 2.0.1 =
 * Fixed: Force ssl code checking the wrong option.
 
