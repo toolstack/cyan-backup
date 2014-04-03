@@ -16,18 +16,30 @@ if( class_exists( 'Net_SFTP' ) ) {
 	
 	if( $sftp_connection !== FALSE ) {
 		if( $sftp_connection->login( $remote_settings['username'], $final_password ) !== FALSE ) {
-			// The phpseclib needs to have the destination as a relitive path to the users home directory, so strip the leading
+			// The phpseclib needs to have the destination as a relative path to the users home directory, so strip the leading
 			// directory marker if it exists.
 			if( substr($final_dir, 0, 1) == '/' ) { $rel_final_dir = substr($final_dir,1); } else { $rel_final_dir = $final_dir; }
-
-			// Make sure the remote directory exists.
-			$sftp_connection->mkdir( $rel_final_dir );
-
+			
+			// Make sure the remote directory exists, phpseclib->mkdir() doesn't support recursive directories, so do it manually.
+			$parts = explode( '/', $final_dir );
+			
+			// Get the current working directory so we can return to it later.
+			$cwd = $sftp_connection->pwd();
+			
+			foreach( $parts as $part ) {
+				if( !$sftp_connection->chdir( $part ) ) {
+					$sftp_connection->mkdir( $part );
+					$sftp_connection->chdir( $part );
+				}
+			}
+			
+			// Go back to where we started.
+			$sftp_connection->chdir( $cwd );
+			
 			$result = $sftp_connection->put( $rel_final_dir . $filename, $archive, NET_SFTP_LOCAL_FILE );
 			
 			// If we have been told to send the log file as well, let's do that now.
 			if( $remote_settings['sendlog'] == 'on' ) {
-				$this->write_debug_log( 'put: dest = ' . $rel_final_dir . $logname . ' src = ' . $log );
 				$sftp_connection->put( $rel_final_dir . $logname, $log, NET_SFTP_LOCAL_FILE );
 			}
 		}
