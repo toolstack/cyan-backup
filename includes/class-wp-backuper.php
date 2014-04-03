@@ -658,7 +658,6 @@ class WP_Backuper {
 						$this->write_log_file( __("Archiving SQL dump...", $this->textdomain) );
 						$this->write_status_file( $this->last_percentage, __("Archiving SQL dump...", $this->textdomain) );
 
-						$this->write_log_file( sprintf( __("src: %s dst: %s", $this->textdomain), $this->dump_file, basename($this->dump_file ) ) );
 						$zip->addFile($this->dump_file, basename($this->dump_file));
 					}
 
