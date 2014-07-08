@@ -469,14 +469,14 @@
 	<h2><?php _e('CYAN Backup Options', $this->textdomain);?></h2>
 
 	<form method="post" id="option_update" action="<?php echo $this->admin_action;?>-options">
-	<div id="tabs">
-		<ul>
-			<li><a href="#fragment-1"><span><?php _e('Directory Options', $this->textdomain);?></span></a></li>
-			<li><a href="#fragment-2"><span><?php _e('Log Options', $this->textdomain);?></span></a></li>
-			<li><a href="#fragment-3"><span><?php _e('Schedule Options', $this->textdomain);?></span></a></li>
-			<li><a href="#fragment-4"><span><?php _e('Storage Maintenance', $this->textdomain);?></span></a></li>
-			<li><a href="#fragment-5"><span><?php _e('Remote Storage', $this->textdomain);?></span></a></li>
-			<li><a href="#fragment-6"><span><?php _e('Clear Active Backup', $this->textdomain);?></span></a></li>
+	<div id="tabs" class="ui-tabs ui-widget ui-widget-content ui-corner-all">
+		<ul class="ui-tabs-nav ui-helper-reset ui-helper-clearfix ui-widget-header ui-corner-all">
+			<li class="ui-state-default ui-corner-top ui-tabs-active ui-state-active ui-state-focus"><a class="ui-tabs-anchor" href="#fragment-1"><span><?php _e('Directory Options', $this->textdomain);?></span></a></li>
+			<li class="ui-state-default ui-corner-top"><a class="ui-tabs-anchor" href="#fragment-2"><span><?php _e('Log Options', $this->textdomain);?></span></a></li>
+			<li class="ui-state-default ui-corner-top"><a class="ui-tabs-anchor" href="#fragment-3"><span><?php _e('Schedule Options', $this->textdomain);?></span></a></li>
+			<li class="ui-state-default ui-corner-top"><a class="ui-tabs-anchor" href="#fragment-4"><span><?php _e('Storage Maintenance', $this->textdomain);?></span></a></li>
+			<li class="ui-state-default ui-corner-top"><a class="ui-tabs-anchor" href="#fragment-5"><span><?php _e('Remote Storage', $this->textdomain);?></span></a></li>
+			<li class="ui-state-default ui-corner-top"><a class="ui-tabs-anchor" href="#fragment-6"><span><?php _e('Clear Active Backup', $this->textdomain);?></span></a></li>
 		</ul>
 
 		<div id="fragment-1">
