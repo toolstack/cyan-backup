@@ -804,9 +804,11 @@ class CYANBackup {
 		$option = (array)get_option($this->option_name);
 
 		$site_url = trailingslashit(function_exists('home_url') ? home_url() : get_option('home'));
-		
-		if( $option['forcessl'] == 'on' ) {
-			$site_url = str_ireplace( 'http://', 'https://', $site_url );
+
+		if( array_key_exists( 'forcessl', $option ) ) {
+			if( $option['forcessl'] == 'on' ) {
+				$site_url = str_ireplace( 'http://', 'https://', $site_url );
+			}
 		}
 		
 		$json_backup_url  = $site_url;

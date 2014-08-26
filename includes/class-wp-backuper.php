@@ -57,6 +57,8 @@ class WP_Backuper {
 				),
 			$this->get_excluded_dir($excluded)
 			);
+
+		if( !array_key_exists( 'emaillog', $this->option ) ) { $this->option['emaillog'] = 'off'; }
 		
 		if( $this->option['emaillog'] == 'on' ) {
 			$this->email_sendto = $this->option['sendto'];
