@@ -614,20 +614,28 @@ class CYANBackup {
 	public function scheduled_backup() {
 		$remote_backuper = $this->remote_backuper();
 
+		$this->write_debug_log( "Starting backup" );
 		// Run the backup.
 		$result = $remote_backuper->wp_backup();
+		$this->write_debug_log( "Completed backup" );
 
 		// Get the options.
 		$options = (array)get_option($this->option_name);
 
+		$this->write_debug_log( "Starting next schedule" );
 		// Determine the next backup time.
 		$this->schedule_next_backup();
-		
+		$this->write_debug_log( "SCompleted next schedule" );
+
+		$this->write_debug_log( "Starting transfer" );
 		// Send the backup to remote storage.
 		$this->transfer_backups( $result['backup'], $options['remote'], 'schedule' );
+		$this->write_debug_log( "Completed transfer" );
 
+		$this->write_debug_log( "Starting pruning" );
 		// Prune existing backup files as per the options.
 		$this->prune_backups( $options['prune']['number'] );
+		$this->write_debug_log( "Completed pruning" );
 	}
 
 	private function transfer_backups( $archive, $remote_settings, $source ) {
@@ -1461,13 +1469,83 @@ jQuery(function($){
 			$getdata = $this->get_real_get_data();
 				
 			if (($file = realpath($getdata['download'])) !== FALSE) {
+				
 				if( strtolower( substr( $file, -4 ) ) == ".log" ) {
 					header("Content-Type: text/plain;");
 				} else {
 					header("Content-Type: application/octet-stream;");
 				}
-				header("Content-Disposition: attachement; filename=".urlencode(basename($file)));
-				readfile($file);
+				header("Content-Disposition: attachment; filename=".urlencode(basename($file)));
+
+				// The following code is in place as, while readfile() doesn't use memory to read the contents, if output buffering
+				// is enabled it will buffer our output of the file, which can cause an out of memory condition for large backups.
+				
+				// Default buffer is 2meg, max is 20meg.
+				$buffer_size = 2048000;
+				$max_buffer_size = 20480000;
+				
+				$php_limit = ini_get('memory_limit');
+
+				// The ini file might have some text like KB to indicate the size so replace it with some zeros now.
+				$php_limit = str_ireplace('KB', '000', $php_limit );
+				$php_limit = str_ireplace('MB', '000000', $php_limit );
+				$php_limit = str_ireplace('GB', '000000000', $php_limit );
+				$php_limit = str_ireplace('K', '000', $php_limit );
+				$php_limit = str_ireplace('M', '000000', $php_limit );
+				$php_limit = str_ireplace('G', '000000000', $php_limit );
+
+				// Let's make sure the number is a real integer.
+				$php_limit = intval( $php_limit );
+
+				// Let's get the current memory usage
+				$current_usage = memory_get_usage( true );
+				$remaining = $php_limit - $current_usage;
+
+				$filesize = filesize( $file );
+				
+				// If the file size is less than the remaining memory (plus a 20% buffer ), then we can use readfile()
+				if( ( $filesize * 1.2 ) < $remaining ) {
+					readfile($file);
+				}
+				else {
+					// If the remaining memory is greater than the current buffer size, change the buffer size.
+					if( $remaining > $buffer_size ) {
+						// if the remaining memory is greater than the max buffer size, use the max buffer size.
+						if( $remaining > $max_buffer_size ) {
+							$buffer_size = $max_buffer_size;
+						}
+						else {
+							// Only use 80% of the remaining memory to ensure we don't fault out.
+							$buffer_size = $remaining * .8;
+						}
+					}
+				
+					// Now divide the buffer size by 2 as we're going to have 2 copies of the data in memory at any
+					// givin time (one from the fread, one in the output buffer.
+					$buffer_size = $buffer_size / 2;
+				
+					// Open the file for reading.
+					$fh = fopen( $file, 'rb' );
+				
+					// Loop through.
+					while( !feof( $fh ) && $fh !== false ) {
+						// Read a chunk of the file in to memory.
+						$buffer = fread( $fh, $buffer_size );
+						
+						// Output the contents of the chunk.
+						print( $buffer );
+						
+						// Make sure we free the temporary buffer.
+						unset( $buffer );
+
+						// Make sure we've flushed the output buffer.
+						ob_flush();
+						flush();
+					}
+					
+					// Close the file.
+					fclose( $fh );
+				}
 			} else {
 				header("HTTP/1.1 404 Not Found");
 				wp_die(__('File not Found: ' . $getdata['download'], $this->textdomain));
