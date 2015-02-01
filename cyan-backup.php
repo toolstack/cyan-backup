@@ -614,28 +614,28 @@ class CYANBackup {
 	public function scheduled_backup() {
 		$remote_backuper = $this->remote_backuper();
 
-		$this->write_debug_log( "Starting backup" );
+		//$this->write_debug_log( "Starting backup" );
 		// Run the backup.
 		$result = $remote_backuper->wp_backup();
-		$this->write_debug_log( "Completed backup" );
+		//$this->write_debug_log( "Completed backup" );
 
 		// Get the options.
 		$options = (array)get_option($this->option_name);
 
-		$this->write_debug_log( "Starting next schedule" );
+		//$this->write_debug_log( "Starting next schedule" );
 		// Determine the next backup time.
 		$this->schedule_next_backup();
-		$this->write_debug_log( "SCompleted next schedule" );
+		//$this->write_debug_log( "Completed next schedule" );
 
-		$this->write_debug_log( "Starting transfer" );
+		//$this->write_debug_log( "Starting transfer" );
 		// Send the backup to remote storage.
 		$this->transfer_backups( $result['backup'], $options['remote'], 'schedule' );
-		$this->write_debug_log( "Completed transfer" );
+		//$this->write_debug_log( "Completed transfer" );
 
-		$this->write_debug_log( "Starting pruning" );
+		//$this->write_debug_log( "Starting pruning" );
 		// Prune existing backup files as per the options.
 		$this->prune_backups( $options['prune']['number'] );
-		$this->write_debug_log( "Completed pruning" );
+		//$this->write_debug_log( "Completed pruning" );
 	}
 
 	private function transfer_backups( $archive, $remote_settings, $source ) {
