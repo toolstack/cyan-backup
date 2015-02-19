@@ -221,7 +221,10 @@
 				if( !function_exists( 'mcrypt_encrypt' ) ) {
 					$CYANUtil->record_notes( __('mcrypt library is not installed so passwords cannot be encrypted before being stored in the database.  Your remote storage password will be stored in clear text!  Please install mcrypt and re-save your configuration.', $this->textdomain), 1);
 				}
-				
+
+				// WordPress escapes form data no matter what the setting of magic quotes is in PHP (http://www.theblog.ca/wordpress-addslashes-magic-quotes).
+				$options['remote']['password'] = stripslashes( $options['remote']['password'] );
+
 				// Encrpyt the password for storage in the database.
 				$options['remote']['password'] = $this->encrypt_password( $options['remote']['password'] );
 			}
