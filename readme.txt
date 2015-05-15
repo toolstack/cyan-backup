@@ -91,19 +91,23 @@ Also the remote server MUST be on the same class 'C' subnet as your web server. 
 
 == Changelog == 
 = 2.1 =
+* Release date: February 1, 2015
 * Fixed: Download of large backups would fail if the filesize was larger than the available memory and output buffering was enabled.
 * Fixed: Various WP DEBUG warnings.
 * Updated: CSS information for tabs.
 * Updated: Moved screenshots to assets directory.
 
 = 2.0.2 =
+* Release date: April 3, 2014
 * Fixed: Recursive remote directory creation in phpseclib SFTP protocol provider.
 * Removed: Spurious debug log message in backup log file.
 
 = 2.0.1 =
+* Release date: March 27, 2014
 * Fixed: Force ssl code checking the wrong option.
 
 = 2.0 =
+* Release date: March 20, 2014
 * Added: Artificial delay option for hosting providers that watch CPU usage.
 * Added: PclZip temporary files are both excluded and deleted when found.
 * Updated: Handling of error conditions with the active backup file.
@@ -112,33 +116,41 @@ Also the remote server MUST be on the same class 'C' subnet as your web server. 
 * Removed: Old code that is no longer used.
 
 = 1.6.9 =
+* Release date: March 15, 2014
 * Added: Check during json activity check to remove inactive backup.active file.
 * Updated: Reduced the default timeout to keep a backup active without activity to 10 minutes from 30.
 * Removed: Debug logging if PclZip routine was used.
 
 = 1.6.8 =
+* Release date: March 13, 2014
 * Added: Option to disable use ZipArchive of extension and use PclZip instead.
 * Fixed: PclZip now functions correctly.
 
 = 1.6.7 =
+* Release date: March 13, 2014
 * Added: phplibsec SFTP implantation, this library does not require any PHP modules so it is available on all installations.
 * Fixed: Incorrect variable name in SFTP Library code.
 
 = 1.6.6 =
+* Release date: March 11, 2014
 * Added: Option to force SSL connections for AJAX backups.
 
 = 1.6.5 =
+* Release date: March 11, 2014
 * Fixed: Bug with new recursive remove function on the option page.
 
 = 1.6.4 =
+* Release date: March 10, 2014
 * Fixed: Issue with getting file list to backup including '.' and '..'.
 
 = 1.6.3 =
+* Release date: March 10, 2014
 * Added: Settings page now divided in to tabs.
 * Updated: Added additional logging during backups.
 * Fixed: Excluded root directories would also match sub directories of the same name.
 
 = 1.6.2 =
+* Release date: March 6, 2014
 * Added: Option to delete temporary files from failed backups.
 * Added: More error messages to the log file.
 * Updated: Clear active backup status now also deletes the status.log file.
@@ -148,18 +160,22 @@ Also the remote server MUST be on the same class 'C' subnet as your web server. 
 * Fixed: Issue with ftps-wrappers not creating subdirectories recursively.
 
 = 1.6.1 =
+* Release date: February 25, 2014
 * Fixed: Deletion of backups failed on some platforms depending on the version of PHP.
 * Fixed: FTPS Library code not executing.
 
 = 1.6 =
+* Release date: February 18, 2014
 * Added: Remote storage provider: SFTP/SCP (Secure File Transfer via SSH).
 * Fixed: FTPS Library missing close brace.
 
 = 1.5 =
+* Release date: February 18, 2014
 * Added: Remote storage provider: FTPS (FTP via SSL/TLS).
 * Fixed: Log file not sending if the FTP server was still processing the zip file transfer.
 
 = 1.4 =
+* Release date: February 18, 2014
 * Added: Remote storage to local FTP server.
 * Added: Help screen to the options page.
 * Added: Additional checks for bad configurations of the archive path, including the WordPress root and admin directories.
@@ -167,23 +183,28 @@ Also the remote server MUST be on the same class 'C' subnet as your web server. 
 * Fixed: Missing directory name in non-writable archive path error message.
 
 = 1.3 =
+* Release date: February 17, 2014
 * Added: E-Mail notifications.
 * Updated: Manual backups now add the log download link to the backup list.
 * Updated: Backup list formatting change for better display on smaller displays.
 
 = 1.2.1 =
+* Release date: February 17, 2014
 * Added: Log file deletion when zip is deleted.
 * Fixed: Deletion of files through the backups page now works again.
 * Fixed: Spurious error when deleting files.
 
 = 1.2 =
+* Release date: February 17, 2014
 * Added: Log file creation and download support.
 * Removed: Duplicate download hook in backup class.
 
 = 1.1.1 =
+* Release date: February 17, 2014
 * Fixed: Spinning icon while backing up disappeared after first update of the progress bar.
 
 = 1.1 =
+* Release date: February 16, 2014
 * Added: Progress bar when manually backing up.
 * Added: Code to avoid executing two backups at the same time.
 * Added: When a backup is running and you go to the backup page, the current status will be displayed.
@@ -192,13 +213,16 @@ Also the remote server MUST be on the same class 'C' subnet as your web server. 
 * Removed: Old Windows based zip routine.  Now always use a PHP based library.
 
 = 1.0 =
+* Release date: February 14, 2014
 * Updated: Upgrade function now updates the schedule between V0.5 and V0.6 style configuration settings. 
 
 = 0.7 =
+* Release date: February 13, 2014
 * Fixed: Exclusion buttons in options.
 * Updated: Translation files.
 
 = 0.6 =
+* Release date: February 13, 2014
 * Added: Check to see if web access to archive directory is enabled if it is inside of the WordPress directory.
 * Added: Automatic addition of archive directory to the excluded directories list if it is inside of the WordPress directory.
 * Added: Buttons to create .htaccess and Web.Config files in the archive directory.
@@ -212,6 +236,7 @@ Also the remote server MUST be on the same class 'C' subnet as your web server. 
 * Fixed: File times were being reported incorrectly due to GMT offset being applied twice.
 
 = 0.5 =
+* Release date: February 10, 2014
 * Renamed: Total Backup code base to CYAN backup.
 * Added: About page.
 * Added: check/uncheck all backup files checkbox.
@@ -230,15 +255,19 @@ Also the remote server MUST be on the same class 'C' subnet as your web server. 
 * Updated: Added additional information to several error messages to make them clearer.
 
 = 0.4 =
+* Release date: Never released
 * Added: backup pruning.
 
 = 0.3 =
+* Release date: Never released
 * Added: scheduler backend.
 
 = 0.2 =
+* Release date: Never released
 * Fixed: support for PHP 5.3 with Magic Quotes GPC enabled.
 
 = 0.1 =
+* Release date: Never released
 * Initial fork from Total Backup.
 
 == Road Map ==
