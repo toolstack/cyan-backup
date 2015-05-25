@@ -366,6 +366,9 @@ class WP_Backuper {
 				}
 			} 
 
+			if( $this->option['disabledbbackup'] == true ) 
+				$db_backup = FALSE;
+			
 			// Create a semaphore file to indicate we're active.
 			$active_backup = fopen( $active_filename, 'w' );
 			fwrite( $active_backup, "placeholder\n" );
@@ -378,8 +381,10 @@ class WP_Backuper {
 			$this->open_log_file( $archive_path . $filename . '.log' );
 			$this->write_log_file( __('Calculating backup size...', $this->textdomain) );
 
+			$sqlrowcount = 0;
 			// get SQL rows.
-			$sqlrowcount = $this->get_sql_row_count();
+			if( $db_backup )
+				$sqlrowcount = $this->get_sql_row_count();
 			
 			// get files
 			$this->files = $files = $this->get_files($this->wp_dir, $this->excluded);
@@ -394,7 +399,7 @@ class WP_Backuper {
 			$this->write_log_file( __('Backup started, processing SQL tables...', $this->textdomain) );
 
 			// DB backup
-			if ($db_backup)
+			if( $db_backup )
 				$this->dump_file = $this->wpdb_dump($archive_path, $archive_prefix);
 
 			$this->write_status_file( $this->last_percentage, __('Archiving files...', $this->textdomain));
@@ -613,14 +618,10 @@ class WP_Backuper {
 		if (file_exists($zip_file))
 			@unlink($zip_file);
 
-		if( $this->options['artificialdelay'] ) {
-			$last_time = time();
-		} else {
-			$last_time = false;
-		}
-			
 		$wp_dir    = basename($this->wp_dir) . DIRECTORY_SEPARATOR;
 		$last_time = time();
+		$cur_time = $last_time;
+		$last_count = $this->currentcount;
 		
 		try {
 			if (class_exists('ZipArchive') && $this->option['disableziparchive'] != 'on') {
@@ -636,11 +637,12 @@ class WP_Backuper {
 						
 						$current_file = realpath( $file );
 
-						if( $last_time != false ) {
+						if( $this->option['artificialdelay'] ) {
 							$cur_time = time();
-							if( $cur_time - $last_time > 10 ) {
+							if( $cur_time - $last_time > 10 || $this->currentcount - $last_count > 100) {
 								$this->write_log_file( __("Artificial delay of .25 sec...", $this->textdomain) );
 								$last_time = $cur_time;
+								$last_count = $this->currentcount;
 								usleep(250000);
 							}
 						}
@@ -696,11 +698,12 @@ class WP_Backuper {
 
 					$current_file = realpath( $file );
 					
-						if( $last_time != false ) {
+						if( $this->option['artificialdelay'] ) {
 							$cur_time = time();
-							if( $cur_time - $last_time > 10 ) {
+							if( $cur_time - $last_time > 10 || $this->currentcount - $last_count > 100) {
 								$this->write_log_file( __("Artificial delay of .25 sec...", $this->textdomain) );
 								$last_time = $cur_time;
+								$last_count = $this->currentcount;
 								usleep(250000);
 							}
 						}

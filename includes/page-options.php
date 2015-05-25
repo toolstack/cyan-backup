@@ -114,6 +114,10 @@
 		if( isset( $_POST['disableziparchive'] ) ) {
 			$options['disableziparchive'] = $_POST['disableziparchive'];
 		}
+		
+		if( isset( $_POST['disabledbbackup'] ) ) {
+			$options['disabledbbackup'] = $_POST['disabledbbackup'];
+		}
 
 		if( isset( $_POST['artificialdelay'] ) ) {
 			$options['artificialdelay'] = $_POST['artificialdelay'];
@@ -457,7 +461,7 @@
 	$current_time = time();
 	
 	// If the next scheduled backup is over an hour in the past, it's probably broken, let the user know.
-	if( $next_schedule < $current_time - 3600 ) {
+	if( ( $next_schedule < $current_time - 3600 ) && $option['schedule']['enabled'] ) {
 		$CYANUtil->record_notes( __('The next scheduled backup job is in the past, WP Cron may be broken.  If it does not execute shortly, you may want to disable and then re-enable scheduled backup jobs to re-create the WP Cron entry.', $this->textdomain), 1 );
 	}
 	
@@ -511,6 +515,13 @@
 						</td>
 					</tr>
 <?php }?>
+					<tr>
+						<th><?php _e('Disable DB Backup', $this->textdomain);?></th>
+
+						<td>
+							<input type=checkbox id="disabledbbackup" name="disabledbbackup"<?php if( $option['disabledbbackup'] == 'on' ) { echo ' CHECKED'; }?>>
+						</td>
+					</tr>
 					<tr>
 						<th><?php _e('Archive path', $this->textdomain);?></th>
 
