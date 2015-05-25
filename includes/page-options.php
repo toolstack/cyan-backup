@@ -527,8 +527,11 @@
 
 						<td>
 							<input type="text" name="archive_path" id="archive_path" size="100" value="<?php echo htmlentities($archive_path);?>" /><br><br>
-							<input class="button" id="Createhtaccess" name="Createhtaccess" type="submit" value="<?php _e('Create .htaccess File', $this->textdomain);?>">&nbsp;
+<?php GLOBAL $is_iis; if( !$is_iis ) {?>
+							<input class="button" id="Createhtaccess" name="Createhtaccess" type="submit" value="<?php _e('Create .htaccess File', $this->textdomain);?>">
+<?php } else {?>
 							<input class="button" id="CreateWebConfig" name="CreateWebConfig" type="submit" value="<?php _e('Create WebConfig File', $this->textdomain);?>">
+<?php }?>
 						</td>
 					</tr>
 
