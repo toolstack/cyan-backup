@@ -86,10 +86,17 @@ Also the remote server MUST be on the same class 'C' subnet as your web server. 
 4. About page.
 
 == Upgrade Notice ==
-= 2.1 =
+= 2.2 =
 * None at this time.
 
 == Changelog == 
+= 2.2 =
+* Release date: TBD
+* Added: Option to exclude the database from the backup.
+* Fixed: Make sure the warning about the next scheduled backup is in the past is only displayed when the schedule is enabled.
+* Fixed: The artificial delay option not working.
+* Updated: Artificial delay option to delay every one hundred files or (as before) every ten seconds, which ever happens first.
+
 = 2.1 =
 * Release date: February 1, 2015
 * Fixed: Download of large backups would fail if the filesize was larger than the available memory and output buffering was enabled.
