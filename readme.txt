@@ -96,6 +96,7 @@ Also the remote server MUST be on the same class 'C' subnet as your web server. 
 * Fixed: Make sure the warning about the next scheduled backup is in the past is only displayed when the schedule is enabled.
 * Fixed: The artificial delay option not working.
 * Updated: Artificial delay option to delay every one hundred files or (as before) every ten seconds, which ever happens first.
+* Updated: Detect what kind of web server is being run and only display the required directory configuration button for it.
 
 = 2.1 =
 * Release date: February 1, 2015
