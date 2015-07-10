@@ -93,10 +93,13 @@ Also the remote server MUST be on the same class 'C' subnet as your web server. 
 = 2.2 =
 * Release date: TBD
 * Added: Option to exclude the database from the backup.
-* Added: Option to split the database tables in to separate files instead of a sinlge large one.
+* Added: Option to split the database tables in to separate files instead of a single large one.
 * Added: Option to define the prefix of the archive file name.
+* Added: Artificial delay between export of sql tables.
 * Fixed: Make sure the warning about the next scheduled backup is in the past is only displayed when the schedule is enabled.
 * Fixed: The artificial delay option not working.
+* Fixed: Passwords for remote storage with special characters would not be saved correctly.
+* Fixed: The wp-admin button on the exclude directories had a typo in it and added the wrong directory name.
 * Updated: When going in to the option page, if a backup has been running for at least 12 hours, automatically clear the active backup status.
 * Updated: Artificial delay option to delay every one hundred files or (as before) every ten seconds, which ever happens first.
 * Updated: Detect what kind of web server is being run and only display the required directory configuration button for it.
