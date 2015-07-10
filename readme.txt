@@ -5,7 +5,7 @@ Author URI: http://toolstack.com
 Tags: Backup, Schedule, FTP, SFTP, SCP, FTPS, remote storage
 Requires at least: 2.9
 Tested up to: 4.2
-Stable tag: 2.1
+Stable tag: 2.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -91,7 +91,7 @@ Also the remote server MUST be on the same class 'C' subnet as your web server. 
 
 == Changelog == 
 = 2.2 =
-* Release date: TBD
+* Release date: July 10, 2015
 * Added: Option to exclude the database from the backup.
 * Added: Option to split the database tables in to separate files instead of a single large one.
 * Added: Option to define the prefix of the archive file name.
