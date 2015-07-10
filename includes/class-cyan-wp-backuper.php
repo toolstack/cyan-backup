@@ -885,7 +885,12 @@ class CYAN_WP_Backuper {
 				// backup tables
 				foreach ($core_tables as $table) {
 					$this->table_dump($fp, $table);
+					
+					if( $this->option['artificialdelay'] ) {
+						usleep(250000);
+					}
 				}
+				
 				fclose($fp);
 			} else {
 				$this->error[] = __('Could not open the db dump file for writing!', $this->textdomain);
@@ -996,7 +1001,7 @@ class CYAN_WP_Backuper {
 			$row_inc = self::ROWS_PER_SEGMENT;
 			$row_start = $segment * self::ROWS_PER_SEGMENT;
 
-			// spam or rivision excluded
+			// spam or revision excluded
 			$where = '';
 			if ( preg_match('/comments$/i', $table) ) {
 				$where = ' WHERE comment_approved != "spam"';
