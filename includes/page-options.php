@@ -14,7 +14,7 @@
 	$excluded_dir = $this->get_excluded_dir($option, array());
 	$content_dir  = $this->chg_directory_separator(WP_CONTENT_DIR . "/", FALSE);
 	$abspath  	  = $this->chg_directory_separator(ABSPATH, FALSE);
-	$admin_dir    = $this->chg_directory_separator($abspath . 'wp-admim/', FALSE);
+	$admin_dir    = $this->chg_directory_separator($abspath . 'wp-admin/', FALSE);
 	
 	// Create the .htaccess or WebConfig files
 	if (isset($_POST['CreateWebConfig']) || isset($_POST['Createhtaccess'])) {
