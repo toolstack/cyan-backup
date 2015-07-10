@@ -3,6 +3,8 @@
 	if( !is_admin() )
 		wp_die(__('Access denied!', $this->textdomain));
 
+	$this->verify_status_file();
+	
 	include_once('class-cyan-utilities.php');
 	
 	$CYANUtil = new CYAN_Utilities;
@@ -10,11 +12,12 @@
 	$nonce_field = 'option_update';
 
 	$option = (array)get_option($this->option_name);
-	$archive_path = $this->get_archive_path($option);
-	$excluded_dir = $this->get_excluded_dir($option, array());
-	$content_dir  = $this->chg_directory_separator(WP_CONTENT_DIR . "/", FALSE);
-	$abspath  	  = $this->chg_directory_separator(ABSPATH, FALSE);
-	$admin_dir    = $this->chg_directory_separator($abspath . 'wp-admin/', FALSE);
+	$archive_path   = $this->get_archive_path($option);
+	$archive_prefix = $this->get_archive_prefix($option);
+	$excluded_dir   = $this->get_excluded_dir($option, array());
+	$content_dir    = $this->chg_directory_separator(WP_CONTENT_DIR . "/", FALSE);
+	$abspath  	    = $this->chg_directory_separator(ABSPATH, FALSE);
+	$admin_dir      = $this->chg_directory_separator($abspath . 'wp-admin/', FALSE);
 	
 	// Create the .htaccess or WebConfig files
 	if (isset($_POST['CreateWebConfig']) || isset($_POST['Createhtaccess'])) {
@@ -119,6 +122,10 @@
 			$options['disabledbbackup'] = $_POST['disabledbbackup'];
 		}
 
+		if( isset( $_POST['splitdbbackup'] ) ) {
+			$options['splitdbbackup'] = $_POST['splitdbbackup'];
+		}
+
 		if( isset( $_POST['artificialdelay'] ) ) {
 			$options['artificialdelay'] = $_POST['artificialdelay'];
 		}
@@ -163,6 +170,32 @@
 				}
 			} else {
 				$CYANUtil->record_notes( sprintf(__('Archive directory ("%s") does not exist!', $this->textdomain), $realpath), 2);
+			}
+		}
+		
+		if ( isset($postdata['archive_prefix']) ) {
+			$temp_prefix = str_replace(DIRECTORY_SEPARATOR, '-', untrailingslashit($postdata['archive_prefix']));
+			
+			if( $temp_prefix != '' ) {
+				$backup_files = $this->get_backup_files();
+
+				if (count($backup_files) > 0) {
+					foreach ($backup_files as $backup_file) {
+						$pinfo = pathinfo( $backup_file );
+
+						$new_bname = $temp_prefix . substr( $pinfo['filename'], strlen( $archive_prefix ) );
+
+						$new_fname = $pinfo['dirname'] . '/' . $new_bname . '.' . $pinfo['extension'];
+						rename( $backup_file, $new_fname );
+	
+						$logname = $pinfo['dirname'] . '/' . $pinfo['filename'] . '.log';
+						$new_lname = $pinfo['dirname'] . '/' . $new_bname . '.log';
+						rename( $logname, $new_lname );
+					}
+				}
+				
+				$archive_prefix = $temp_prefix;
+				$options['archive_prefix'] = $temp_prefix;
 			}
 		}
 		
@@ -516,10 +549,26 @@
 					</tr>
 <?php }?>
 					<tr>
+						<th><?php _e('Split DB backup file', $this->textdomain);?></th>
+
+						<td>
+							<input type=checkbox id="splitdbbackup" name="splitdbbackup"<?php if( $option['splitdbbackup'] == 'on' ) { echo ' CHECKED'; }?>>
+						</td>
+					</tr>
+					<tr>
 						<th><?php _e('Disable DB Backup', $this->textdomain);?></th>
 
 						<td>
 							<input type=checkbox id="disabledbbackup" name="disabledbbackup"<?php if( $option['disabledbbackup'] == 'on' ) { echo ' CHECKED'; }?>>
+						</td>
+					</tr>
+					<tr>
+						<th><?php _e('Archive prefix', $this->textdomain);?></th>
+
+						<td>
+							<input type="text" name="archive_prefix" id="archive_prefix" size="20" value="<?php echo htmlentities($archive_prefix);?>" /><br><br>
+							<?php _e( 'Remember to include a separator at the end of the prifix (like a period or a dash) to make your filenames look nice!', $this->textdomain );?><br><br>
+							<?php _e( 'Note: Existing backups will be renamed to the new prefix.', $this->textdomain );?>
 						</td>
 					</tr>
 					<tr>

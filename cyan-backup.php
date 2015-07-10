@@ -400,15 +400,20 @@ class CYANBackup {
 
 	// get archive prefix
 	private function get_archive_prefix($option = '') {
-		return basename(ABSPATH) . '.';
+		if( is_array( $option ) && array_key_exists( 'archive_prefix', $option ) && $option['archive_prefix'] != '' ) {
+			return $option['archive_prefix'];
+		}
+		else {
+			return basename( ABSPATH ) . '.';
+		}
 	}
-
+	
 	// get excluded dir
 	private function get_excluded_dir($option = '', $special = FALSE) {
 		if (empty($option) || !is_array($option))
 			$option = (array)get_option($this->option_name);
-		if (!class_exists('WP_Backuper'))
-			require_once 'includes/class-wp-backuper.php';
+		if (!class_exists('CYAN_WP_Backuper'))
+			require_once 'includes/class-cyan-wp-backuper.php';
 
 		$excluded =	(
 			$special === FALSE
@@ -432,12 +437,12 @@ class CYANBackup {
 		if (isset($remote_backuper))
 			return $remote_backuper;
 
-		if (!class_exists('WP_Backuper'))
-			require_once 'includes/class-wp-backuper.php';
+		if (!class_exists('CYAN_WP_Backuper'))
+			require_once 'includes/class-cyan-wp-backuper.php';
 
 		if (!$option)
 			$option = (array)get_option($this->option_name);
-		$remote_backuper = new WP_Backuper(
+		$remote_backuper = new CYAN_WP_Backuper(
 			$this->get_archive_path($option) ,
 			$this->get_archive_prefix($option) ,
 			$this->trailingslashit(ABSPATH, FALSE) ,
@@ -1129,19 +1134,38 @@ jQuery(function($){
 	}
 	
 	//**************************************************************************************
-	// sites backup
+	// About page
 	//**************************************************************************************
 	public function about_page() {
 		include_once( 'includes/page-about.php' );
 	}
 	
 	//**************************************************************************************
-	// sites backup
+	// Backup page
 	//**************************************************************************************
 	public function site_backup() {
 		include_once( 'includes/page-backups.php' );
 	}
 
+	//**************************************************************************************
+	// Clear's the backup state if it's been running for more than 12 hours.
+	//**************************************************************************************
+	public function verify_status_file() {
+		$option = (array)get_option($this->option_name);
+		
+		$archive_path   = $this->get_archive_path($option);
+		
+		if( file_exists( $archive_path . 'backup.active' ) ) {
+			$state = filemtime( $archive_path . 'backup.active' );
+		
+			// Check to see if the state file is more than 12 hours stale.
+			if( time() - $state > 43200 ) {
+				@unlink( $archive_path . 'backup.active' );
+				@unlink( $archive_path . 'status.log' );
+			}
+		}
+	}
+	
 	private function get_real_post_data() {
 		// Processing of windows style paths is broken if magic quotes is enabled in php.ini but not enabled during runtime.
 		if( get_magic_quotes_gpc() != get_magic_quotes_runtime() ) {

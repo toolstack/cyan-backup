@@ -3,6 +3,8 @@
 	if( !is_admin() )
 		wp_die(__('Access denied!', $this->textdomain));
 		
+	$this->verify_status_file();
+		
 	$notes = array();
 	$nonce_field = 'backup';
 

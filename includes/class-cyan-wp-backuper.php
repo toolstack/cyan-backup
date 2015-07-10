@@ -1,7 +1,7 @@
 <?php
-if (!class_exists('WP_Backuper')) :
+if (!class_exists('CYAN_WP_Backuper')) :
 
-class WP_Backuper {
+class CYAN_WP_Backuper {
 	private $wp_dir;
 	private $archive_path;
 	private $archive_pre;
@@ -29,7 +29,7 @@ class WP_Backuper {
 
 	const ROWS_PER_SEGMENT = 100;
 	const TIME_LIMIT       = 900;		// 15min * 60sec
-	const EXCLUSION_KEY    = 'WP_Backuper::wp_backup';
+	const EXCLUSION_KEY    = 'CYAN_WP_Backuper::wp_backup';
 	const OPTION_NAME      = 'CYAN Backup Option';
 
 	//**************************************************************************************
@@ -413,11 +413,21 @@ class WP_Backuper {
 			$this->write_log_file( __('Removing temporary files...', $this->textdomain) );
 
 			// Remove DB backup files
-			if ( $db_backup && file_exists($this->dump_file) ) {
+			if ( $db_backup ) {
 				$db_backup = TRUE;
+				
 				if ( file_exists($backup) ) {
 					$this->archive_file = $backup;
-					unlink($this->dump_file);
+
+					if( is_array( $this->dump_file ) ) {
+						foreach( $this->dump_file as $dumpfile ) {
+							if( file_exists( $dumpfile ) ) {
+								unlink( $dumpfile );
+							}
+						}
+					} else {
+						unlink($this->dump_file);
+					}
 				} else {
 					$this->archive_file = FALSE;
 				}
@@ -466,7 +476,7 @@ class WP_Backuper {
 			
 			return array(
 				'backup'    => ($backup && file_exists($backup)) ? $this->archive_file : FALSE ,
-				'db_backup' => $db_backup ? basename($this->dump_file) : FALSE ,
+				'db_backup' => $db_backup ? TRUE : FALSE ,
 				'errors'    => $this->error ,
 				);
 
@@ -658,11 +668,21 @@ class WP_Backuper {
 							$zip->addFile($current_file, $wp_dir.$file);
 					}
 
-					if (file_exists($this->dump_file)) {
+					if ( ( !is_array( $this->dump_file ) && file_exists($this->dump_file) ) 
+						|| ( is_array( $this->dump_file ) && file_exists($this->dump_file[0]) ) ) {
 						$this->write_log_file( __("Archiving SQL dump...", $this->textdomain) );
 						$this->write_status_file( $this->last_percentage, __("Archiving SQL dump...", $this->textdomain) );
 
-						$zip->addFile($this->dump_file, basename($this->dump_file));
+						if( is_array( $this->dump_file ) ) {
+							foreach( $this->dump_file as $dumpfile ) {
+								$zip->addFile($dumpfile, basename($dumpfile));
+								if( $this->option['artificialdelay'] ) {
+									usleep(250000);
+								}
+							}
+						} else {
+							$zip->addFile($this->dump_file, basename($this->dump_file));
+						}
 					}
 
 					$zip->close();
@@ -698,15 +718,15 @@ class WP_Backuper {
 
 					$current_file = realpath( $file );
 					
-						if( $this->option['artificialdelay'] ) {
-							$cur_time = time();
-							if( $cur_time - $last_time > 10 || $this->currentcount - $last_count > 100) {
-								$this->write_log_file( __("Artificial delay of .25 sec...", $this->textdomain) );
-								$last_time = $cur_time;
-								$last_count = $this->currentcount;
-								usleep(250000);
-							}
+					if( $this->option['artificialdelay'] ) {
+						$cur_time = time();
+						if( $cur_time - $last_time > 10 || $this->currentcount - $last_count > 100) {
+							$this->write_log_file( __("Artificial delay of .25 sec...", $this->textdomain) );
+							$last_time = $cur_time;
+							$last_count = $this->currentcount;
+							usleep(250000);
 						}
+					}
 					
 					if( round( $this->percentage ) > $this->last_percentage ) {
 						$this->last_percentage = round( $this->percentage );
@@ -724,7 +744,16 @@ class WP_Backuper {
 					$this->write_log_file( __("Archiving SQL dump...", $this->textdomain) );
 					$this->write_status_file( $this->last_percentage, __("Archiving SQL dump...", $this->textdomain) );
 					
-					$zip->add($this->dump_file, PCLZIP_OPT_REMOVE_PATH, dirname( $this->dump_file ) );
+					if( is_array( $this->dump_file ) ) {
+						foreach( $this->dump_file as $dumpfile ) {
+							$zip->add($dumpfile, PCLZIP_OPT_REMOVE_PATH, dirname( $dumpfile ) );
+							if( $this->option['artificialdelay'] ) {
+								usleep(250000);
+							}
+						}
+					} else {
+						$zip->add($this->dump_file, PCLZIP_OPT_REMOVE_PATH, dirname( $this->dump_file ) );
+					}
 				}
 			}
 		} catch(Exception $e) {
@@ -802,16 +831,6 @@ class WP_Backuper {
 		if (!$this->can_user_backup())
 			return FALSE;
 
-		// get dump file name
-		$file_path = $this->chg_directory_separator($path === FALSE ? $this->wp_dir : $path, FALSE);
-		$file_name = $this->chg_directory_separator(
-			$file_path .
-			untrailingslashit($pre === FALSE ? 'dump.' : str_replace(DIRECTORY_SEPARATOR, '-', untrailingslashit($pre))) .
-			date('Ymd.His') . '.sql',
-			FALSE);
-		if (!is_writable($file_path))
-			return FALSE;
-
 		// get core tables
 		$core_tables =
 			$core_tables === FALSE
@@ -820,33 +839,76 @@ class WP_Backuper {
 			;
 		$this->core_tables = $core_tables;
 
-		$fp = @fopen($file_name, 'w');
-		if($fp) {
-			//Begin new backup of MySql
-			$this->fwrite($fp, "# " . __('WordPress MySQL database backup', $this->textdomain) . "\n");
-			$this->fwrite($fp, "#\n");
-			$this->fwrite($fp, "# " . sprintf(__('Generated: %s', $this->textdomain), date("l j. F Y H:i T")) . "\n");
-			$this->fwrite($fp, "# " . sprintf(__('Hostname: %s', $this->textdomain),  DB_HOST) . "\n");
-			$this->fwrite($fp, "# " . sprintf(__('Database: %s', $this->textdomain),  $this->backquote(DB_NAME)) . "\n");
-			$this->fwrite($fp, "# --------------------------------------------------------\n");
-
-			// backup tables
+		$file_path   = $this->chg_directory_separator($path === FALSE ? $this->wp_dir : $path, FALSE);
+		$file_prefix = untrailingslashit( $pre === FALSE ? 'dump.' : str_replace(DIRECTORY_SEPARATOR, '-', untrailingslashit( $pre ) ) );
+		
+		if( $this->option['splitdbbackup'] == true ) {
+			$sqlfiles = array();
+		
 			foreach ($core_tables as $table) {
-				$this->table_dump($fp, $table);
-			}
-			fclose($fp);
-		} else {
-			$this->error[] = __('Could not open the db dump file for writing!', $this->textdomain);
-		}
+				$file_name = $file_path . $this->chg_directory_separator(  $file_prefix . $table . '.' . date('Ymd.His') . '.sql', FALSE );
+				
+				$fp = @fopen($file_name, 'w');
+				if($fp) {
+					//Begin new backup of MySql
+					$this->sql_export_headers( $fp );
+					
+					// backup table
+					$this->table_dump($fp, $table);
+					
+					fclose($fp);
 
-		if (file_exists($file_name)) {
-			chmod($file_name, 0600);
-			return $file_name;
+					chmod($file_name, 0600);
+					$sqlfiles[] = $file_name;
+				} else {
+					$this->error[] = __('Could not open the db dump file for writing!', $this->textdomain);
+				}
+				
+				if( $this->option['artificialdelay'] ) {
+					usleep(250000);
+				}
+			}
+			
+			return $sqlfiles;
 		} else {
-			return FALSE;
+			// get dump file name
+			$file_name = $file_path . $this->chg_directory_separator(  $file_prefix . date('Ymd.His') . '.sql', FALSE );
+
+			if (!is_writable($file_path))
+				return FALSE;
+			
+			$fp = @fopen($file_name, 'w');
+			if($fp) {
+				//Begin new backup of MySql
+				$this->sql_export_headers( $fp );
+				
+				// backup tables
+				foreach ($core_tables as $table) {
+					$this->table_dump($fp, $table);
+				}
+				fclose($fp);
+			} else {
+				$this->error[] = __('Could not open the db dump file for writing!', $this->textdomain);
+			}
+
+			if (file_exists($file_name)) {
+				chmod($file_name, 0600);
+				return $file_name;
+			} 
 		}
+		
+	return FALSE;
 	}
 
+	private function sql_export_headers( $fp ) {
+		$this->fwrite($fp, "# " . __('WordPress MySQL database backup', $this->textdomain) . "\n");
+		$this->fwrite($fp, "#\n");
+		$this->fwrite($fp, "# " . sprintf(__('Generated: %s', $this->textdomain), date("l j. F Y H:i T")) . "\n");
+		$this->fwrite($fp, "# " . sprintf(__('Hostname: %s', $this->textdomain),  DB_HOST) . "\n");
+		$this->fwrite($fp, "# " . sprintf(__('Database: %s', $this->textdomain),  $this->backquote(DB_NAME)) . "\n");
+		$this->fwrite($fp, "# --------------------------------------------------------\n");
+	}
+	
 	//**************************************************************************************
 	// Write to the dump file
 	//**************************************************************************************
