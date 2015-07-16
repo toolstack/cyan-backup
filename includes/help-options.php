@@ -19,11 +19,11 @@
 	
 	$help_screen->add_help_tab(
 		array(
-			'title'    => 	__('Directory Options', $this->textdomain),
+			'title'    => 	__('General', $this->textdomain),
 			'id'       => 	'dir_tab',
 			'content'  => 	'<p>' . __('<b>Force SSL</b>: If your site uses SSL for the admin interface but the WordPress/Site URL points to the non-encrypted front end, select this option to ensure the backup will use the SSL connection.', $this->textdomain) . '</p>' .
-							'<p>' . __('<b>Artificial Delay</b>: Zipping the files is a processor intensive task, some hosting providers will terminate the backup process if it looks like it has hung.  This option will introduce a .25 second delay every 10 seconds to avoid this problem.', $this->textdomain) . '</p>' .
-							'<p>' . __('<b>Disable ZipArchive</b>: This will disable the use of the PHP ZipArchive extension and instead use PclZip.  ZipArchive is the better option but if your implementation of PHP has a bug in it PclZip should work for you.', $this->textdomain) . '</p>' .
+							'<p>' . __('<b>Artificial Delay</b>: Archiving the files is a processor intensive task, some hosting providers will terminate the backup process if it looks like it has hung.  This option will introduce a .25 second delay every 10 seconds to avoid this problem.', $this->textdomain) . '</p>' .
+							'<p>' . __('<b>Archive Method</b>: There are several options available on what format your archive file will be stored in.  By default "zip (ZipArchive)" will be used as it is the fastest option, however some hosts do not support it or have buggy implementations so other options are available.  The second best option is "zip (PHP-Archive)".</p><p>NOTE: Changing this option after you have executed backups will not re-archive existing backups and they will not be visible from the user interface, however they will still exist on your system and simply changing this option back to the previous setting will make them visible again.', $this->textdomain) . '</p>' .
 							'<p>' . __('<b>Split DB Backup File</b>: This will split the DB backup file in to multpile files, one per table.  This may be useful if your database is large and when you restore it your hosting provider to terminate the script due to size/time.  With this setting the artificial delay will be added between zipping each db file.', $this->textdomain) . '</p>' .
 							'<p>' . __('<b>Disable DB Backup</b>: This will disable the backup of the database.  Only disable this if you backup your database through another utility.', $this->textdomain) . '</p>' .
 							'<p>' . __('<b>Archive Prefix</b>: By default your WordPress installation directory name is used to prefix the backup files, this option allows you to override the default with a more informative name of your choosing.', $this->textdomain) . '</p>' .
@@ -37,7 +37,24 @@
 
 	$help_screen->add_help_tab(
 		array(
-			'title'    => 	__('Log Options', $this->textdomain),
+			'title'    => 	__('Archive Methods', $this->textdomain),
+			'id'       => 	'archive_methods_tab',
+			'content'  => 	'<p>' . __('<b>tar (PHP-Archive)</b>: This option generates a unix TAR file without compression and should only be used as a last resort.  It is the fastest and least resource intensive option.', $this->textdomain) . '</p>' .
+							'<p>' . __('<b>tar.bz2 (PHP-Archive)</b>: This option generates a bzip2 compressed tar file with "tar.bz2" as the file extension.', $this->textdomain) . '</p>' .
+							'<p>' . __('<b>tar.gz (PHP-Archive)</b>: This option generates a gzip compresed file with "tar.gz" as the file extension .', $this->textdomain) . '</p>' .
+							'<p>' . __('<b>tbz (PHP-Archive)</b>: This option generates a bzip2 compressed tar file with "tbz" as the file extension.', $this->textdomain) . '</p>' .
+							'<p>' . __('<b>tgz (PHP-Archive)</b>: This option generates a gzip compressed tar file with "tgz" as the file extension.', $this->textdomain) . '</p>' .
+							'<p>' . __('<b>zip (PHP-Archive)</b>: This option generates a zip file using the PHP-Archive library.  If you have enabled the "Artificial Delay" option and are still finding your backups do not complete, try this option as it handles the delay better than ZipArchive.', $this->textdomain) . '</p>' .
+							'<p>' . __('<b>zip (PclZip)</b>: This option generates a zip file, however it is very slow and should not be used except as a last resort.', $this->textdomain) . '</p>' .
+							'<p>' . __('<b>zip (ZipArchive)</b>: This is the default option and generates a zip file.  It is the fasted option however it can generate high CPU utilization which may cause issues on some hosting providers.', $this->textdomain) . '</p>'
+			,
+			'callback' => 	false
+		)
+	);
+
+	$help_screen->add_help_tab(
+		array(
+			'title'    => 	__('Logging', $this->textdomain),
 			'id'       => 	'log_tab',
 			'content'  => 	'<p>' . __('<b>E-Mail the log file</b>: If this option is enabled the log file will be e-mailed after a backup has been completed.', $this->textdomain) . '</p>' .
 							'<p>' . __('<b>Send to Addresses</b>: This is a comma separated list of e-mail addresses to send the log to.  If this option is left blank, the site administrators e-mail address will be used.', $this->textdomain) . '</p>'
@@ -48,7 +65,7 @@
 
 	$help_screen->add_help_tab(
 		array(
-			'title'    => 	__('Schedule Options', $this->textdomain),
+			'title'    => 	__('Schedules', $this->textdomain),
 			'id'       => 	'schedule_tab',
 			'content'  => 	'<p>' . sprintf(__('<b>Current Server Time</b>: This displays the server time when you loaded this page, it is here for reference only.  If this does not display the time you expect your %stimezone setting%s may be incorrect.', $this->textdomain), '<a href="' . admin_url('options-general.php') . '">','</a>') . '</p>' .
 							'<p>' . __('<b>Next backup scheduled for</b>: This displays the next scheduled backup in WP Cron, it is here for reference only.', $this->textdomain) . '</p>' .
@@ -115,7 +132,7 @@
 			'title'    => 	__('Clear Active Backup', $this->textdomain),
 			'id'       => 	'active_tab',
 			'content'  => 	'<p>' . __("<b>Clear active backup status</b>: Only check this if a backup has hung and you can no longer execute backups.  CYAN Backup uses a status file to tell if a backup is running or not, if this file hasn't been deleted after a backup is complete you won't be able to run another backup for 10 minutes.  If you wish to force the deletion of the file check this option and save the settings.  This will force the deletion of the file.", $this->textdomain) . '</p>' .
-							'<p>' . __('<b>Delete temporary files and directories</b>: If a backup has failed it will sometimes leave temporary files and subdirectories behind in the archive directory, this option will delete any file in the archive path that starts with your site directory name but is not a zip/log file.', $this->textdomain) . '</p>'
+							'<p>' . __('<b>Delete temporary files and directories</b>: If a backup has failed it will sometimes leave temporary files and subdirectories behind in the archive directory, this option will delete any file in the archive path that starts with your site directory name but is not a archive/log file.', $this->textdomain) . '</p>'
 			,
 			'callback' => 	false
 		)
