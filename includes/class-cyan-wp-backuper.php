@@ -738,7 +738,7 @@ class CYAN_WP_Backuper {
 		}
 	}
 	
-	private function GetArchiveExtension() {
+	public function GetArchiveExtension() {
 		switch( $this->option['archive_method'] ) {
 			case 'PHPArchiveTar':
 				return '.tar';
@@ -1164,7 +1164,7 @@ class CYAN_WP_Backuper {
 	// get backup files
 	//**************************************************************************************
 	public function get_backup_files() {
-		$scan_pattern = '/^' . preg_quote($this->archive_pre, '/') . '.*\.zip$/i';
+		$scan_pattern = '/^' . preg_quote($this->archive_pre, '/') . '.*' . preg_quote( $this->GetArchiveExtension(), '/' ) . '$/i';
 		$files = array_reverse(scandir($this->archive_path));
 		$backup_files = array();
 		foreach ($files as $file) {
@@ -1200,7 +1200,7 @@ class CYAN_WP_Backuper {
 						);
 					$filesize = (int)sprintf('%u', filesize($backup_file)) / 1024 / 1024;
 
-					$log_file = str_ireplace( '.zip', '.log', $backup_file );
+					$log_file = str_ireplace( $this->GetArchiveExtension(), '.log', $backup_file );
 					if (file_exists($log_file)) {
 						$logquery =
 							$page

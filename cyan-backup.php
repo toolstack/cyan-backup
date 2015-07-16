@@ -3,7 +3,7 @@
 Plugin Name: CYAN Backup
 Version: 2.2
 Plugin URI: http://toolstack.com/cyan-backup
-Description: Backup your entire WordPress site and its database into a zip file on a schedule.
+Description: Backup your entire WordPress site and its database into an archive file on a schedule.
 Author: Greg Ross
 Author URI: http://toolstack.com/
 Text Domain: cyan-backup
@@ -39,6 +39,7 @@ class CYANBackup {
 	private $backup_page;
 	private $option_page;
 	private $about_page;
+	private $CYANWPBackup;
 
 	private $default_excluded = array(
 	    'wp-content/cache/',
@@ -439,22 +440,23 @@ class CYANBackup {
 
 	// remote backuper
 	private function remote_backuper($option = NULL) {
-		static $remote_backuper;
-		if (isset($remote_backuper))
-			return $remote_backuper;
+		if (isset($this->CYANWPBackup))
+			return $this->CYANWPBackup;
 
 		if (!class_exists('CYAN_WP_Backuper'))
 			require_once 'includes/class-cyan-wp-backuper.php';
 
 		if (!$option)
 			$option = (array)get_option($this->option_name);
-		$remote_backuper = new CYAN_WP_Backuper(
+		
+		$this->CYANWPBackup = new CYAN_WP_Backuper(
 			$this->get_archive_path($option) ,
 			$this->get_archive_prefix($option) ,
 			$this->trailingslashit(ABSPATH, FALSE) ,
 			$this->get_excluded_dir($option)
 			);
-		return $remote_backuper;
+			
+		return $this->CYANWPBackup;
 	}
 
 	// get filemtime
@@ -668,8 +670,10 @@ class CYANBackup {
 		// Get the basename of the archive for later.
 		$filename = basename( $archive );
 
+		$rb = $this->remote_backuper();
+		
 		// We need to find the log file path and name.
-		$log = str_ireplace( '.zip', '.log', $archive );
+		$log = str_ireplace( $rb->GetArchiveExtension(), '.log', $archive );
 
 		// Find the basename of the log file.
 		$logname = basename( $log );
@@ -964,7 +968,7 @@ jQuery(function($){
 						var rowCount = $('#backuplist tr').length - 2;
 						var tr = '';
 
-						log_name = log_name.replace(".zip",".log");
+						log_name = log_name.replace("<?php $rb = $this->remote_backuper(); echo $rb->GetArchiveExtension();?>",".log");
 						
 						log_file = ' [<a href="?page=<?php echo $this->menu_base; ?>&download=' + encodeURIComponent(log_name) + '<?php echo $nonces_2; ?>' + '" title="<?php _e('log', $this->textdomain);?>"><?php _e('log', $this->textdomain);?></a>]';
 							
@@ -1463,13 +1467,17 @@ jQuery(function($){
 	public function prune_backups( $number ) {
 		$backup_files = $this->backup_files_info($this->get_backup_files());
 
+		$rb = $this->remote_backuper();
+		
+		$ext = $rb->GetArchiveExtension();
+
 		if (count($backup_files) > $number && $number > 1) {
 			$i = 1;
 			$j = 0;
 			foreach ($backup_files as $backup_file) {
 				if( $i > $number ) {
 					if( ($file = realpath( $backup_file['filename'] ) ) !== FALSE) {
-						$logfile = str_ireplace( '.zip', '.log', $file );
+						$logfile = str_ireplace( $ext, '.log', $file );
 						@unlink($file);
 						@unlink($logfile);
 						$j++;
