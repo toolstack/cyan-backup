@@ -586,7 +586,7 @@
 
 						<td>
 							<input type="text" name="archive_prefix" id="archive_prefix" size="20" value="<?php echo htmlentities($archive_prefix);?>" /><br><br>
-							<?php _e( 'Remember to include a separator at the end of the prifix (like a period or a dash) to make your filenames look nice!', $this->textdomain );?><br><br>
+							<?php _e( 'Remember to include a separator at the end of the prefix (like a period or a dash) to make your filenames look nice!', $this->textdomain );?><br><br>
 							<?php _e( 'Note: Existing backups will be renamed to the new prefix.', $this->textdomain );?>
 						</td>
 					</tr>
