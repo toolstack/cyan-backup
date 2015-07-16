@@ -90,6 +90,12 @@ class CYANBackup {
 				list( $hours, $options['schedule']['minutes'], $options['schedule']['hours'], $options['schedule']['ampm'] ) = $this->split_date_string( $schedule['tod'] );
 			}
 			
+			// Remove the old 'Disable ZipArchive' option, but if it was set, update the new archive_method if it hasn't already been set by the user.
+			if( $options['disableziparchive'] ) { 
+				if( !array_key_exists( 'archive_method', $options ) ) { $options['archive_method'] = 'PclZip'; }
+				unset( $options['disableziparchive'] );
+			}
+			
 			update_option( $this->option_name, $options );
 			}
 		
@@ -1576,6 +1582,25 @@ jQuery(function($){
 			}
 			exit;
 		}
+	}
+	//**************************************************************************************
+	// Define the different Arvhive types.
+	//**************************************************************************************
+	public function get_archive_methods() {
+		$archive_methods = array( 	'PclZip' 				=> __('zip (PclZip)', $this->textdomain),
+									'PHPArchiveZip' 		=> __('zip (PHP-Archive)', $this->textdomain),
+									'PHPArchiveTar' 		=> __('tar (PHP-Archive)', $this->textdomain),
+									'PHPArchiveTarGZ' 		=> __('tgz (PHP-Archive)', $this->textdomain),
+									'PHPArchiveTarDotGZ' 	=> __('tar.gz (PHP-Archive)', $this->textdomain),
+									'PHPArchiveTarBZ' 		=> __('tbz (PHP-Archive)', $this->textdomain),
+									'PHPArchiveTarDotBZ' 	=> __('tar.bz2 (PHP-Archive)', $this->textdomain),
+							);
+		
+		if( class_exists('ZipArchive') ) { $archive_methods['ZipArchive'] = __('zip (ZipArchive)', $this->textdomain); }
+
+		asort( $archive_methods );
+		
+		return $archive_methods;
 	}
 }
 

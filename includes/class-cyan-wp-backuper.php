@@ -1,4 +1,9 @@
 <?php
+require_once( __DIR__ . '/../vendor/autoload.php' );
+
+use splitbrain\PHPArchive\Zip;
+use splitbrain\PHPArchive\Tar;
+
 if (!class_exists('CYAN_WP_Backuper')) :
 
 class CYAN_WP_Backuper {
@@ -406,34 +411,30 @@ class CYAN_WP_Backuper {
 			$this->write_log_file( __('Archiving files...', $this->textdomain) );
 
 			// WP Core files archive
-			$zip_file = $this->chg_directory_separator(trailingslashit($archive_path).$filename.'.zip');
-			$backup = $this->files_archive($this->wp_dir, $files, $zip_file);
+			$archive_file = $this->chg_directory_separator(trailingslashit($archive_path).$filename.$this->GetArchiveExtension());
+			$backup = $this->files_archive($this->wp_dir, $files, $archive_file);
 
 			$this->write_status_file( $this->last_percentage, __('Removing temporary files...', $this->textdomain));
 			$this->write_log_file( __('Removing temporary files...', $this->textdomain) );
 
+			// If we successfully created the backupfile, save it's name to the class globals.
+			if ( file_exists($backup) ) {
+				$this->archive_file = $backup;
+			} else {
+				$this->archive_file = FALSE;
+			}
+
 			// Remove DB backup files
 			if ( $db_backup ) {
-				$db_backup = TRUE;
-				
-				if ( file_exists($backup) ) {
-					$this->archive_file = $backup;
-
-					if( is_array( $this->dump_file ) ) {
-						foreach( $this->dump_file as $dumpfile ) {
-							if( file_exists( $dumpfile ) ) {
-								unlink( $dumpfile );
-							}
+				if( is_array( $this->dump_file ) ) {
+					foreach( $this->dump_file as $dumpfile ) {
+						if( file_exists( $dumpfile ) ) {
+							unlink( $dumpfile );
 						}
-					} else {
-						unlink($this->dump_file);
 					}
 				} else {
-					$this->archive_file = FALSE;
+					unlink($this->dump_file);
 				}
-			} else {
-				$db_backup = FALSE;
-				$this->archive_file = FALSE;
 			}
 			
 			$this->delete_transient(self::EXCLUSION_KEY);
@@ -616,86 +617,22 @@ class CYAN_WP_Backuper {
 			unlink($dir);
 		}
 	} 
-	//**************************************************************************************
-	// WP Files Archive
-	//**************************************************************************************
-	private function files_archive($source_dir, $files, $zip_file) {
-		if (!$this->can_user_backup()) {
-			$this->write_log_file(__('Could not backup!', $this->textdomain));
-			throw new Exception(__('Could not backup!', $this->textdomain));
-		}
-
-		if (file_exists($zip_file))
-			@unlink($zip_file);
-
-		$wp_dir    = basename($this->wp_dir) . DIRECTORY_SEPARATOR;
-		$last_time = time();
-		$cur_time = $last_time;
-		$last_count = $this->currentcount;
+	
+	private function OpenArchiveFile( $filename ) {
+		$handle = FALSE;
 		
-		try {
-			if (class_exists('ZipArchive') && $this->option['disableziparchive'] != 'on') {
-				$this->write_log_file( __('Using ZipArchive class.', $this->textdomain) );
-				$this->write_log_file( sprintf( __('Creating %s.', $this->textdomain), $zip_file ) );
-				
+		switch( $this->option['archive_method'] ) {
+			case 'ZipArchive':
 				$zip = new ZipArchive;
-				if ( $zip->open($zip_file, ZipArchive::CREATE) === TRUE ) {
-					$zip->addEmptyDir($parent);
-					foreach ($files as $file) {
-						$this->currentcount++;
-						$this->percentage += $this->increment;
-						
-						$current_file = realpath( $file );
-
-						if( $this->option['artificialdelay'] ) {
-							$cur_time = time();
-							if( $cur_time - $last_time > 10 || $this->currentcount - $last_count > 100) {
-								$this->write_log_file( __("Artificial delay of .25 sec...", $this->textdomain) );
-								$last_time = $cur_time;
-								$last_count = $this->currentcount;
-								usleep(250000);
-							}
-						}
-					
-						if( round( $this->percentage ) > $this->last_percentage ) {
-							$this->last_percentage = round( $this->percentage );
-							$this->write_status_file( $this->last_percentage, sprintf( __("Archiving %s...", $this->textdomain), $current_file ) );
-						}
-					
-						$this->write_log_file( sprintf( __("Archiving %s...", $this->textdomain), $current_file ) );
-					
-						if ( !is_dir($current_file) )
-							$zip->addFile($current_file, $wp_dir.$file);
-					}
-
-					if ( ( !is_array( $this->dump_file ) && file_exists($this->dump_file) ) 
-						|| ( is_array( $this->dump_file ) && file_exists($this->dump_file[0]) ) ) {
-						$this->write_log_file( __("Archiving SQL dump...", $this->textdomain) );
-						$this->write_status_file( $this->last_percentage, __("Archiving SQL dump...", $this->textdomain) );
-
-						if( is_array( $this->dump_file ) ) {
-							foreach( $this->dump_file as $dumpfile ) {
-								$zip->addFile($dumpfile, basename($dumpfile));
-								if( $this->option['artificialdelay'] ) {
-									usleep(250000);
-								}
-							}
-						} else {
-							$zip->addFile($this->dump_file, basename($this->dump_file));
-						}
-					}
-
-					$zip->close();
-				} else {
-					$this->write_log_file( __('Could not create the archive file!', $this->textdomain) );
-					throw new Exception(__('Could not create the archive file!', $this->textdomain));
+				if ( $zip->open($filename, ZipArchive::CREATE) === TRUE ) {
+					$handle = $zip;
+					$handle->addEmptyDir();
 				}
-
-			} else {
+				
+				break;
+			case 'PclZip':
 				if (!class_exists('PclZip'))
-					require_once 'class-pclzip.php';
-
-				$this->write_log_file( __('Using PclZip class.', $this->textdomain) );
+					require_once( 'class-pclzip.php' );
 
 				$dir_list = scandir($this->wp_dir);
 				
@@ -706,18 +643,172 @@ class CYAN_WP_Backuper {
 					}
 				}
 					
-				$this->write_log_file( sprintf( __('Creating %s.', $this->textdomain), $zip_file ) );
+				$handle = new PclZip($filename);
+				
+				break;
+			case 'PHPArchiveZip':
 
-				$zip = new PclZip($zip_file);
+				$zip = new Zip();
+				$zip->create($filename);
+
+				$handle = $zip;
+				break;
+			case 'PHPArchiveTar':
+			case 'PHPArchiveTarGZ':
+			case 'PHPArchiveTarDotGZ':
+			case 'PHPArchiveTarBZ':
+			case 'PHPArchiveTarDotBZ':
+				$tar = new Tar();
+				$tar->create($filename);
+
+				$handle = $tar;
 				
-				$dir_to_strip = dirname($this->wp_dir);
+				break;
+		}
 				
+		return $handle;
+	}
+	
+	private function AddArchiveFile( $handle, $file, $archive_file = null, $dir_to_strip = null) {
+		if( $handle === FALSE ) {
+			return;
+		}
+	
+		switch( $this->option['archive_method'] ) {
+			case 'ZipArchive':
+				$handle->addFile( $file, $archive_file );
+			
+				break;
+			case 'PclZip':
+				$handle->add( $file, PCLZIP_OPT_REMOVE_PATH, $dir_to_strip );
+				break;
+			case 'PHPArchiveTar':
+			case 'PHPArchiveZip':
+			case 'PHPArchiveTarGZ':
+			case 'PHPArchiveTarDotGZ':
+			case 'PHPArchiveTarBZ':
+			case 'PHPArchiveTarDotBZ':
+				$handle->addFile( $file, $archive_file );
+				break;
+		}
+	}
+
+	private function AddArchiveDir( $handle, $dir ) {
+		if( $handle === FALSE ) {
+			return;
+		}
+	
+		switch( $this->option['archive_method'] ) {
+			case 'ZipArchive':
+			case 'PclZip':
+			case 'PHPArchiveZip':
+			case 'PHPArchiveTar':
+			case 'PHPArchiveTarGZ':
+			case 'PHPArchiveTarDotGZ':
+			case 'PHPArchiveTarBZ':
+			case 'PHPArchiveTarDotBZ':
+				// No need to add directories to Zip files.
+			
+				break;
+		}
+	}
+
+	private function CloseArchiveFile( $handle ) {
+		if( $handle === FALSE ) {
+			return;
+		}
+	
+		switch( $this->option['archive_method'] ) {
+			case 'ZipArchive':
+				$handle->close();
+				
+				break;
+			case 'PclZip':
+				// PclZip doesn't require an explicit close.
+				break;
+			case 'PHPArchiveTar':
+			case 'PHPArchiveZip':
+			case 'PHPArchiveTarGZ':
+			case 'PHPArchiveTarDotGZ':
+			case 'PHPArchiveTarBZ':
+			case 'PHPArchiveTarDotBZ':
+				$handle->close();
+			
+				break;
+		}
+	}
+	
+	private function GetArchiveExtension() {
+		switch( $this->option['archive_method'] ) {
+			case 'PHPArchiveTar':
+				return '.tar';
+				
+				break;
+			case 'PHPArchiveTarGZ':
+				return '.tgz';
+				
+				break;
+			case 'PHPArchiveTarDotGZ':
+				return '.tar.gz';
+				
+				break;
+			case 'PHPArchiveTarBZ':
+				return '.tbz';
+				
+				break;
+			case 'PHPArchiveTarDotBZ':
+				return '.tar.bz2';
+				
+				break;
+			case 'ZipArchive':
+			case 'PclZip':
+			case 'PHPArchiveZip':
+			default:
+				return '.zip';
+				
+				break;
+		}
+	}
+
+	//**************************************************************************************
+	// WP Files Archive
+	//**************************************************************************************
+	private function files_archive($source_dir, $files, $archive_file) {
+		GLOBAL $cyan_backup;
+		
+		if (!$this->can_user_backup()) {
+			$this->write_log_file(__('Could not backup!', $this->textdomain));
+			throw new Exception(__('Could not backup!', $this->textdomain));
+		}
+
+		if (file_exists($archive_file))
+			@unlink($archive_file);
+
+		$wp_dir    = basename($this->wp_dir) . DIRECTORY_SEPARATOR;
+		$last_time = time();
+		$cur_time = $last_time;
+		$last_count = $this->currentcount;
+		$archive_methods = $cyan_backup->get_archive_methods();
+		$archive_method = $this->option['archive_method'];
+		$dir_to_strip = dirname($this->wp_dir);
+		
+		if (!array_key_exists( $archive_method, $archive_methods) ) {
+			$this->write_log_file(__('Invalid archive method!', $this->textdomain));
+			throw new Exception(__('Invalid archive method!', $this->textdomain));
+		}
+
+		try {
+			$this->write_log_file( __('Using ', $this->textdomain) . $archive_methods[$archive_method] . '.' );
+			$this->write_log_file( __('Creating ', $this->textdomain) . $archive_file . '.' );
+	
+			$archive = $this->OpenArchiveFile( $archive_file );
+			if ( $archive !== FALSE ) {
 				foreach ($files as $file) {
 					$this->currentcount++;
 					$this->percentage += $this->increment;
-
-					$current_file = realpath( $file );
 					
+					$current_file = realpath( $file );
+
 					if( $this->option['artificialdelay'] ) {
 						$cur_time = time();
 						if( $cur_time - $last_time > 10 || $this->currentcount - $last_count > 100) {
@@ -727,46 +818,55 @@ class CYAN_WP_Backuper {
 							usleep(250000);
 						}
 					}
-					
+				
 					if( round( $this->percentage ) > $this->last_percentage ) {
 						$this->last_percentage = round( $this->percentage );
 						$this->write_status_file( $this->last_percentage, sprintf( __("Archiving %s...", $this->textdomain), $current_file ) );
 					}
-
-					$this->write_log_file( sprintf( __("Archiving %s...", $this->textdomain), $current_file ) );
-					
-					if ( !is_dir($current_file) )
-						$zip->add($current_file, PCLZIP_OPT_REMOVE_PATH, $dir_to_strip);
-					
-				}
 				
-				if (file_exists($this->dump_file)) {
+					$this->write_log_file( sprintf( __("Archiving %s...", $this->textdomain), $current_file ) );
+				
+					if ( is_dir($current_file) ) {
+						$this->AddArchiveDir( $archive, $current_file );
+					}
+					else {
+						$this->AddArchiveFile( $archive, $current_file, $wp_dir.$file, $dir_to_strip );
+					}
+				}
+
+				if ( ( !is_array( $this->dump_file ) && file_exists($this->dump_file) ) 
+					|| ( is_array( $this->dump_file ) && file_exists($this->dump_file[0]) ) ) {
 					$this->write_log_file( __("Archiving SQL dump...", $this->textdomain) );
 					$this->write_status_file( $this->last_percentage, __("Archiving SQL dump...", $this->textdomain) );
-					
+
 					if( is_array( $this->dump_file ) ) {
 						foreach( $this->dump_file as $dumpfile ) {
-							$zip->add($dumpfile, PCLZIP_OPT_REMOVE_PATH, dirname( $dumpfile ) );
+							$this->AddArchiveFile( $archive, $dumpfile, basename($dumpfile), $dir_to_strip);
 							if( $this->option['artificialdelay'] ) {
 								usleep(250000);
 							}
 						}
 					} else {
-						$zip->add($this->dump_file, PCLZIP_OPT_REMOVE_PATH, dirname( $this->dump_file ) );
+						$this->AddArchiveFile( $archive, $this->dump_file, basename($this->dump_file), $dir_to_strip );
 					}
 				}
+
+				$this->CloseArchiveFile( $archive );
+			} else {
+				$this->write_log_file( __('Could not create the archive file!', $this->textdomain) );
+				throw new Exception(__('Could not create the archive file!', $this->textdomain));
 			}
 		} catch(Exception $e) {
 			$this->write_log_file($e->getMessage());
 			throw new Exception($e->getMessage());
 		}
 
-		if (file_exists($zip_file)) {
-			$this->write_log_file( __('Updating permission on zip file.', $this->textdomain) );
+		if (file_exists($archive_file)) {
+			$this->write_log_file( __('Updating permission on archive file.', $this->textdomain) );
 
-			chmod($zip_file, 0600);
+			chmod($archive_file, 0600);
 			
-			return $zip_file;
+			return $archive_file;
 		} else {
 			$this->write_log_file(__('Archive file does not exist after the backup is complete!', $this->textdomain));
 			throw new Exception(__('Archive file does not exist after the backup is complete!', $this->textdomain));

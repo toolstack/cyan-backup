@@ -11,13 +11,14 @@
 		
 	$nonce_field = 'option_update';
 
-	$option = (array)get_option($this->option_name);
-	$archive_path   = $this->get_archive_path($option);
-	$archive_prefix = $this->get_archive_prefix($option);
-	$excluded_dir   = $this->get_excluded_dir($option, array());
-	$content_dir    = $this->chg_directory_separator(WP_CONTENT_DIR . "/", FALSE);
-	$abspath  	    = $this->chg_directory_separator(ABSPATH, FALSE);
-	$admin_dir      = $this->chg_directory_separator($abspath . 'wp-admin/', FALSE);
+	$option          = (array)get_option($this->option_name);
+	$archive_path    = $this->get_archive_path($option);
+	$archive_prefix  = $this->get_archive_prefix($option);
+	$excluded_dir    = $this->get_excluded_dir($option, array());
+	$content_dir     = $this->chg_directory_separator(WP_CONTENT_DIR . "/", FALSE);
+	$abspath  	     = $this->chg_directory_separator(ABSPATH, FALSE);
+	$admin_dir       = $this->chg_directory_separator($abspath . 'wp-admin/', FALSE);
+	$archive_methods = $this->get_archive_methods();
 	
 	// Create the .htaccess or WebConfig files
 	if (isset($_POST['CreateWebConfig']) || isset($_POST['Createhtaccess'])) {
@@ -114,8 +115,10 @@
 			$options['forcessl'] = $_POST['forcessl'];
 		}
 
-		if( isset( $_POST['disableziparchive'] ) ) {
-			$options['disableziparchive'] = $_POST['disableziparchive'];
+		if( isset( $_POST['archive_method'] ) ) {
+			if( array_key_exists( $_POST['archive_method'], $archive_methods ) ) {
+				$options['archive_method'] = $_POST['archive_method'];
+			}
 		}
 		
 		if( isset( $_POST['disabledbbackup'] ) ) {
@@ -511,9 +514,9 @@
 	<form method="post" id="option_update" action="<?php echo $this->admin_action;?>-options">
 	<div id="tabs" class="ui-tabs ui-widget ui-widget-content ui-corner-all">
 		<ul class="ui-tabs-nav ui-helper-reset ui-helper-clearfix ui-widget-header ui-corner-all">
-			<li class="ui-state-default ui-corner-top ui-tabs-active ui-state-active ui-state-focus"><a class="ui-tabs-anchor" href="#fragment-1"><span><?php _e('Directory Options', $this->textdomain);?></span></a></li>
-			<li class="ui-state-default ui-corner-top"><a class="ui-tabs-anchor" href="#fragment-2"><span><?php _e('Log Options', $this->textdomain);?></span></a></li>
-			<li class="ui-state-default ui-corner-top"><a class="ui-tabs-anchor" href="#fragment-3"><span><?php _e('Schedule Options', $this->textdomain);?></span></a></li>
+			<li class="ui-state-default ui-corner-top ui-tabs-active ui-state-active ui-state-focus"><a class="ui-tabs-anchor" href="#fragment-1"><span><?php _e('General', $this->textdomain);?></span></a></li>
+			<li class="ui-state-default ui-corner-top"><a class="ui-tabs-anchor" href="#fragment-2"><span><?php _e('Logging', $this->textdomain);?></span></a></li>
+			<li class="ui-state-default ui-corner-top"><a class="ui-tabs-anchor" href="#fragment-3"><span><?php _e('Schedules', $this->textdomain);?></span></a></li>
 			<li class="ui-state-default ui-corner-top"><a class="ui-tabs-anchor" href="#fragment-4"><span><?php _e('Storage Maintenance', $this->textdomain);?></span></a></li>
 			<li class="ui-state-default ui-corner-top"><a class="ui-tabs-anchor" href="#fragment-5"><span><?php _e('Remote Storage', $this->textdomain);?></span></a></li>
 			<li class="ui-state-default ui-corner-top"><a class="ui-tabs-anchor" href="#fragment-6"><span><?php _e('Clear Active Backup', $this->textdomain);?></span></a></li>
@@ -539,15 +542,31 @@
 							<input type=checkbox id="artificialdelay" name="artificialdelay"<?php if( $option['artificialdelay'] == 'on' ) { echo ' CHECKED'; }?>>
 						</td>
 					</tr>
-<?php if( class_exists('ZipArchive') ) {?>
 					<tr>
-						<th><?php _e('Disable ZipArchive', $this->textdomain);?></th>
+						<th><?php _e('Archive method', $this->textdomain);?></th>
 
 						<td>
-							<input type=checkbox id="disableziparchive" name="disableziparchive"<?php if( $option['disableziparchive'] == 'on' ) { echo ' CHECKED'; }?>>
+							<select id="archive_method" name="archive_method">
+<?php		
+		if( !array_key_exists( 'archive_method', $option ) || !array_key_exists( $option['archive_method'], $archive_methods ) ) { 
+			if( array_key_exists( 'ZipArchive', $archive_methods ) ) {
+				$option['archive_method'] = 'ZipArchive'; 
+			} else {
+				$option['archive_method'] = 'PclZip';
+			}
+		}
+		
+		foreach( $archive_methods as $key => $method ) {
+			echo "\t\t\t\t\t\t<option value=\"" . $key . '"';
+
+			if( $option['archive_method'] == $key ) { echo ' SELECTED'; }
+			
+			echo '>' . $method . '</option>' . "\r\n";
+		}
+?>		
+							</select>
 						</td>
 					</tr>
-<?php }?>
 					<tr>
 						<th><?php _e('Split DB backup file', $this->textdomain);?></th>
 
