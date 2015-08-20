@@ -1011,10 +1011,6 @@ jQuery(function($){
 
 				}
 			},
-			error: function(req, status, err){
-				$("#progressbar").progressbar( "value", 0 );
-				$("#progresstext").html(req.responseText);
-			},
 			type: '<?php echo $json_method_type; ?>',
 			url: '<?php echo $json_status_url; ?>'
 		});
@@ -1049,15 +1045,6 @@ jQuery(function($){
 				buttons_disabled(false);
 				$("#progressbar").progressbar( "value", 100 );
 				$("#progresstext").html("<?php _e("Backup complete!", $this->textdomain);?>");
-			},
-			error: function(req, status, err){
-				clearInterval( CYANBackupInterval );
-				CYANBackupInterval = null;
-				$('img.updating', wrap).remove();
-				wrap.append('<?php echo $failure_img; ?> <span id="error_message">' + req.responseText + '</span>');
-				buttons_disabled(false);
-				$("#progressbar").progressbar( "value", 100 );
-				$("#progresstext").html("<?php _e("Backup failed!", $this->textdomain);?>");
 			},
 			type: '<?php echo $json_method_type; ?>',
 			url: '<?php echo $json_backup_url; ?>'
