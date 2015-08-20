@@ -133,6 +133,11 @@
 			$options['artificialdelay'] = $_POST['artificialdelay'];
 		}
 		
+		if( isset( $_POST['lowiomode'] ) ) {
+			$options['lowiomode'] = $_POST['lowiomode'];
+			$options['artificialdelay'] = $_POST['lowiomode'];
+		}
+		
 		$postdata = $this->get_real_post_data();
 
 		if ( isset($postdata['archive_path']) ) {
@@ -540,6 +545,13 @@
 
 						<td>
 							<input type=checkbox id="artificialdelay" name="artificialdelay"<?php if( $option['artificialdelay'] == 'on' ) { echo ' CHECKED'; }?>>
+						</td>
+					</tr>
+					<tr>
+						<th><?php _e('Low I/O Mode', $this->textdomain);?></th>
+
+						<td>
+							<input type=checkbox id="lowiomode" name="lowiomode"<?php if( $option['lowiomode'] == 'on' ) { echo ' CHECKED'; }?>>
 						</td>
 					</tr>
 					<tr>

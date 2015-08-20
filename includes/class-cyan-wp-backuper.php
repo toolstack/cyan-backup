@@ -792,6 +792,17 @@ class CYAN_WP_Backuper {
 		$archive_method = $this->option['archive_method'];
 		$dir_to_strip = dirname($this->wp_dir);
 		
+		$artifical_time = 10;
+		$artifical_wait = 250000;
+		
+		if( $this->option['lowiomode'] ) {
+			$artifical_time = 1;
+			$artifical_wait = 2000000;
+			$this->option['artificialdelay'] = 'on';
+		}
+		
+		$artifical_wait_seconds = $artifical_wait / 1000000;
+		
 		if (!array_key_exists( $archive_method, $archive_methods) ) {
 			$this->write_log_file(__('Invalid archive method!', $this->textdomain));
 			throw new Exception(__('Invalid archive method!', $this->textdomain));
@@ -811,11 +822,11 @@ class CYAN_WP_Backuper {
 
 					if( $this->option['artificialdelay'] ) {
 						$cur_time = time();
-						if( $cur_time - $last_time > 10 || $this->currentcount - $last_count > 100) {
-							$this->write_log_file( __("Artificial delay of .25 sec...", $this->textdomain) );
+						if( $cur_time - $last_time > $artifical_time || $this->currentcount - $last_count > 100) {
+							$this->write_log_file( sprintf( __("Artificial delay of %.2f sec...", $this->textdomain), $artifical_wait_seconds ) );
 							$last_time = $cur_time;
 							$last_count = $this->currentcount;
-							usleep(250000);
+							usleep($artifical_wait);
 						}
 					}
 				
@@ -843,7 +854,7 @@ class CYAN_WP_Backuper {
 						foreach( $this->dump_file as $dumpfile ) {
 							$this->AddArchiveFile( $archive, $dumpfile, basename($dumpfile), $dir_to_strip);
 							if( $this->option['artificialdelay'] ) {
-								usleep(250000);
+								usleep($artifical_wait);
 							}
 						}
 					} else {
@@ -941,6 +952,18 @@ class CYAN_WP_Backuper {
 
 		$file_path   = $this->chg_directory_separator($path === FALSE ? $this->wp_dir : $path, FALSE);
 		$file_prefix = untrailingslashit( $pre === FALSE ? 'dump.' : str_replace(DIRECTORY_SEPARATOR, '-', untrailingslashit( $pre ) ) );
+
+		$artifical_time = 10;
+		$artifical_wait = 250000;
+		
+		if( $this->option['lowiomode'] ) {
+			$artifical_time = 1;
+			$artifical_wait = 1000000;
+			$this->option['artificialdelay'] = 'on';
+		}
+		
+		$artifical_wait_seconds = $artifical_wait / 1000000;
+
 		
 		if( $this->option['splitdbbackup'] == true ) {
 			$sqlfiles = array();
@@ -965,7 +988,7 @@ class CYAN_WP_Backuper {
 				}
 				
 				if( $this->option['artificialdelay'] ) {
-					usleep(250000);
+					usleep($artifical_wait);
 				}
 			}
 			
@@ -987,7 +1010,7 @@ class CYAN_WP_Backuper {
 					$this->table_dump($fp, $table);
 					
 					if( $this->option['artificialdelay'] ) {
-						usleep(250000);
+						usleep($artifical_wait);
 					}
 				}
 				
