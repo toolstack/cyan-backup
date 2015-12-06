@@ -37,7 +37,7 @@
  * @category  File
  * @package   File_X509
  * @author    Jim Wigginton <terrafrost@php.net>
- * @copyright MMXII Jim Wigginton
+ * @copyright 2012 Jim Wigginton
  * @license   http://www.opensource.org/licenses/mit-license.html  MIT License
  * @link      http://phpseclib.sourceforge.net
  */
@@ -125,7 +125,6 @@ define('FILE_X509_ATTR_REPLACE', -3); // Clear first, then add a value.
  *
  * @package File_X509
  * @author  Jim Wigginton <terrafrost@php.net>
- * @version 0.3.1
  * @access  public
  */
 class File_X509
@@ -297,6 +296,14 @@ class File_X509
      * @access private
      */
     var $caFlag = false;
+
+    /**
+     * SPKAC Challenge
+     *
+     * @var String
+     * @access private
+     */
+    var $challenge;
 
     /**
      * Default Constructor.
@@ -1498,6 +1505,16 @@ class File_X509
                     case 'rsaEncryption':
                         $cert['tbsCertificate']['subjectPublicKeyInfo']['subjectPublicKey']
                             = base64_encode("\0" . base64_decode(preg_replace('#-.+-|[\r\n]#', '', $cert['tbsCertificate']['subjectPublicKeyInfo']['subjectPublicKey'])));
+                        /* "[For RSA keys] the parameters field MUST have ASN.1 type NULL for this algorithm identifier."
+                           -- https://tools.ietf.org/html/rfc3279#section-2.3.1
+
+                           given that and the fact that RSA keys appear ot be the only key type for which the parameters field can be blank,
+                           it seems like perhaps the ASN.1 description ought not say the parameters field is OPTIONAL, but whatever.
+                         */
+                        $cert['tbsCertificate']['subjectPublicKeyInfo']['algorithm']['parameters'] = null;
+                        // https://tools.ietf.org/html/rfc3279#section-2.2.1
+                        $cert['signatureAlgorithm']['parameters'] = null;
+                        $cert['tbsCertificate']['signature']['parameters'] = null;
                 }
         }
 
@@ -1582,7 +1599,7 @@ class File_X509
                             }
                         }
                     }
-                } elseif ($map) {
+                } else {
                     $value = base64_encode($value);
                 }
             }
@@ -1605,6 +1622,10 @@ class File_X509
         if (is_array($extensions)) {
             $size = count($extensions);
             for ($i = 0; $i < $size; $i++) {
+                if (is_object($extensions[$i]) && strtolower(get_class($extensions[$i])) == 'file_asn1_element') {
+                    continue;
+                }
+
                 $id = $extensions[$i]['extnId'];
                 $value = &$extensions[$i]['extnValue'];
 
@@ -2166,12 +2187,12 @@ class File_X509
         switch ($algorithm) {
             case 'rsaEncryption':
                 return
-                    "-----BEGIN PUBLIC KEY-----\r\n" .
+                    "-----BEGIN RSA PUBLIC KEY-----\r\n" .
                     // subjectPublicKey is stored as a bit string in X.509 certs.  the first byte of a bit string represents how many bits
                     // in the last byte should be ignored.  the following only supports non-zero stuff but as none of the X.509 certs Firefox
                     // uses as a cert authority actually use a non-zero bit I think it's safe to assume that none do.
                     chunk_split(base64_encode(substr(base64_decode($key), 1)), 64) .
-                    '-----END PUBLIC KEY-----';
+                    '-----END RSA PUBLIC KEY-----';
             default:
                 return $key;
         }
@@ -2502,7 +2523,8 @@ class File_X509
                 $asn1->loadFilters($filters);
                 $result = '';
                 foreach ($dn['rdnSequence'] as $rdn) {
-                    foreach ($rdn as &$attr) {
+                    foreach ($rdn as $i => $attr) {
+                        $attr = &$rdn[$i];
                         if (is_array($attr['value'])) {
                             foreach ($attr['value'] as $type => $v) {
                                 $type = array_search($type, $asn1->ANYmap, true);
@@ -2531,7 +2553,7 @@ class File_X509
                 return strtolower(bin2hex(pack('N', $hash)));
         }
 
-        // Defaut is to return a string.
+        // Default is to return a string.
         $start = true;
         $output = '';
         $asn1 = new File_ASN1();
@@ -2568,7 +2590,7 @@ class File_X509
                     break;
                 default:
                     $delim = '/';
-                    $desc = preg_replace('#.+-([^-]+)$#', '$1',  $prop) . '=';
+                    $desc = preg_replace('#.+-([^-]+)$#', '$1', $prop) . '=';
             }
 
             if (!$start) {
@@ -2725,7 +2747,7 @@ class File_X509
                 break;
             }
         }
-        foreach ($chain as $key=>$value) {
+        foreach ($chain as $key => $value) {
             $chain[$key] = new File_X509();
             $chain[$key]->loadX509($value);
         }
@@ -2758,6 +2780,19 @@ class File_X509
     function setPrivateKey($key)
     {
         $this->privateKey = $key;
+    }
+
+    /**
+     * Set challenge
+     *
+     * Used for SPKAC CSR's
+     *
+     * @param String $challenge
+     * @access public
+     */
+    function setChallenge($challenge)
+    {
+        $this->challenge = $challenge;
     }
 
     /**
@@ -2896,7 +2931,7 @@ class File_X509
 
         switch (true) {
             case !($algorithm = $this->_subArray($csr, 'certificationRequestInfo/subjectPKInfo/algorithm/algorithm')):
-            case is_object($csr['certificationRequestInfo']['subjectPKInfo']['subjectPublicKey']);
+            case is_object($csr['certificationRequestInfo']['subjectPKInfo']['subjectPublicKey']):
                 break;
             default:
                 switch ($algorithm) {
@@ -2953,7 +2988,8 @@ class File_X509
 
         $asn1 = new File_ASN1();
 
-        $temp = preg_replace('#(?:^[^=]+=)|[\r\n\\\]#', '', $spkac);
+        // OpenSSL produces SPKAC's that are preceeded by the string SPKAC=
+        $temp = preg_replace('#(?:SPKAC=)|[ \r\n\\\]#', '', $spkac);
         $temp = preg_match('#^[a-zA-Z\d/+]*={0,2}$#', $temp) ? base64_decode($temp) : false;
         if ($temp != false) {
             $spkac = $temp;
@@ -3003,6 +3039,49 @@ class File_X509
         $this->currentCert = $spkac;
 
         return $spkac;
+    }
+
+    /**
+     * Save a SPKAC CSR request
+     *
+     * @param Array $csr
+     * @param Integer $format optional
+     * @access public
+     * @return String
+     */
+    function saveSPKAC($spkac, $format = FILE_X509_FORMAT_PEM)
+    {
+        if (!is_array($spkac) || !isset($spkac['publicKeyAndChallenge'])) {
+            return false;
+        }
+
+        $algorithm = $this->_subArray($spkac, 'publicKeyAndChallenge/spki/algorithm/algorithm');
+        switch (true) {
+            case !$algorithm:
+            case is_object($spkac['publicKeyAndChallenge']['spki']['subjectPublicKey']):
+                break;
+            default:
+                switch ($algorithm) {
+                    case 'rsaEncryption':
+                        $spkac['publicKeyAndChallenge']['spki']['subjectPublicKey']
+                            = base64_encode("\0" . base64_decode(preg_replace('#-.+-|[\r\n]#', '', $spkac['publicKeyAndChallenge']['spki']['subjectPublicKey'])));
+                }
+        }
+
+        $asn1 = new File_ASN1();
+
+        $asn1->loadOIDs($this->oids);
+        $spkac = $asn1->encodeDER($spkac, $this->SignedPublicKeyAndChallenge);
+
+        switch ($format) {
+            case FILE_X509_FORMAT_DER:
+                return $spkac;
+            // case FILE_X509_FORMAT_PEM:
+            default:
+                // OpenSSL's implementation of SPKAC requires the SPKAC be preceeded by SPKAC= and since there are pretty much
+                // no other SPKAC decoders phpseclib will use that same format
+                return 'SPKAC=' . base64_encode($spkac);
+        }
     }
 
     /**
@@ -3118,6 +3197,28 @@ class File_X509
     }
 
     /**
+     * Helper function to build a time field according to RFC 3280 section
+     *  - 4.1.2.5 Validity
+     *  - 5.1.2.4 This Update
+     *  - 5.1.2.5 Next Update
+     *  - 5.1.2.6 Revoked Certificates
+     * by choosing utcTime iff year of date given is before 2050 and generalTime else.
+     *
+     * @param String $date in format date('D, d M Y H:i:s O')
+     * @access private
+     * @return Array
+     */
+    function _timeField($date)
+    {
+        $year = @gmdate("Y", @strtotime($date)); // the same way ASN1.php parses this
+        if ($year < 2050) {
+            return array('utcTime' => $date);
+        } else {
+            return array('generalTime' => $date);
+        }
+    }
+
+    /**
      * Sign an X.509 certificate
      *
      * $issuer's private key needs to be loaded.
@@ -3149,12 +3250,10 @@ class File_X509
             $this->currentCert['signatureAlgorithm']['algorithm'] = $signatureAlgorithm;
 
             if (!empty($this->startDate)) {
-                $this->currentCert['tbsCertificate']['validity']['notBefore']['generalTime'] = $this->startDate;
-                unset($this->currentCert['tbsCertificate']['validity']['notBefore']['utcTime']);
+                $this->currentCert['tbsCertificate']['validity']['notBefore'] = $this->_timeField($this->startDate);
             }
             if (!empty($this->endDate)) {
-                $this->currentCert['tbsCertificate']['validity']['notAfter']['generalTime'] = $this->endDate;
-                unset($this->currentCert['tbsCertificate']['validity']['notAfter']['utcTime']);
+                $this->currentCert['tbsCertificate']['validity']['notAfter'] = $this->_timeField($this->endDate);
             }
             if (!empty($this->serialNumber)) {
                 $this->currentCert['tbsCertificate']['serialNumber'] = $this->serialNumber;
@@ -3169,16 +3268,30 @@ class File_X509
             if (isset($subject->domains)) {
                 $this->removeExtension('id-ce-subjectAltName');
             }
-        } else if (isset($subject->currentCert) && is_array($subject->currentCert) && isset($subject->currentCert['tbsCertList'])) {
+        } elseif (isset($subject->currentCert) && is_array($subject->currentCert) && isset($subject->currentCert['tbsCertList'])) {
             return false;
         } else {
             if (!isset($subject->publicKey)) {
                 return false;
             }
 
-            $startDate = !empty($this->startDate) ? $this->startDate : @date('D, d M y H:i:s O');
-            $endDate = !empty($this->endDate) ? $this->endDate : @date('D, d M y H:i:s O', strtotime('+1 year'));
-            $serialNumber = !empty($this->serialNumber) ? $this->serialNumber : new Math_BigInteger();
+            $startDate = !empty($this->startDate) ? $this->startDate : @date('D, d M Y H:i:s O');
+            $endDate = !empty($this->endDate) ? $this->endDate : @date('D, d M Y H:i:s O', strtotime('+1 year'));
+            if (!empty($this->serialNumber)) {
+                $serialNumber = $this->serialNumber;
+            } else {
+                if (!function_exists('crypt_random_string')) {
+                    include_once 'Crypt/Random.php';
+                }
+                /* "The serial number MUST be a positive integer"
+                   "Conforming CAs MUST NOT use serialNumber values longer than 20 octets."
+                    -- https://tools.ietf.org/html/rfc5280#section-4.1.2.2
+
+                   for the integer to be positive the leading bit needs to be 0 hence the
+                   application of a bitmap
+                */
+                $serialNumber = new Math_BigInteger(crypt_random_string(20) & ("\x7F" . str_repeat("\xFF", 19)), 256);
+            }
 
             $this->currentCert = array(
                 'tbsCertificate' =>
@@ -3188,14 +3301,14 @@ class File_X509
                         'signature' => array('algorithm' => $signatureAlgorithm),
                         'issuer' => false, // this is going to be overwritten later
                         'validity' => array(
-                            'notBefore' => array('generalTime' => $startDate), // $this->setStartDate()
-                            'notAfter' => array('generalTime' => $endDate)   // $this->setEndDate()
+                            'notBefore' => $this->_timeField($startDate), // $this->setStartDate()
+                            'notAfter' => $this->_timeField($endDate)   // $this->setEndDate()
                         ),
                         'subject' => $subject->dn,
                         'subjectPublicKeyInfo' => $subjectPublicKey
                     ),
-                'signatureAlgorithm' => array('algorithm' => $signatureAlgorithm),
-                'signature'          => false // this is going to be overwritten later
+                    'signatureAlgorithm' => array('algorithm' => $signatureAlgorithm),
+                    'signature'          => false // this is going to be overwritten later
             );
 
             // Copy extensions from CSR.
@@ -3216,8 +3329,7 @@ class File_X509
                     //    )
                     //),
                     'keyIdentifier' => $issuer->currentKeyIdentifier
-                )
-            );
+                ));
             //$extensions = &$this->currentCert['tbsCertificate']['extensions'];
             //if (isset($issuer->serialNumber)) {
             //    $extensions[count($extensions) - 1]['authorityCertSerialNumber'] = $issuer->serialNumber;
@@ -3260,7 +3372,8 @@ class File_X509
                 $keyUsage = array();
             }
 
-            $this->setExtension('id-ce-keyUsage',
+            $this->setExtension(
+                'id-ce-keyUsage',
                 array_values(array_unique(array_merge($keyUsage, array('cRLSign', 'keyCertSign'))))
             );
 
@@ -3269,8 +3382,11 @@ class File_X509
                 $basicConstraints = array();
             }
 
-            $this->setExtension('id-ce-basicConstraints',
-                array_unique(array_merge(array('cA' => true), $basicConstraints)), true);
+            $this->setExtension(
+                'id-ce-basicConstraints',
+                array_unique(array_merge(array('cA' => true), $basicConstraints)),
+                true
+            );
 
             if (!isset($subject->currentKeyIdentifier)) {
                 $this->setExtension('id-ce-subjectKeyIdentifier', base64_encode($this->computeKeyIdentifier($this->currentCert)), false, false);
@@ -3330,8 +3446,8 @@ class File_X509
                         'subject' => $this->dn,
                         'subjectPKInfo' => $publicKey
                     ),
-                'signatureAlgorithm' => array('algorithm' => $signatureAlgorithm),
-                'signature'          => false // this is going to be overwritten later
+                    'signatureAlgorithm' => array('algorithm' => $signatureAlgorithm),
+                    'signature'          => false // this is going to be overwritten later
             );
         }
 
@@ -3342,6 +3458,71 @@ class File_X509
 
         $result = $this->_sign($this->privateKey, $signatureAlgorithm);
         $result['certificationRequestInfo'] = $certificationRequestInfo;
+
+        $this->currentCert = $currentCert;
+        $this->signatureSubject = $signatureSubject;
+
+        return $result;
+    }
+
+    /**
+     * Sign a SPKAC
+     *
+     * @access public
+     * @return Mixed
+     */
+    function signSPKAC($signatureAlgorithm = 'sha1WithRSAEncryption')
+    {
+        if (!is_object($this->privateKey)) {
+            return false;
+        }
+
+        $origPublicKey = $this->publicKey;
+        $class = get_class($this->privateKey);
+        $this->publicKey = new $class();
+        $this->publicKey->loadKey($this->privateKey->getPublicKey());
+        $this->publicKey->setPublicKey();
+        $publicKey = $this->_formatSubjectPublicKey();
+        if (!$publicKey) {
+            return false;
+        }
+        $this->publicKey = $origPublicKey;
+
+        $currentCert = isset($this->currentCert) ? $this->currentCert : null;
+        $signatureSubject = isset($this->signatureSubject) ? $this->signatureSubject: null;
+
+        // re-signing a SPKAC seems silly but since everything else supports re-signing why not?
+        if (isset($this->currentCert) && is_array($this->currentCert) && isset($this->currentCert['publicKeyAndChallenge'])) {
+            $this->currentCert['signatureAlgorithm']['algorithm'] = $signatureAlgorithm;
+            $this->currentCert['publicKeyAndChallenge']['spki'] = $publicKey;
+            if (!empty($this->challenge)) {
+                // the bitwise AND ensures that the output is a valid IA5String
+                $this->currentCert['publicKeyAndChallenge']['challenge'] = $this->challenge & str_repeat("\x7F", strlen($this->challenge));
+            }
+        } else {
+            $this->currentCert = array(
+                'publicKeyAndChallenge' =>
+                    array(
+                        'spki' => $publicKey,
+                        // quoting <https://developer.mozilla.org/en-US/docs/Web/HTML/Element/keygen>,
+                        // "A challenge string that is submitted along with the public key. Defaults to an empty string if not specified."
+                        // both Firefox and OpenSSL ("openssl spkac -key private.key") behave this way
+                        // we could alternatively do this instead if we ignored the specs:
+                        // crypt_random_string(8) & str_repeat("\x7F", 8)
+                        'challenge' => !empty($this->challenge) ? $this->challenge : ''
+                    ),
+                    'signatureAlgorithm' => array('algorithm' => $signatureAlgorithm),
+                    'signature'          => false // this is going to be overwritten later
+            );
+        }
+
+        // resync $this->signatureSubject
+        // save $publicKeyAndChallenge in case there are any File_ASN1_Element objects in it
+        $publicKeyAndChallenge = $this->currentCert['publicKeyAndChallenge'];
+        $this->loadSPKAC($this->saveSPKAC($this->currentCert));
+
+        $result = $this->_sign($this->privateKey, $signatureAlgorithm);
+        $result['publicKeyAndChallenge'] = $publicKeyAndChallenge;
 
         $this->currentCert = $currentCert;
         $this->signatureSubject = $signatureSubject;
@@ -3368,7 +3549,7 @@ class File_X509
 
         $currentCert = isset($this->currentCert) ? $this->currentCert : null;
         $signatureSubject = isset($this->signatureSubject) ? $this->signatureSubject : null;
-        $thisUpdate = !empty($this->startDate) ? $this->startDate : @date('D, d M y H:i:s O');
+        $thisUpdate = !empty($this->startDate) ? $this->startDate : @date('D, d M Y H:i:s O');
 
         if (isset($crl->currentCert) && is_array($crl->currentCert) && isset($crl->currentCert['tbsCertList'])) {
             $this->currentCert = $crl->currentCert;
@@ -3381,19 +3562,19 @@ class File_X509
                         'version' => 'v2',
                         'signature' => array('algorithm' => $signatureAlgorithm),
                         'issuer' => false, // this is going to be overwritten later
-                        'thisUpdate' => array('generalTime' => $thisUpdate) // $this->setStartDate()
+                        'thisUpdate' => $this->_timeField($thisUpdate) // $this->setStartDate()
                     ),
-                'signatureAlgorithm' => array('algorithm' => $signatureAlgorithm),
-                'signature'          => false // this is going to be overwritten later
+                    'signatureAlgorithm' => array('algorithm' => $signatureAlgorithm),
+                    'signature'          => false // this is going to be overwritten later
             );
         }
 
         $tbsCertList = &$this->currentCert['tbsCertList'];
         $tbsCertList['issuer'] = $issuer->dn;
-        $tbsCertList['thisUpdate'] = array('generalTime' => $thisUpdate);
+        $tbsCertList['thisUpdate'] = $this->_timeField($thisUpdate);
 
         if (!empty($this->endDate)) {
-            $tbsCertList['nextUpdate'] = array('generalTime' => $this->endDate); // $this->setEndDate()
+            $tbsCertList['nextUpdate'] = $this->_timeField($this->endDate); // $this->setEndDate()
         } else {
             unset($tbsCertList['nextUpdate']);
         }
@@ -3402,6 +3583,11 @@ class File_X509
             $crlNumber = $this->serialNumber;
         } else {
             $crlNumber = $this->getExtension('id-ce-cRLNumber');
+            // "The CRL number is a non-critical CRL extension that conveys a
+            //  monotonically increasing sequence number for a given CRL scope and
+            //  CRL issuer.  This extension allows users to easily determine when a
+            //  particular CRL supersedes another CRL."
+            // -- https://tools.ietf.org/html/rfc5280#section-5.2.3
             $crlNumber = $crlNumber !== false ? $crlNumber->add(new Math_BigInteger(1)) : null;
         }
 
@@ -3440,8 +3626,7 @@ class File_X509
                         //    )
                         //),
                         'keyIdentifier' => $issuer->currentKeyIdentifier
-                    )
-                );
+                    ));
                 //$extensions = &$tbsCertList['crlExtensions'];
                 //if (isset($issuer->serialNumber)) {
                 //    $extensions[count($extensions) - 1]['authorityCertSerialNumber'] = $issuer->serialNumber;
@@ -3516,7 +3701,7 @@ class File_X509
      */
     function setStartDate($date)
     {
-        $this->startDate = @date('D, d M y H:i:s O', @strtotime($date));
+        $this->startDate = @date('D, d M Y H:i:s O', @strtotime($date));
     }
 
     /**
@@ -3540,7 +3725,7 @@ class File_X509
             $temp = chr(FILE_ASN1_TYPE_GENERALIZED_TIME) . $asn1->_encodeLength(strlen($temp)) . $temp;
             $this->endDate = new File_ASN1_Element($temp);
         } else {
-            $this->endDate = @date('D, d M y H:i:s O', @strtotime($date));
+            $this->endDate = @date('D, d M Y H:i:s O', @strtotime($date));
         }
     }
 
@@ -3974,7 +4159,7 @@ class File_X509
                     case $disposition == FILE_X509_ATTR_APPEND:
                         $last = $key;
                         break;
-                    case $disposition >= $n;
+                    case $disposition >= $n:
                         $disposition -= $n;
                         break;
                     default:
@@ -4085,7 +4270,7 @@ class File_X509
                 }
                 return false;
             default: // Should be a key object (i.e.: Crypt_RSA).
-                $key = $key->getPublicKey(CRYPT_RSA_PUBLIC_FORMAT_PKCS1_RAW);
+                $key = $key->getPublicKey(CRYPT_RSA_PUBLIC_FORMAT_PKCS1);
                 break;
         }
 
@@ -4126,7 +4311,7 @@ class File_X509
                 //return new File_ASN1_Element(base64_decode(preg_replace('#-.+-|[\r\n]#', '', $this->publicKey->getPublicKey())));
                 return array(
                     'algorithm' => array('algorithm' => 'rsaEncryption'),
-                    'subjectPublicKey' => $this->publicKey->getPublicKey(CRYPT_RSA_PUBLIC_FORMAT_PKCS1_RAW)
+                    'subjectPublicKey' => $this->publicKey->getPublicKey(CRYPT_RSA_PUBLIC_FORMAT_PKCS1)
                 );
             default:
                 return false;
@@ -4214,7 +4399,7 @@ class File_X509
 
         $i = count($rclist);
         $rclist[] = array('userCertificate' => $serial,
-                          'revocationDate'  => array('generalTime' => @date('D, d M y H:i:s O')));
+                          'revocationDate'  => $this->_timeField(@date('D, d M Y H:i:s O')));
         return $i;
     }
 
@@ -4232,9 +4417,8 @@ class File_X509
             if (is_array($rclist = &$this->_subArray($this->currentCert, 'tbsCertList/revokedCertificates', true))) {
                 if ($this->_revokedCertificate($rclist, $serial) === false) { // If not yet revoked
                     if (($i = $this->_revokedCertificate($rclist, $serial, true)) !== false) {
-
                         if (!empty($date)) {
-                            $rclist[$i]['revocationDate'] = array('generalTime' => $date);
+                            $rclist[$i]['revocationDate'] = $this->_timeField($date);
                         }
 
                         return true;
@@ -4350,7 +4534,7 @@ class File_X509
 
         if (is_array($rclist = $this->_subArray($crl, 'tbsCertList/revokedCertificates'))) {
             if (($i = $this->_revokedCertificate($rclist, $serial)) !== false) {
-                return $this->_getExtension($id, $crl,  "tbsCertList/revokedCertificates/$i/crlEntryExtensions");
+                return $this->_getExtension($id, $crl, "tbsCertList/revokedCertificates/$i/crlEntryExtensions");
             }
         }
 

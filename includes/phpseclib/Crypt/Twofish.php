@@ -14,7 +14,7 @@
  * Here's a short example of how to use this library:
  * <code>
  * <?php
- *    include('Crypt/Twofish.php');
+ *    include 'Crypt/Twofish.php';
  *
  *    $twofish = new Crypt_Twofish();
  *
@@ -48,9 +48,8 @@
  * @package   Crypt_Twofish
  * @author    Jim Wigginton <terrafrost@php.net>
  * @author    Hans-Juergen Petrich <petrich@tronic-media.com>
- * @copyright MMVII Jim Wigginton
+ * @copyright 2007 Jim Wigginton
  * @license   http://www.opensource.org/licenses/mit-license.html  MIT License
- * @version   1.0
  * @link      http://phpseclib.sourceforge.net
  */
 
@@ -102,27 +101,12 @@ define('CRYPT_TWOFISH_MODE_CFB', CRYPT_MODE_CFB);
 define('CRYPT_TWOFISH_MODE_OFB', CRYPT_MODE_OFB);
 /**#@-*/
 
-/**#@+
- * @access private
- * @see Crypt_Twofish::Crypt_Twofish()
- */
-/**
- * Toggles the internal implementation
- */
-define('CRYPT_TWOFISH_MODE_INTERNAL', CRYPT_MODE_INTERNAL);
-/**
- * Toggles the mcrypt implementation
- */
-define('CRYPT_TWOFISH_MODE_MCRYPT', CRYPT_MODE_MCRYPT);
-/**#@-*/
-
 /**
  * Pure-PHP implementation of Twofish.
  *
  * @package Crypt_Twofish
  * @author  Jim Wigginton <terrafrost@php.net>
  * @author  Hans-Juergen Petrich <petrich@tronic-media.com>
- * @version 1.0
  * @access  public
  */
 class Crypt_Twofish extends Crypt_Base
@@ -449,34 +433,6 @@ class Crypt_Twofish extends Crypt_Base
     var $kl;
 
     /**
-     * Default Constructor.
-     *
-     * Determines whether or not the mcrypt extension should be used.
-     *
-     * $mode could be:
-     *
-     * - CRYPT_TWOFISH_MODE_ECB
-     *
-     * - CRYPT_TWOFISH_MODE_CBC
-     *
-     * - CRYPT_TWOFISH_MODE_CTR
-     *
-     * - CRYPT_TWOFISH_MODE_CFB
-     *
-     * - CRYPT_TWOFISH_MODE_OFB
-     *
-     * If not explictly set, CRYPT_TWOFISH_MODE_CBC will be used.
-     *
-     * @see Crypt_Base::Crypt_Base()
-     * @param optional Integer $mode
-     * @access public
-     */
-    function Crypt_Twofish($mode = CRYPT_TWOFISH_MODE_CBC)
-    {
-        parent::Crypt_Base($mode);
-    }
-
-    /**
      * Sets the key.
      *
      * Keys can be of any length. Twofish, itself, requires the use of a key that's 128, 192 or 256-bits long.
@@ -648,7 +604,9 @@ class Crypt_Twofish extends Crypt_Base
             $u^= 0x7fffffff & ($t >> 1);
 
             // Add the modular polynomial on underflow.
-            if ($t & 0x01) $u^= 0xa6 ;
+            if ($t & 0x01) {
+                $u^= 0xa6 ;
+            }
 
             // Remove t * (a + 1/a) * (x^3 + x).
             $B^= ($u << 24) | ($u << 8);
@@ -709,10 +667,12 @@ class Crypt_Twofish extends Crypt_Base
             $R1 = ((($R1 >> 31) & 1) | ($R1 << 1)) ^ ($t0 + ($t1 << 1) + $K[++$ki]);
         }
 
+        // @codingStandardsIgnoreStart
         return pack("V4", $K[4] ^ $R2,
                           $K[5] ^ $R3,
                           $K[6] ^ $R0,
                           $K[7] ^ $R1);
+        // @codingStandardsIgnoreEnd
     }
 
     /**
@@ -763,10 +723,12 @@ class Crypt_Twofish extends Crypt_Base
             $R0 = ($R0 >> 31 & 0x1 | $R0 << 1) ^ ($t0 + $t1 + $K[--$ki]);
         }
 
+        // @codingStandardsIgnoreStart
         return pack("V4", $K[0] ^ $R2,
                           $K[1] ^ $R3,
                           $K[2] ^ $R0,
                           $K[3] ^ $R1);
+        // @codingStandardsIgnoreEnd
     }
 
     /**
@@ -780,21 +742,19 @@ class Crypt_Twofish extends Crypt_Base
         $lambda_functions =& Crypt_Twofish::_getLambdaFunctions();
 
         // Max. 10 Ultra-Hi-optimized inline-crypt functions. After that, we'll (still) create very fast code, but not the ultimate fast one.
+        // (Currently, for Crypt_Twofish, one generated $lambda_function cost on php5.5@32bit ~140kb unfreeable mem and ~240kb on php5.5@64bit)
         $gen_hi_opt_code = (bool)( count($lambda_functions) < 10 );
 
-        switch (true) {
-            case $gen_hi_opt_code:
-                $code_hash = md5(str_pad("Crypt_Twofish, {$this->mode}, ", 32, "\0") . $this->key);
-                break;
-            default:
-                $code_hash = "Crypt_Twofish, {$this->mode}";
+        // Generation of a uniqe hash for our generated code
+        $code_hash = "Crypt_Twofish, {$this->mode}";
+        if ($gen_hi_opt_code) {
+            $code_hash = str_pad($code_hash, 32) . $this->_hashInlineCryptFunction($this->key);
         }
 
         if (!isset($lambda_functions[$code_hash])) {
             switch (true) {
                 case $gen_hi_opt_code:
                     $K = $this->K;
-
                     $init_crypt = '
                         static $S0, $S1, $S2, $S3;
                         if (!$S0) {
@@ -812,7 +772,6 @@ class Crypt_Twofish extends Crypt_Base
                     for ($i = 0; $i < 40; ++$i) {
                         $K[] = '$K_' . $i;
                     }
-
                     $init_crypt = '
                         $S0 = $self->S0;
                         $S1 = $self->S1;

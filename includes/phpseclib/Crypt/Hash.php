@@ -5,7 +5,7 @@
  *
  * Uses hash() or mhash() if available and an internal implementation, otherwise.  Currently supports the following:
  *
- * md2, md5, md5-96, sha1, sha1-96, sha256, sha384, and sha512
+ * md2, md5, md5-96, sha1, sha1-96, sha256, sha256-96, sha384, and sha512, sha512-96
  *
  * If {@link Crypt_Hash::setKey() setKey()} is called, {@link Crypt_Hash::hash() hash()} will return the HMAC as opposed to
  * the hash.  If no valid algorithm is provided, sha1 will be used.
@@ -18,7 +18,7 @@
  * Here's a short example of how to use this library:
  * <code>
  * <?php
- *    include('Crypt/Hash.php');
+ *    include 'Crypt/Hash.php';
  *
  *    $hash = new Crypt_Hash('sha1');
  *
@@ -49,7 +49,7 @@
  * @category  Crypt
  * @package   Crypt_Hash
  * @author    Jim Wigginton <terrafrost@php.net>
- * @copyright MMVII Jim Wigginton
+ * @copyright 2007 Jim Wigginton
  * @license   http://www.opensource.org/licenses/mit-license.html  MIT License
  * @link      http://phpseclib.sourceforge.net
  */
@@ -77,7 +77,6 @@ define('CRYPT_HASH_MODE_HASH',     3);
  *
  * @package Crypt_Hash
  * @author  Jim Wigginton <terrafrost@php.net>
- * @version 0.1.0
  * @access  public
  */
 class Crypt_Hash
@@ -154,7 +153,7 @@ class Crypt_Hash
      */
     function Crypt_Hash($hash = 'sha1')
     {
-        if ( !defined('CRYPT_HASH_MODE') ) {
+        if (!defined('CRYPT_HASH_MODE')) {
             switch (true) {
                 case extension_loaded('hash'):
                     define('CRYPT_HASH_MODE', CRYPT_HASH_MODE_HASH);
@@ -208,6 +207,9 @@ class Crypt_Hash
         switch ($hash) {
             case 'md5-96':
             case 'sha1-96':
+            case 'sha256-96':
+            case 'sha512-96':
+                $hash = substr($hash, 0, -3);
                 $this->l = 12; // 96 / 8 = 12
                 break;
             case 'md2':
@@ -240,18 +242,16 @@ class Crypt_Hash
                 $mode = CRYPT_HASH_MODE;
         }
 
-        switch ( $mode ) {
+        switch ($mode) {
             case CRYPT_HASH_MODE_MHASH:
                 switch ($hash) {
                     case 'md5':
-                    case 'md5-96':
                         $this->hash = MHASH_MD5;
                         break;
                     case 'sha256':
                         $this->hash = MHASH_SHA256;
                         break;
                     case 'sha1':
-                    case 'sha1-96':
                     default:
                         $this->hash = MHASH_SHA1;
                 }
@@ -259,7 +259,6 @@ class Crypt_Hash
             case CRYPT_HASH_MODE_HASH:
                 switch ($hash) {
                     case 'md5':
-                    case 'md5-96':
                         $this->hash = 'md5';
                         return;
                     case 'md2':
@@ -269,7 +268,6 @@ class Crypt_Hash
                         $this->hash = $hash;
                         return;
                     case 'sha1':
-                    case 'sha1-96':
                     default:
                         $this->hash = 'sha1';
                 }
@@ -278,28 +276,26 @@ class Crypt_Hash
 
         switch ($hash) {
             case 'md2':
-                 $this->b = 16;
-                 $this->hash = array($this, '_md2');
-                 break;
+                $this->b = 16;
+                $this->hash = array($this, '_md2');
+                break;
             case 'md5':
-            case 'md5-96':
-                 $this->b = 64;
-                 $this->hash = array($this, '_md5');
-                 break;
+                $this->b = 64;
+                $this->hash = array($this, '_md5');
+                break;
             case 'sha256':
-                 $this->b = 64;
-                 $this->hash = array($this, '_sha256');
-                 break;
+                $this->b = 64;
+                $this->hash = array($this, '_sha256');
+                break;
             case 'sha384':
             case 'sha512':
-                 $this->b = 128;
-                 $this->hash = array($this, '_sha512');
-                 break;
+                $this->b = 128;
+                $this->hash = array($this, '_sha512');
+                break;
             case 'sha1':
-            case 'sha1-96':
             default:
-                 $this->b = 64;
-                 $this->hash = array($this, '_sha1');
+                $this->b = 64;
+                $this->hash = array($this, '_sha1');
         }
 
         $this->ipad = str_repeat(chr(0x36), $this->b);
@@ -318,7 +314,7 @@ class Crypt_Hash
         $mode = is_array($this->hash) ? CRYPT_HASH_MODE_INTERNAL : CRYPT_HASH_MODE;
 
         if (!empty($this->key) || is_string($this->key)) {
-            switch ( $mode ) {
+            switch ($mode) {
                 case CRYPT_HASH_MODE_MHASH:
                     $output = mhash($this->hash, $text, $this->key);
                     break;
@@ -341,7 +337,7 @@ class Crypt_Hash
                     $output = call_user_func($this->hash, $output); // step 7
             }
         } else {
-            switch ( $mode ) {
+            switch ($mode) {
                 case CRYPT_HASH_MODE_MHASH:
                     $output = mhash($this->hash, $text);
                     break;
@@ -515,12 +511,14 @@ class Crypt_Hash
 
             // Extend the sixteen 32-bit words into sixty-four 32-bit words
             for ($i = 16; $i < 64; $i++) {
+                // @codingStandardsIgnoreStart
                 $s0 = $this->_rightRotate($w[$i - 15],  7) ^
                       $this->_rightRotate($w[$i - 15], 18) ^
                       $this->_rightShift( $w[$i - 15],  3);
                 $s1 = $this->_rightRotate($w[$i - 2], 17) ^
                       $this->_rightRotate($w[$i - 2], 19) ^
                       $this->_rightShift( $w[$i - 2], 10);
+                // @codingStandardsIgnoreEnd
                 $w[$i] = $this->_add($w[$i - 16], $s0, $w[$i - 7], $s1);
 
             }

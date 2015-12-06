@@ -502,7 +502,7 @@
 	$current_time = time();
 	
 	// If the next scheduled backup is over an hour in the past, it's probably broken, let the user know.
-	if( ( $next_schedule < $current_time - 3600 ) && $option['schedule']['enabled'] ) {
+	if( ( $next_schedule < $current_time - 3600 ) && is_array( $option['schedule'] ) && array_key_exists( 'enabled', $option['schedule'] ) && $option['schedule']['enabled'] ) {
 		$CYANUtil->record_notes( __('The next scheduled backup job is in the past, WP Cron may be broken.  If it does not execute shortly, you may want to disable and then re-enable scheduled backup jobs to re-create the WP Cron entry.', $this->textdomain), 1 );
 	}
 	
@@ -537,21 +537,21 @@
 						<th><?php _e('Force SSL', $this->textdomain);?></th>
 
 						<td>
-							<input type=checkbox id="forcessl" name="forcessl"<?php if( $option['forcessl'] == 'on' ) { echo ' CHECKED'; }?>>
+							<input type=checkbox id="forcessl" name="forcessl"<?php if( array_key_exists( 'forecssl', $option ) && $option['forcessl'] == 'on' ) { echo ' CHECKED'; }?>>
 						</td>
 					</tr>
 					<tr>
 						<th><?php _e('Artificial Delay', $this->textdomain);?></th>
 
 						<td>
-							<input type=checkbox id="artificialdelay" name="artificialdelay"<?php if( $option['artificialdelay'] == 'on' ) { echo ' CHECKED'; }?>>
+							<input type=checkbox id="artificialdelay" name="artificialdelay"<?php if( array_key_exists( 'artificialdelay', $option ) && $option['artificialdelay'] == 'on' ) { echo ' CHECKED'; }?>>
 						</td>
 					</tr>
 					<tr>
 						<th><?php _e('Low I/O Mode', $this->textdomain);?></th>
 
 						<td>
-							<input type=checkbox id="lowiomode" name="lowiomode"<?php if( $option['lowiomode'] == 'on' ) { echo ' CHECKED'; }?>>
+							<input type=checkbox id="lowiomode" name="lowiomode"<?php if( array_key_exists( 'lowiomode', $option ) && $option['lowiomode'] == 'on' ) { echo ' CHECKED'; }?>>
 						</td>
 					</tr>
 					<tr>
@@ -583,14 +583,14 @@
 						<th><?php _e('Split DB backup file', $this->textdomain);?></th>
 
 						<td>
-							<input type=checkbox id="splitdbbackup" name="splitdbbackup"<?php if( $option['splitdbbackup'] == 'on' ) { echo ' CHECKED'; }?>>
+							<input type=checkbox id="splitdbbackup" name="splitdbbackup"<?php if( array_key_exists( 'splitdbbackup', $option ) && $option['splitdbbackup'] == 'on' ) { echo ' CHECKED'; }?>>
 						</td>
 					</tr>
 					<tr>
 						<th><?php _e('Disable DB Backup', $this->textdomain);?></th>
 
 						<td>
-							<input type=checkbox id="disabledbbackup" name="disabledbbackup"<?php if( $option['disabledbbackup'] == 'on' ) { echo ' CHECKED'; }?>>
+							<input type=checkbox id="disabledbbackup" name="disabledbbackup"<?php if( array_key_exists( 'disabledbbackup', $option ) && $option['disabledbbackup'] == 'on' ) { echo ' CHECKED'; }?>>
 						</td>
 					</tr>
 					<tr>
@@ -643,7 +643,7 @@
 						<th><?php _e('E-Mail the log file', $this->textdomain);?></th>
 
 						<td>
-							<input type=checkbox id="emaillog_enabled" name="emaillog"<?php if( $option['emaillog'] == 'on' ) { echo ' CHECKED'; }?>>
+							<input type=checkbox id="emaillog_enabled" name="emaillog"<?php if( array_key_exists( 'emaillog', $option ) && $option['emaillog'] == 'on' ) { echo ' CHECKED'; }?>>
 						</td>
 					</tr>
 
@@ -670,7 +670,7 @@
 ?></code>
 						</td>
 					</tr>
-<?php if( $option['schedule']['enabled'] == 'on' ) { ?>
+<?php if( array_key_exists( 'schedule', $option ) && array_key_exists( 'enabled', $option['schedule'] ) && $option['schedule']['enabled'] == 'on' ) { ?>
 					<tr>
 			
 					<td style="width: auto; text-align: right; vertical-align: top;"><span class="description"><?php _e('Next backup scheduled for', $this->textdomain);?></span>:</td><td style="width: auto; text-align: left; vertical-align: top;"><code>
@@ -693,7 +693,7 @@
 					<tr>
 						<th><?php _e('Enable', $this->textdomain);?></th>
 
-						<td><input type=checkbox id="schedule_enabled" name="schedule[enabled]"<?php if( $option['schedule']['enabled'] == 'on' ) { echo ' CHECKED'; }?>></td>
+						<td><input type=checkbox id="schedule_enabled" name="schedule[enabled]"<?php if( array_key_exists( 'schedule', $option ) && array_key_exists( 'enabled', $option['schedule'] ) && $option['schedule']['enabled'] == 'on' ) { echo ' CHECKED'; }?>></td>
 					</tr>
 
 					<tr>
@@ -705,7 +705,7 @@
 		foreach( $schedule_types as $type ) {
 			echo "\t\t\t\t\t\t<option value=\"" . $type . '"';
 
-			if( $option['schedule']['type'] == $type ) { echo ' SELECTED'; $display_settings = $display_type_settings[$type]; }
+			if( array_key_exists( 'schedule', $option ) && array_key_exists( 'type', $option['schedule'] ) && $option['schedule']['type'] == $type ) { echo ' SELECTED'; $display_settings = $display_type_settings[$type]; }
 			
 			echo '>' . __($type, $this->textdomain) . '</option>';
 		}
@@ -730,7 +730,7 @@
 		for( $i = 1; $i < 32; $i++ ) 
 			{ 
 			echo '<option value="' . $i . '"';
-			if( $i == (int)$option['schedule']['interval'] ) { echo ' SELECTED'; }
+			if( array_key_exists( 'schedule', $option ) && array_key_exists( 'interval', $option['schedule'] ) && $i == (int)$option['schedule']['interval'] ) { echo ' SELECTED'; }
 			echo '>' . $i . '</option>'; 
 			}
 		echo "</select>\n";
@@ -745,7 +745,7 @@
 		foreach( $weekdays as $day ) {
 			echo "\t\t\t\t\t\t\t\t" . '<option value="' . $day . '"';
 
-			if( $option['schedule']['dow'] == $day ) { echo' SELECTED'; }
+			if( array_key_exists( 'schedule', $option ) && array_key_exists( 'dow', $option['schedule'] ) && $option['schedule']['dow'] == $day ) { echo' SELECTED'; }
 			
 			echo '>' . __($day, $this->textdomain) . '</option>';
 		}
@@ -760,7 +760,7 @@
 		for( $i = 1; $i < 28; $i++ ) {
 			echo "\t\t\t\t\t\t\t\t" . '<option value="' . $i . '"';
 
-			if( $option['schedule']['dom'] == $i ) { echo' SELECTED'; }
+			if( array_key_exists( 'schedule', $option ) && array_key_exists( 'dom', $option['schedule'] ) && $option['schedule']['dom'] == $i ) { echo' SELECTED'; }
 			
 			echo '>' . $i . '</option>';
 		}
@@ -773,7 +773,7 @@
 		for( $i = 1; $i < 13; $i++ ) 
 			{ 
 			echo '<option value="' . $i . '"';
-			if( $i == (int)$option['schedule']['hours'] ) { echo ' SELECTED'; }
+			if( array_key_exists( 'schedule', $option ) && array_key_exists( 'hours', $option['schedule'] ) && $i == (int)$option['schedule']['hours'] ) { echo ' SELECTED'; }
 			echo '>' . $i . '</option>'; 
 			}
 		echo "</select>\n";
@@ -782,14 +782,14 @@
 		for( $i = 0; $i < 60; $i++ ) 
 			{ 
 			echo '<option value="' . $i . '"';
-			if( $i == (int)$option['schedule']['minutes'] ) { echo ' SELECTED'; }
+			if( array_key_exists( 'schedule', $option ) && array_key_exists( 'minutes', $option['schedule'] ) && $i == (int)$option['schedule']['minutes'] ) { echo ' SELECTED'; }
 			echo '>:';
 			if( $i < 10 ) { echo '0'; }
 			echo $i . '</option>'; 
 			}
 		echo "</select>\n";
 ?>
-							<select id="schedule_ampm" name="schedule[ampm]"><option value="am"<?php if( $option['schedule']['ampm'] == 'am' ) { echo ' SELECTED'; } ?>>am</option><option value="pm"<?php if( $option['schedule']['ampm'] == 'pm' ) { echo ' SELECTED'; } ?>>pm</option></select>.
+							<select id="schedule_ampm" name="schedule[ampm]"><option value="am"<?php if( array_key_exists( 'schedule', $option ) && array_key_exists( 'ampm', $option['schedule'] ) && $option['schedule']['ampm'] == 'am' ) { echo ' SELECTED'; } ?>>am</option><option value="pm"<?php if( array_key_exists( 'schedule', $option ) && array_key_exists( 'ampm', $option['schedule'] ) && $option['schedule']['ampm'] == 'pm' ) { echo ' SELECTED'; } ?>>pm</option></select>.
 						</td>
 					</tr>
 				</tbody>
@@ -802,7 +802,7 @@
 					<tr>
 						<th><?php _e('Enable backup pruning', $this->textdomain);?></th>
 						
-						<td><input type="checkbox" name="prune[enabled]"<?php	if( $option['prune']['enabled'] == 'on' ) { echo' CHECKED'; }?>></td>
+						<td><input type="checkbox" name="prune[enabled]"<?php	if( array_key_exists( 'prune', $option ) && array_key_exists( 'enabled', $option['prune'] ) && $option['prune']['enabled'] == 'on' ) { echo' CHECKED'; }?>></td>
 					</tr>
 
 					<tr>
@@ -820,7 +820,7 @@
 					<tr>
 						<th><?php _e('Enable remote storage', $this->textdomain);?></th>
 						
-						<td><input type="checkbox" name="remote[enabled]"<?php	if( $option['remote']['enabled'] == 'on' ) { echo' CHECKED'; }?>></td>
+						<td><input type="checkbox" name="remote[enabled]"<?php	if( array_key_exists( 'remote', $option ) && array_key_exists( 'enabled', $option['remote'] ) && $option['remote']['enabled'] == 'on' ) { echo' CHECKED'; }?>></td>
 					</tr>
 
 					<tr>
@@ -844,7 +844,7 @@
 		foreach( $remoteprotocols as $key => $protocol ) 
 			{ 
 			echo '<option value="' . $key . '"';
-			if( $key == $option['remote']['protocol'] ) { echo ' SELECTED'; }
+			if( array_key_exists( 'remote', $option ) && array_key_exists( 'protocol', $option['remote'] ) && $key == $option['remote']['protocol'] ) { echo ' SELECTED'; }
 			echo '>'. $protocol . '</option>'; 
 			}
 			
@@ -884,19 +884,19 @@
 					<tr>
 						<th><?php _e('Include log file', $this->textdomain);?></th>
 						
-						<td><input type="checkbox" name="remote[sendlog]"<?php	if( $option['remote']['sendlog'] == 'on' ) { echo' CHECKED'; }?>></td>
+						<td><input type="checkbox" name="remote[sendlog]"<?php	if( array_key_exists( 'remote', $option ) && array_key_exists( 'sendlog', $option['remote'] ) && $option['remote']['sendlog'] == 'on' ) { echo' CHECKED'; }?>></td>
 					</tr>
 
 					<tr>
 						<th><?php _e('Delete local copy during scheduled backup', $this->textdomain);?></th>
 						
-						<td><input type="checkbox" name="remote[deletelocalschedule]"<?php	if( $option['remote']['deletelocalschedule'] == 'on' ) { echo' CHECKED'; }?>></td>
+						<td><input type="checkbox" name="remote[deletelocalschedule]"<?php	if( array_key_exists( 'remote', $option ) && array_key_exists( 'deletelocalschedule', $option['remote'] ) && $option['remote']['deletelocalschedule'] == 'on' ) { echo' CHECKED'; }?>></td>
 					</tr>
 					
 					<tr>
 						<th><?php _e('Delete local copy during manual backup', $this->textdomain);?></th>
 						
-						<td><input type="checkbox" name="remote[deletelocalmanual]"<?php	if( $option['remote']['deletelocalmanual'] == 'on' ) { echo' CHECKED'; }?>></td>
+						<td><input type="checkbox" name="remote[deletelocalmanual]"<?php	if( array_key_exists( 'remote', $option ) && array_key_exists( 'deletelocalmanual', $option['remote'] ) && $option['remote']['deletelocalmanual'] == 'on' ) { echo' CHECKED'; }?>></td>
 					</tr>
 
 				</tbody>
