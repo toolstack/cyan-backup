@@ -90,6 +90,16 @@ Also the remote server MUST be on the same class 'C' subnet as your web server. 
 * None at this time.
 
 == Changelog == 
+= 2.3 =
+* Release date: December 6, 2015
+* Added: Low i/o mode.
+* Added: First cut at adding PHP Archive library support (UI still needs to be addressed for non zip formats).
+* Fixed: Several fixes to the UI to handle different archive file extensions.
+* Fixed: Incorrect name being returned to the UI when not backing up the database.
+* Updated: Help tab.
+* Updated: phpseclib to version 1.0.0.
+* Removed: The error display for the JSON calls as they aren't required.
+
 = 2.2 =
 * Release date: July 10, 2015
 * Added: Option to exclude the database from the backup.
