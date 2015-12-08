@@ -92,7 +92,7 @@ class CYANBackup {
 			}
 			
 			// Remove the old 'Disable ZipArchive' option, but if it was set, update the new archive_method if it hasn't already been set by the user.
-			if( $options['disableziparchive'] ) { 
+			if( array_key_exists( 'disableziparchive', $options ) && $options['disableziparchive'] ) { 
 				if( !array_key_exists( 'archive_method', $options ) ) { $options['archive_method'] = 'PclZip'; }
 				unset( $options['disableziparchive'] );
 			}
