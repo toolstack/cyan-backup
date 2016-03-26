@@ -110,12 +110,44 @@ class Zip_TestCase extends PHPUnit_Framework_TestCase
         $zip->open($file);
         $content = $zip->contents();
 
-        $this->assertCount(4, $content, "Contents of $file");
-        $this->assertEquals('zip/testdata1.txt', $content[1]->getPath(), "Contents of $file");
-        $this->assertEquals(13, $content[1]->getSize(), "Contents of $file");
+        $this->assertCount(5, $content, "Contents of $file");
+        $this->assertEquals('zip/testdata1.txt', $content[2]->getPath(), "Contents of $file");
+        $this->assertEquals(13, $content[2]->getSize(), "Contents of $file");
 
-        $this->assertEquals('zip/foobar/testdata2.txt', $content[3]->getPath(), "Contents of $file");
-        $this->assertEquals(13, $content[3]->getSize(), "Contents of $file");
+        $this->assertEquals('zip/foobar/testdata2.txt', $content[4]->getPath(), "Contents of $file");
+        $this->assertEquals(13, $content[4]->getSize(), "Contents of $file");
+    }
+
+    /**
+     * Create an archive and unpack it again
+     */
+    public function test_dogfood()
+    {
+
+        $input = glob(dirname(__FILE__) . '/../src/*');
+        $archive = sys_get_temp_dir() . '/dwziptest' . md5(time()) . '.zip';
+        $extract = sys_get_temp_dir() . '/dwziptest' . md5(time() + 1);
+
+        $zip = new Zip();
+        $zip->create($archive);
+        foreach($input as $path) {
+            $file = basename($path);
+            $zip->addFile($path, $file);
+        }
+        $zip->close();
+        $this->assertFileExists($archive);
+
+        $zip = new Zip();
+        $zip->open($archive);
+        $zip->extract($extract, '', '/FileInfo\\.php/', '/.*\\.php/');
+
+        $this->assertFileExists("$extract/Tar.php");
+        $this->assertFileExists("$extract/Zip.php");
+        $this->assertFileNotExists("$extract/FileInfo.php");
+
+        self::rdelete($extract);
+        unlink($archive);
+
     }
 
     /**
@@ -139,6 +171,10 @@ class Zip_TestCase extends PHPUnit_Framework_TestCase
 
         $this->assertFileExists($out.'/zip/foobar/testdata2.txt', "Extracted $file");
         $this->assertEquals(13, filesize($out.'/zip/foobar/testdata2.txt'), "Extracted $file");
+
+        $this->assertFileExists($out.'/zip/compressable.txt', "Extracted $file");
+        $this->assertEquals(1836, filesize($out.'/zip/compressable.txt'), "Extracted $file");
+        $this->assertFileNotExists($out.'/zip/compressable.txt.gz', "Extracted $file");
 
         self::rdelete($out);
     }
