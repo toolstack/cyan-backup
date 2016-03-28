@@ -91,7 +91,7 @@
 
 			<tbody>
 <?php
-		$backup_files = $this->backup_files_info($this->get_backup_files());
+		$backup_files = $this->backup_files_info( $this->get_backup_files() );
 		$alternate = ' class="alternate"';
 		
 		if( count( $backup_files ) > 0) {
@@ -111,7 +111,7 @@
 				$temp_time = strtotime( $backup_file['filemtime'] );
 
 				printf( "\t\t\t\t\t<td>%s</td>\n", date( get_option( 'date_format' ), $temp_time ) . ' @ ' . date( get_option( 'time_format' ), $temp_time ) );
-				printf( "\t\t\t\t\t<td>%s MB</td>\n", number_format($backup_file['filesize'], 2));
+				printf( "\t\t\t\t\t<td>%s MB</td>\n", number_format( $backup_file['filesize'], 2 ) );
 				echo "\t\t\t\t\t<td style='text-align: center;'><input type=\"checkbox\" id=\"removefiles[{$i}]\" name=\"remove[{$i}]\" value=\"{$backup_file['filename']}\" /></td>\n";
 				echo "\t\t\t\t</tr>\n";
 				

@@ -49,19 +49,17 @@ if( !class_exists( 'CYAN_WP_Backup' ) ) {
 
 			new WP_AddRewriteRules( 'json/([^/]+)/?', 'json=$matches[1]', array( &$this, 'json_request' ) );
 
-			if( is_admin() ) {
-				// add admin menu
-				$this->menu_base = basename( $this->plugin_file, '.php' );
-				if( function_exists( 'is_multisite' ) && is_multisite() ) {
-					$this->admin_action = $this->wp_admin_url( 'network/admin.php?page=' . $this->menu_base );
-					add_action( 'network_admin_menu', array( &$this, 'admin_menu' ) );
-				} else {
-					$this->admin_action = $this->wp_admin_url( 'admin.php?page=' . $this->menu_base );
-					add_action( 'admin_menu', array( &$this, 'admin_menu' ) );
-					add_filter( 'plugin_action_links', array( &$this, 'plugin_setting_links' ), 10, 2 );
-				}
-				add_action( 'init', array( &$this, 'file_download' ) );
+			// add admin menu
+			$this->menu_base = basename( $this->plugin_file, '.php' );
+			if( function_exists( 'is_multisite' ) && is_multisite() ) {
+				$this->admin_action = $this->wp_admin_url( 'network/admin.php?page=' . $this->menu_base );
+				add_action( 'network_admin_menu', array( &$this, 'admin_menu' ) );
+			} else {
+				$this->admin_action = $this->wp_admin_url( 'admin.php?page=' . $this->menu_base );
+				add_action( 'admin_menu', array( &$this, 'admin_menu' ) );
+				add_filter( 'plugin_action_links', array( &$this, 'plugin_setting_links' ), 10, 2 );
 			}
+			add_action( 'init', array( &$this, 'file_download' ) );
 
 			$options = get_option( $this->option_name );
 

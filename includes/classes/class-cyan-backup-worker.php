@@ -1095,7 +1095,7 @@ class CYAN_Backup_Worker {
 						$query = '?download=' . rawurlencode( $backup_file ) . $nonces;
 					}
 					
-					$url = sprintf( '<a href="%1$s" title="%2$s">%2$s</a>', trailingslashit( home_url() ) . $query, esc_html( basename( $backup_file ) ) );
+					$url = sprintf( '<a href="%1$s" title="%2$s">%2$s</a>', $query, esc_html( basename( $backup_file ) ) );
 					
 					$filesize = (int)sprintf( '%u', filesize( $backup_file ) ) / 1024 / 1024;
 
@@ -1103,12 +1103,12 @@ class CYAN_Backup_Worker {
 					
 					if( file_exists( $log_file ) ) {
 						if( $page ) {
-							$logquery = "?page={$page}&download=" . rawurlencode($log_file) . $nonces;
+							$logquery = "?page={$page}&download=" . rawurlencode( $log_file ) . $nonces;
 						} else {
-							$logquery = '?download=' . rawurlencode($log_file) . $nonces;
+							$logquery = '?download=' . rawurlencode( $log_file ) . $nonces;
 						}
 						
-						$logurl = sprintf( '<a href="%1$s" title="log">log</a>', trailingslashit( home_url() ) . $logquery, esc_html( basename( $log_file ) ) );
+						$logurl = sprintf( '<a href="%1$s" title="log">log</a>', $logquery, esc_html( basename( $log_file ) ) );
 					} else {
 						$logurl = '';
 					}
