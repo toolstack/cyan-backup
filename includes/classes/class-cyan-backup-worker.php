@@ -422,8 +422,12 @@ class CYAN_Backup_Worker {
 	//**************************************************************************************
 	// can user backup ?
 	//**************************************************************************************
-	private function can_user_backup($loc = 'main') {
-		return TRUE;
+	public function can_user_backup( $loc = 'main' ) {
+		if( current_user_can( 'manage_options' ) ) {
+			return TRUE;
+		}
+		
+		return FALSE;
 	}
 
 	//**************************************************************************************

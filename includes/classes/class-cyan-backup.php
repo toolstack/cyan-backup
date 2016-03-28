@@ -3,6 +3,9 @@ if( !class_exists( 'CYAN_WP_Backup' ) ) {
 	class CYANBackup {
 		public $plugin_name = 'CYAN Backup';
 		public $archive_path;
+		public $CYANBackupWorker;
+		public $CYANBackupAjax;
+		public $Utils;
 
 		private $plugin_basename;
 		private $plugin_dir;
@@ -18,9 +21,6 @@ if( !class_exists( 'CYAN_WP_Backup' ) ) {
 		private $backup_page;
 		private $option_page;
 		private $about_page;
-		private $CYANBackupWorker;
-		private $CYANBackupAjax;
-		private $Utils;
 
 		private $default_excluded = array(
 			'wp-content/cache/',
@@ -449,7 +449,7 @@ if( !class_exists( 'CYAN_WP_Backup' ) ) {
 		//**************************************************************************************
 		// Site backup
 		//**************************************************************************************
-		private function json_backup( $userid_org ) {
+		public function json_backup( $userid_org ) {
 			$userid = (int)( $this->get_request_var( 'userid', -1 ) );
 
 			if( $userid !== $userid_org ) {
