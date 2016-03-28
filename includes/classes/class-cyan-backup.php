@@ -587,31 +587,6 @@ if( !class_exists( 'CYAN_WP_Backup' ) ) {
 				}
 			}
 
-			$json_backup_url  = $site_url;
-			$json_status_url  = $site_url;
-			$json_backup_args = "userid:{$userid}";
-			$json_status_args = "userid:{$userid}";
-			$json_method_type = 'POST';
-
-			switch ($this->get_permalink_type()) {
-				case 'Pretty':
-					$json_backup_url .= 'json/backup/';
-					$json_status_url .= 'json/status/';
-					$json_method_type = 'POST';
-					break;
-				case 'Almost Pretty':
-					$json_backup_url .= 'index.php/json/backup/';
-					$json_status_url .= 'index.php/json/status/';
-					$json_method_type = 'POST';
-					break;
-				case 'Ugly':
-				default:
-					$json_backup_args .= "json:'backup'";
-					$json_status_args .= "json:'status'";
-					$json_method_type = 'GET';
-					break;
-			}
-
 			$img = '<img src="%1$s" class="%2$s" style="display:inline-block;position:relative;left:.25em;top:.25em;width:16p;height:16px;" />';
 			$loading_img = sprintf( $img, $this->wp_admin_url('images/wpspin_light.gif'), 'updating' );
 			$success_img = sprintf( $img, $this->plugin_url . 'images/success.png', 'success' );
@@ -635,27 +610,6 @@ if( !class_exists( 'CYAN_WP_Backup' ) ) {
 	<script type="text/javascript">//<![CDATA[
 	function CYANBackupVariables( name ) {
 		switch( name ) {
-			case 'json_status_args':
-				return <?php echo json_encode( $json_status_args ); ?>;
-				break;
-			case 'json_backup_url':
-				return <?php echo json_encode( $json_backup_url ); ?>;
-				break;
-			case 'json_status_url':
-				return <?php echo json_encode( $json_status_url ); ?>;
-				break;
-			case 'json_backup_args':
-				return <?php echo json_encode( $json_backup_args ); ?>;
-				break;
-			case 'nonces_1':
-				return <?php echo json_encode( $nonces_1 ); ?>;
-				break;
-			case 'nonces_2':
-				return <?php echo json_encode( $nonces_2 ); ?>;
-				break;
-			case 'nonces_3':
-				return <?php echo json_encode( $nonces_3 ); ?>;
-				break;
 			case 'loading_img':
 				return <?php echo json_encode( $loading_img ); ?>;
 				break;

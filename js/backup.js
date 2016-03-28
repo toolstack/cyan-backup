@@ -40,8 +40,7 @@ jQuery( function($) {
 	function CYANBackupActivityCheck() {
 		var args = {};
 		
-		args[0] = CYANBackupVariables( 'json_status_args' );
-		args[1] = CYANBackupVariables( 'nonces_3' );
+		args['action'] = 'cyan_backup_status';
 
 		jQuery.ajax( {
 			async: true,
@@ -62,16 +61,15 @@ jQuery( function($) {
 					jQuery("#progresstext").html( json.message );
 				}
 			},
-			type: CYANBackupVariables( 'json_method_type' ),
-			url: CYANBackupVariables( 'json_status_url' ),
+			type: 'POST',
+			url: ajaxurl,
 		});
 	}
 
 	function CYANBackupUpdater() {
 		var args = {};
 		
-		args[0] = CYANBackupVariables( 'json_status_args' );
-		args[1] = CYANBackupVariables( 'nonces_3' );
+		args['action'] = 'cyan_backup_status';
 
 		jQuery.ajax( {
 			async: true,
@@ -136,16 +134,15 @@ jQuery( function($) {
 
 				}
 			},
-			type: CYANBackupVariables( 'json_method_type' ),
-			url: CYANBackupVariables( 'json_status_url' ),
+			type: 'POST',
+			url: ajaxurl,
 		});
 	}
 
 	jQuery('input[name="backup_site"]').unbind('click').click( function(){
 		var args = {};
 		
-		args[0] = CYANBackupVariables( 'json_status_args' );
-		args[1] = CYANBackupVariables( 'nonces_1' );
+		args['action'] = 'cyan_backup_start';
 
 		var wrap = jQuery(this).parent();
 		
@@ -173,8 +170,8 @@ jQuery( function($) {
 				jQuery("#progressbar").progressbar( "value", 100 );
 				jQuery("#progresstext").html( "Backup complete!" );
 			},
-			type: CYANBackupVariables( 'json_method_type' ),
-			url: CYANBackupVariables( 'json_backup_url' ),
+			type: 'POST',
+			url: ajaxurl,
 		});
 
 		return false;
