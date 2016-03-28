@@ -11,12 +11,14 @@ if( !class_exists( 'CYAN_WP_Backup' ) ) {
 		private $include_path;
 		private $menu_base;
 		private $option_name;
+		private $options;
 		private $admin_action;
 		private $debug_log = null;
 		private $backup_page;
 		private $option_page;
 		private $about_page;
 		private $CYANBackupWorker;
+		private $CYANBackupAjax;
 		private $Utils;
 
 		private $default_excluded = array(
@@ -61,25 +63,39 @@ if( !class_exists( 'CYAN_WP_Backup' ) ) {
 			}
 			add_action( 'init', array( &$this, 'file_download' ) );
 
-			$options = get_option( $this->option_name );
+			$this->options = get_option( $this->option_name );
+
+			$this->CYANBackupWorker = new CYAN_Backup_Worker(
+																$this->get_archive_path( $this->options ),
+																$this->get_archive_prefix( $this->options ),
+																trailingslashit( ABSPATH, FALSE ),
+																$this->get_excluded_dir( $this->options ),
+																$this->Utils,
+																$this->options
+															);
+
+			$this->CYANBackupAjax = new CYAN_Backup_Ajax(
+																$this->Utils,
+																$this->options
+															);
 
 			// Run the upgrade code if required
-			if( $options['version'] != self::VERSION )
+			if( $this->options['version'] != self::VERSION )
 				{
-				$options['version'] = self::VERSION;
-				$options['next_backup_time'] = wp_next_scheduled( 'cyan_backup_hook' );
+				$this->options['version'] = self::VERSION;
+				$this->options['next_backup_time'] = wp_next_scheduled( 'cyan_backup_hook' );
 
-				if( !isset( $options['schedule']['ampm'] ) ) {
-					list( $hours, $options['schedule']['minutes'], $options['schedule']['hours'], $options['schedule']['ampm'] ) = $this->split_date_string( $schedule['tod'] );
+				if( !isset( $this->options['schedule']['ampm'] ) ) {
+					list( $hours, $this->options['schedule']['minutes'], $this->options['schedule']['hours'], $this->options['schedule']['ampm'] ) = $this->split_date_string( $schedule['tod'] );
 				}
 
 				// Remove the old 'Disable ZipArchive' option, but if it was set, update the new archive_method if it hasn't already been set by the user.
-				if( array_key_exists( 'disableziparchive', $options ) && $options['disableziparchive'] ) {
-					if( !array_key_exists( 'archive_method', $options ) ) { $options['archive_method'] = 'PclZip'; }
-					unset( $options['disableziparchive'] );
+				if( array_key_exists( 'disableziparchive', $this->options ) && $options['disableziparchive'] ) {
+					if( !array_key_exists( 'archive_method', $this->options ) ) { $this->options['archive_method'] = 'PclZip'; }
+					unset( $this->options['disableziparchive'] );
 				}
 
-				update_option( $this->option_name, $options );
+				update_option( $this->option_name, $this->options );
 				}
 
 			// activation & deactivation
@@ -285,10 +301,6 @@ if( !class_exists( 'CYAN_WP_Backup' ) ) {
 				$option = (array)get_option( $this->option_name );
 			}
 
-			if( !class_exists('CYAN_Backup_Worker') ) {
-				require_once $this->include_path . '/classes/class-cyan-backup-worker.php';
-			}
-
 			if( FALSE === $special ) {
 				$excluded =	array( './' , '../' );
 			} else {
@@ -308,25 +320,6 @@ if( !class_exists( 'CYAN_WP_Backup' ) ) {
 
 		// remote backuper
 		private function remote_backuper( $option = NULL ) {
-			if( isset( $this->CYANBackupWorker ) ) {
-				return $this->CYANBackupWorker;
-			}
-
-			if( !class_exists( 'CYAN_Backup_Worker ' ) ) {
-				require_once $this->include_path . '/classes/class-cyan-backup-worker.php';
-			}
-
-			if( !$option ) {
-				$option = (array)get_option( $this->option_name );
-			}
-
-			$this->CYANBackupWorker = new CYAN_Backup_Worker(
-																$this->get_archive_path($option) ,
-																$this->get_archive_prefix($option) ,
-																trailingslashit(ABSPATH, FALSE) ,
-																$this->get_excluded_dir($option)
-																);
-
 			return $this->CYANBackupWorker;
 		}
 
@@ -471,21 +464,19 @@ if( !class_exists( 'CYAN_WP_Backup' ) ) {
 			}
 
 			if( $backup_file && file_exists( $backup_file ) ) {
-				$options = (array)get_option( $this->option_name );
-
 				$filesize = (int)sprintf( '%u', filesize( $backup_file ) ) / 1024 / 1024;
 				$temp_time = strtotime( $this->Utils->get_filemtime( $backup_file ) );
 				$filedate = date( get_option( 'date_format' ), $temp_time ) . ' @ ' . date( get_option( 'time_format' ), $temp_time );
 
-				$this->transfer_backups( $backup_file, $options['remote'], 'manual' );
+				$this->transfer_backups( $backup_file, $this->options['remote'], 'manual' );
 
-				$this->prune_backups( $options['prune']['number'] );
+				$this->prune_backups( $this->options['prune']['number'] );
 
 				return array(
 								'backup_file' => $backup_file,
 								'backup_date' => $filedate,
 								'backup_size' => number_format($filesize, 2) . ' MB',
-								'backup_deleted' => $options['remote']['deletelocal'],
+								'backup_deleted' => $this->options['remote']['deletelocal'],
 								);
 			} else {
 				return $result;
@@ -500,9 +491,6 @@ if( !class_exists( 'CYAN_WP_Backup' ) ) {
 			$result = $remote_backuper->wp_backup();
 			//$this->write_debug_log( "Completed backup" );
 
-			// Get the options.
-			$options = (array)get_option($this->option_name);
-
 			//$this->write_debug_log( "Starting next schedule" );
 			// Determine the next backup time.
 			$this->schedule_next_backup();
@@ -510,12 +498,12 @@ if( !class_exists( 'CYAN_WP_Backup' ) ) {
 
 			//$this->write_debug_log( "Starting transfer" );
 			// Send the backup to remote storage.
-			$this->transfer_backups( $result['backup'], $options['remote'], 'schedule' );
+			$this->transfer_backups( $result['backup'], $this->options['remote'], 'schedule' );
 			//$this->write_debug_log( "Completed transfer" );
 
 			//$this->write_debug_log( "Starting pruning" );
 			// Prune existing backup files as per the options.
-			$this->prune_backups( $options['prune']['number'] );
+			$this->prune_backups( $this->options['prune']['number'] );
 			//$this->write_debug_log( "Completed pruning" );
 		}
 
@@ -1007,11 +995,9 @@ if( !class_exists( 'CYAN_WP_Backup' ) ) {
 		// Determine when the first backup should happen based on the schedule
 		//**************************************************************************************
 		private function calculate_initial_backup( $schedule ) {
-			if( !is_array($schedule) )
+			if( !is_array( $schedule ) )
 				{
-				$options = (array)get_option( $this->option_name );
-
-				$schedule = $options['schedule'];
+				$schedule = $this->options['schedule'];
 				}
 
 			// Get the current date/time and split it up for reference later on.
@@ -1174,9 +1160,9 @@ if( !class_exists( 'CYAN_WP_Backup' ) ) {
 		// Determine when the next backup should happen based on the schedule
 		//**************************************************************************************
 		private function calculate_next_backup( $options ) {
-			if( !is_array($options) )
+			if( !is_array( $options ) )
 				{
-				$options = (array)get_option( $this->option_name );
+				$options = $this->options;
 				}
 
 			$schedule = $options['schedule'];
@@ -1220,15 +1206,13 @@ if( !class_exists( 'CYAN_WP_Backup' ) ) {
 		}
 
 		public function schedule_next_backup( $schedule ) {
-			$options = (array)get_option( $this->option_name );
-
-			if( $options['schedule']['enabled'] && $options['schedule']['type'] != 'Once' ) {
-				$next_backup_time = $this->calculate_next_backup( $options );
+			if( $this->options['schedule']['enabled'] && $this->options['schedule']['type'] != 'Once' ) {
+				$next_backup_time = $this->calculate_next_backup( $this->options );
 
 				wp_schedule_single_event( $next_backup_time, 'cyan_backup_hook' );
 
-				$options['next_backup_time'] = $next_backup_time;
-				update_option( $this->option_name, $options );
+				$this->options['next_backup_time'] = $next_backup_time;
+				update_option( $this->option_name, $this->options );
 			}
 		}
 

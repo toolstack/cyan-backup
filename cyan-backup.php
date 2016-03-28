@@ -20,6 +20,8 @@ This software is released under the GPL v2.0, see license.txt for details.
 
 require_once( __DIR__ . '/vendor/autoload.php' );
 
+include_once( 'includes/classes/class-cyan-backup-worker.php' );
+include_once( 'includes/classes/class-cyan-backup-ajax.php' );
 include_once( 'includes/classes/class-cyan-backup.php' );
 
 GLOBAL $cyan_backup;

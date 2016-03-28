@@ -35,12 +35,10 @@ class CYAN_Backup_Worker {
 	//**************************************************************************************
 	// Constructor
 	//**************************************************************************************
-	function __construct( $archive_path = FALSE, $archive_prefix = FALSE, $wp_dir = FALSE, $excluded = FALSE ) {
-		include_once( 'class-cyan-utilities.php' );
-		
-		$this->Utils = new CYAN_Utilities;
+	function __construct( $archive_path = FALSE, $archive_prefix = FALSE, $wp_dir = FALSE, $excluded = FALSE, $utils = FALSE, $options = FALSE ) {
+		$this->Utils = $utils;
 
-		$this->option = (array)get_option( self::OPTION_NAME );
+		$this->option = $options;
 		
 		if( $archive_path === FALSE && isset( $this->option['archive_path'] ) && is_dir( $this->option['archive_path'] ) ) {
 			$archive_path = $this->option['archive_path'];
