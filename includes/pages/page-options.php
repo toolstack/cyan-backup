@@ -505,14 +505,16 @@
 	if( ( $next_schedule < $current_time - 3600 ) && is_array( $option['schedule'] ) && array_key_exists( 'enabled', $option['schedule'] ) && $option['schedule']['enabled'] ) {
 		$CYANUtil->record_notes( __( 'The next scheduled backup job is in the past, WP Cron may be broken.  If it does not execute shortly, you may want to disable and then re-enable scheduled backup jobs to re-create the WP Cron entry.', 'cyan-backup' ), 1 );
 	}
+
+	if( ! function_exists('gzopen') ) {
+		$CYANUtil->record_notes( __( 'The ZLib library isn\'t installed!  Check your PHP configuration to make sure it is included.  Note, some builds of PHP have a broken version of ZLib which only include the 64 bit versions of the gzopen() function.', 'cyan-backup' ), 2 );
+	}
 	
 	echo $CYANUtil->output_notes();
 	$CYANUtil->clear_notes();
 ?>
 
 <div class="wrap">
-
-	<div id="icon-options-general" class="icon32"><br /></div>
 
 	<h2><?php _e( 'CYAN Backup Options', 'cyan-backup' ); ?></h2>
 
