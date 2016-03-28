@@ -45,13 +45,6 @@ if( !class_exists( 'CYAN_WP_Backup' ) ) {
 			$this->option_name = $this->plugin_name . ' Option';
 			$this->load_textdomain( $this->plugin_dir, 'languages', 'cyan-backup' );
 
-			// add rewrite rules
-			if( !class_exists('WP_AddRewriteRules' ) ) {
-				require_once( $this->include_path . '/classes/class-addrewriterules.php' );
-			}
-
-			new WP_AddRewriteRules( 'json/([^/]+)/?', 'json=$matches[1]', array( &$this, 'json_request' ) );
-
 			// add admin menu
 			$this->menu_base = basename( $this->plugin_file, '.php' );
 			if( function_exists( 'is_multisite' ) && is_multisite() ) {
@@ -119,14 +112,12 @@ if( !class_exists( 'CYAN_WP_Backup' ) ) {
 		// Plugin activation
 		//**************************************************************************************
 		public function activation() {
-			flush_rewrite_rules();
 		}
 
 		//**************************************************************************************
 		// Plugin deactivation
 		//**************************************************************************************
 		public function deactivation() {
-			flush_rewrite_rules();
 		}
 
 		//**************************************************************************************
@@ -364,98 +355,9 @@ if( !class_exists( 'CYAN_WP_Backup' ) ) {
 		}
 
 		//**************************************************************************************
-		// json request
-		//**************************************************************************************
-		public function json_request() {
-			if( !is_user_logged_in() ) {
-				header( 'HTTP/1.0 401 Unauthorized' );
-				wp_die( __( 'not logged in!', 'cyan-backup' ) );
-			}
-
-			if( !ini_get( 'safe_mode' ) ) {
-				set_time_limit( self::TIME_LIMIT );
-			}
-
-			$method_name = get_query_var( 'json' );
-
-			check_admin_referer( $method_name, self::NONCE_NAME );
-
-			list( $userid, $username ) = $this->get_current_user();
-
-			$userid = (int)$userid;
-			$charset = get_bloginfo( 'charset' );
-			$content_type = 'application/json';	// $content_type = 'text/plain';
-			$result = FALSE;
-
-			switch( $method_name ) {
-				case 'backup':
-					$result = $this->json_backup( $userid );
-					break;
-				case 'status':
-						$status = @file_get_contents( $this->archive_path . 'status.log' );
-
-						if( $status !== FALSE ) {
-							if( file_exists( $this->archive_path . 'backup.active' ) ) {
-								if( time() - filemtime( $this->archive_path . 'backup.active' ) > (60 * 10) ) {
-									unlink( $this->archive_path . 'backup.active' );
-									$status = FALSE;
-								}
-							}
-						}
-
-						if( $status === FALSE ) {
-							$result = array(
-								'result' => FALSE,
-								'method' => $method_name,
-								'message' => __('No backup running!', 'cyan-backup'),
-								);
-						} else {
-							list( $result['percentage'], $result['message'], $result['state'], $result['backup_file'], $result['backup_date'], $result['backup_size'] ) = explode( "\n", $status );
-							$result['percentage'] = trim( $result['percentage'] );
-							$result['message'] = trim( $result['message'] );
-							$result['state'] = trim( $result['state'] );
-							$result['backup_file'] = trim( $result['backup_file'] );
-							$result['backup_date'] = trim( $result['backup_date'] );
-							$result['backup_size'] = trim( $result['backup_size'] );
-
-							$temp_time = strtotime( $result['backup_date'] );
-							$result['backup_date'] = date( get_option('date_format'), $temp_time ) . ' @ ' . date( get_option('time_format'), $temp_time );
-
-							$result['backup_size'] = number_format( (float)$result['backup_size'], 2 ) . ' MB';
-							}
-
-					break;
-				default:
-					$result = array(
-									'result' => FALSE,
-									'method' => $method_name,
-									'message' => __('Method not found!', 'cyan-backup'),
-									);
-					break;
-			}
-
-			header("Content-Type: {$content_type}; charset={$charset}" );
-
-			if( $result ) {
-				$result = array_merge( array( 'result' => TRUE, 'method' => $method_name ), (array)$result );
-			} else {
-				$result = array_merge( array( 'result' => FALSE, 'method' => $method_name ), (array)$result );
-			}
-			echo json_encode( $result );
-
-			exit;
-		}
-
-		//**************************************************************************************
 		// Site backup
 		//**************************************************************************************
-		public function json_backup( $userid_org ) {
-			$userid = (int)( $this->get_request_var( 'userid', -1 ) );
-
-			if( $userid !== $userid_org ) {
-				return array( 'userid' => $userid, 'result' => FALSE, 'message' => 'UnKnown UserID!' );
-			}
-
+		public function json_backup() {
 			$remote_backuper = $this->remote_backuper();
 
 			$result = $remote_backuper->wp_backup();

@@ -78,9 +78,7 @@ class CYAN_Backup_Ajax {
 							);
 				
 		} else {		
-			$user = wp_get_current_user();
-			
-			$result = $cyan_backup->json_backup( $user->ID );
+			$result = $cyan_backup->json_backup();
 			
 			if( $result ) {
 				$result = array_merge( array( 'result' => TRUE, 'method' => $action ), (array)$result );
