@@ -129,7 +129,7 @@
 			if( $realpath !== FALSE) {
 				$realpath = $this->Utils->chg_directory_separator( $realpath, FALSE );
 				if( is_dir( $realpath ) ) {
-					$realpath = $this->trailingslashit($realpath, FALSE);
+					$realpath = trailingslashit( $realpath, FALSE );
 				}
 					
 				if( $realpath == $abspath || $realpath == $admin_dir ) {
@@ -211,13 +211,13 @@
 						$dir = str_replace( $abspath, '', $realpath );
 						
 						if( is_dir($realpath) ) {
-							$dir = $this->trailingslashit( $dir, FALSE );
+							$dir = trailingslashit( $dir, FALSE );
 						}
 						
 						$excluded[] = $dir;
 						$excluded_dir[] = str_replace( $abspath, '', $dir );
 
-						$realpath = $this->trailingslashit( $realpath, FALSE );
+						$realpath = trailingslashit( $realpath, FALSE );
 						if( $check_archive_excluded && $realpath == $archive_path ) { 
 							$archive_path_found = TRUE; 
 						}
@@ -276,7 +276,7 @@
 		}
 
 		// Add the backup schedule if it doesn't exist and is enabled.
-		if( !wp_next_scheduled( 'cyan_backup_hook' ) && $options['schedule']['enabled'] ) {
+		if( !wp_next_scheduled( 'cyan_backup_hook' ) && is_array( $options ) && is_array( $options['schedule'] ) && array_key_exists( 'enabled', $options['schedule'] ) && $options['schedule']['enabled'] ) {
 			$next_backup_time = $this->calculate_initial_backup( $options['schedule'] );
 
 			if( $next_backup_time > time() ) {

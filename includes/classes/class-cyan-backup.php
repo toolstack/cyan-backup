@@ -698,8 +698,8 @@ if( !class_exists( 'CYAN_WP_Backup' ) ) {
 
 			$json_backup_url  = $site_url;
 			$json_status_url  = $site_url;
-			$json_backup_args = "userid:{$userid},\n";
-			$json_status_args = "userid:{$userid},\n";
+			$json_backup_args = "userid:{$userid}";
+			$json_status_args = "userid:{$userid}";
 			$json_method_type = 'POST';
 
 			switch ($this->get_permalink_type()) {
@@ -715,8 +715,8 @@ if( !class_exists( 'CYAN_WP_Backup' ) ) {
 					break;
 				case 'Ugly':
 				default:
-					$json_backup_args .= "json:'backup',\n";
-					$json_status_args .= "json:'status',\n";
+					$json_backup_args .= "json:'backup'";
+					$json_status_args .= "json:'status'";
 					$json_method_type = 'GET';
 					break;
 			}
@@ -729,195 +729,63 @@ if( !class_exists( 'CYAN_WP_Backup' ) ) {
 			$nonces_1 = $nonces_2 = $nonces_3 = '';
 
 			foreach( $this->get_nonces( 'backup' ) as $key => $val ) {
-				$nonces_1 .= "'{$key}':'{$val}',\n";
+				$nonces_1 .= "'{$key}':'{$val}'";
 				$nonces_2 .= '&' . $key . '=' . rawurlencode($val);
 			}
 
 			foreach( $this->get_nonces( 'status' ) as $key => $val ) {
-				$nonces_3 .= "'{$key}':'{$val}',\n";
+				$nonces_3 .= "'{$key}':'{$val}'";
 			}
 
 			$archive_path = $this->get_archive_path( $option );
 
+			wp_register_script( 'cyan-backup-js', $this->plugin_url . 'js/backup.js' );
+			wp_enqueue_script( 'cyan-backup-js' );
+			
 	?>
 	<script type="text/javascript">//<![CDATA[
-	jQuery(function($){
-		function buttons_disabled(disabled) {
-			$('input[name="backup_site"]').attr('disabled', disabled);
+	function CYANBackupVariables( name ) {
+		switch( name ) {
+			case 'json_status_args':
+				return <?php echo json_encode( $json_status_args ); ?>;
+				break;
+			case 'json_backup_url':
+				return <?php echo json_encode( $json_backup_url ); ?>;
+				break;
+			case 'json_status_url':
+				return <?php echo json_encode( $json_status_url ); ?>;
+				break;
+			case 'json_backup_args':
+				return <?php echo json_encode( $json_backup_args ); ?>;
+				break;
+			case 'nonces_1':
+				return <?php echo json_encode( $nonces_1 ); ?>;
+				break;
+			case 'nonces_2':
+				return <?php echo json_encode( $nonces_2 ); ?>;
+				break;
+			case 'nonces_3':
+				return <?php echo json_encode( $nonces_3 ); ?>;
+				break;
+			case 'loading_img':
+				return <?php echo json_encode( $loading_img ); ?>;
+				break;
+			case 'menu_base':
+				return <?php echo json_encode( $this->menu_base ); ?>;
+				break;
+			case 'success_img':
+				return <?php echo json_encode( $success_img ); ?>;
+				break;
+			case 'failure_img':
+				return <?php echo json_encode( $failure_img ); ?>;
+				break;
+			case 'archive_path':
+				return <?php echo json_encode( $archive_path ); ?>;
+				break;
 		}
-
-		function basename(path, suffix) {
-			// Returns the filename component of the path
-			//
-			// version: 910.820
-			// discuss at: http://phpjs.org/functions/basename	// +   original by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
-			// +   improved by: Ash Searle (http://hexmen.com/blog/)
-			// +   improved by: Lincoln Ramsay
-			// +   improved by: djmix
-			// *	 example 1: basename('/www/site/home.htm', '.htm');	// *	 returns 1: 'home'
-			// *	 example 2: basename('ecra.php?p=1');
-			// *	 returns 2: 'ecra.php?p=1'
-			var b = path.replace(/^.*[\/\\]/g, '');
-			if (typeof(suffix) == 'string' && b.substr(b.length-suffix.length) == suffix) {
-				b = b.substr(0, b.length-suffix.length);
-			}
-			return b;
-		}
-
-		$('#switch_checkboxes').click(function cyan_backup_toogle_checkboxes() {
-			if( jQuery('#switch_checkboxes').attr( 'checked' ) ) {
-				jQuery('[id^="removefiles"]').attr('checked', true);
-			} else {
-				jQuery('[id^="removefiles"]').attr('checked', false);
-			}
-		});
-
-		$("#progressbar").progressbar();
-
-		var CYANBackupInterval = null;
-
-		CYANBackupActivityCheck();
-
-		function CYANBackupActivityCheck() {
-			var args = {
-	<?php echo $json_status_args; ?>
-	<?php echo $nonces_3; ?>
-				};
-
-			$.ajax({
-				async: true,
-				cache: false,
-				data: args,
-				dataType: 'json',
-				success: function(json, status, xhr){
-					if( json.state == 'active' ) {
-						var wrap = $('#img_wrap');
-						wrap.append('<?php echo $loading_img; ?>');
-						buttons_disabled(true);
-
-						$("#progressbar").progressbar("enable");
-
-						if( CYANBackupInterval == null ) { CYANBackupInterval = setInterval( CYANBackupUpdater, 1000 ); }
-
-						$("#progressbar").progressbar( "value", parseInt( json.percentage ) );
-						$("#progresstext").html(json.message);
-					}
-				},
-				type: '<?php echo $json_method_type; ?>',
-				url: '<?php echo $json_status_url; ?>'
-			});
-		}
-
-		function CYANBackupUpdater() {
-			var args = {
-	<?php echo $json_status_args; ?>
-	<?php echo $nonces_3; ?>
-				};
-
-			$.ajax({
-				async: true,
-				cache: false,
-				data: args,
-				dataType: 'json',
-				success: function(json, status, xhr){
-					if( CYANBackupInterval != null ) {
-						$("#progressbar").progressbar( "value", parseInt( json.percentage ) );
-						$("#progresstext").html(json.message);
-
-						var wrap = $('#img_wrap');
-
-						if( json.state == 'complete' ) {
-							var log_name = json.backup_file;
-							var log_file = '';
-							var backup_file = '<a href="?page=<?php echo $this->menu_base; ?>&download=' + encodeURIComponent(json.backup_file) + '<?php echo $nonces_2; ?>' + '" title="' + basename(json.backup_file) + '">' + basename(json.backup_file) + '</a>';
-							var rowCount = $('#backuplist tr').length - 2;
-							var tr = '';
-
-							log_name = log_name.replace("<?php $rb = $this->remote_backuper(); echo $rb->GetArchiveExtension();?>",".log");
-
-							log_file = ' [<a href="?page=<?php echo $this->menu_base; ?>&download=' + encodeURIComponent(log_name) + '<?php echo $nonces_2; ?>' + '" title="<?php _e('log', 'cyan-backup');?>"><?php _e('log', 'cyan-backup');?></a>]';
-
-							tr = $('<tr><td>' + backup_file + log_file + '</td>' +
-								'<td>' + json.backup_date  + '</td>' +
-								'<td>' + json.backup_size  + '</td>' +
-								'<td style="text-align: center;"><input type="checkbox" name="remove[' + ( rowCount )  + ']" value="<?php echo addslashes($archive_path);?>' + basename(json.backup_file) +'"></td></tr>');
-
-							$('img.success', wrap).remove();
-							$('img.failure', wrap).remove();
-							$('img.updating', wrap).remove();
-							$('div#message').remove();
-							$('span#error_message').remove();
-
-							clearInterval( CYANBackupInterval );
-							CYANBackupInterval = null;
-
-							buttons_disabled(false);
-
-							$("#progressbar").progressbar("disable");
-
-							wrap.append('<?php echo $success_img; ?>');
-							$('#backuplist').prepend(tr);
-						} else if( json.state == 'error' ) {
-							clearInterval( CYANBackupInterval );
-							CYANBackupInterval = null;
-
-							$('img.success', wrap).remove();
-							$('img.failure', wrap).remove();
-							$('img.updating', wrap).remove();
-							$('div#message').remove();
-							$('span#error_message').remove();
-
-							buttons_disabled(false);
-
-							$("#progressbar").progressbar("disable");
-
-							wrap.append('<?php echo $failure_img; ?> <span id="error_message">' + json.errors + '</span>');
-						}
-
-					}
-				},
-				type: '<?php echo $json_method_type; ?>',
-				url: '<?php echo $json_status_url; ?>'
-			});
-		}
-
-		$('input[name="backup_site"]').unbind('click').click(function(){
-			var args = {
-	<?php echo $json_backup_args; ?>
-	<?php echo $nonces_1; ?>
-				};
-			var wrap = $(this).parent();
-			$('img.success', wrap).remove();
-			$('img.failure', wrap).remove();
-			$('div#message').remove();
-			$('span#error_message').remove();
-			wrap.append('<?php echo $loading_img; ?>');
-			buttons_disabled(true);
-
-			$("#progressbar").progressbar("enable");
-			$("#progresstext").html("<?php _e("Starting Backup...", 'cyan-backup');?>");
-			$("#progressbar").progressbar( "value", 0 );
-
-			if( CYANBackupInterval == null ) { CYANBackupInterval = setInterval( CYANBackupUpdater, 1000 ); }
-
-			$.ajax({
-				async: true,
-				cache: false,
-				data: args,
-				dataType: 'json',
-				success: function(json, status, xhr){
-					$('img.updating', wrap).remove();
-					buttons_disabled(false);
-					$("#progressbar").progressbar( "value", 100 );
-					$("#progresstext").html("<?php _e("Backup complete!", 'cyan-backup');?>");
-				},
-				type: '<?php echo $json_method_type; ?>',
-				url: '<?php echo $json_backup_url; ?>'
-			});
-
-			return false;
-		});
-	});
+		
+		return '';
+	}
 	//]]></script>
 	<?php
 		}
@@ -926,15 +794,13 @@ if( !class_exists( 'CYAN_WP_Backup' ) ) {
 		}
 
 		public function icon_style() {
-	?>
-	<link rel="stylesheet" type="text/css" href="<?php echo $this->plugin_url; ?>css/config.css" />
-	<?php
+			wp_register_style( 'cyan-backup-config-css', $this->plugin_url . 'css/config.css' );
+			wp_enqueue_style( 'cyan-backup-config-css' );
 		}
 
 		public function add_admin_tabs() {
-	?>
-	<link rel="stylesheet" type="text/css" href="<?php echo $this->plugin_url; ?>css/jquery-ui-cyan-tabs.css" />
-	<?php
+			wp_register_style( 'cyan-backup-tabs-css', $this->plugin_url . 'css/jquery-ui-cyan-tabs.css' );
+			wp_enqueue_style( 'cyan-backup-tabs-css' );
 		}
 
 		public function admin_menu() {
@@ -1013,7 +879,7 @@ if( !class_exists( 'CYAN_WP_Backup' ) ) {
 		}
 
 		//**************************************************************************************
-		// Clear's the backup state if it's been running for more than 12 hours.
+		// Clears the backup state if it's been running for more than 12 hours.
 		//**************************************************************************************
 		public function verify_status_file() {
 			$option = (array)get_option( $this->option_name );
@@ -1510,24 +1376,14 @@ if( !class_exists( 'CYAN_WP_Backup' ) ) {
 				exit;
 			}
 		}
+		
 		//**************************************************************************************
-		// Define the different Arvhive types.
+		// Define the different Archive types.
 		//**************************************************************************************
 		public function get_archive_methods() {
-			$archive_methods = array( 	'PclZip' 				=> __( 'zip (PclZip)', 'cyan-backup' ),
+			$archive_methods = array( 	
 										'PHPArchiveZip' 		=> __( 'zip (PHP-Archive)', 'cyan-backup' ),
-										'PHPArchiveTar' 		=> __( 'tar (PHP-Archive)', 'cyan-backup' ),
-										'PHPArchiveTarGZ' 		=> __( 'tgz (PHP-Archive)', 'cyan-backup' ),
-										'PHPArchiveTarDotGZ' 	=> __( 'tar.gz (PHP-Archive)', 'cyan-backup' ),
-										'PHPArchiveTarBZ' 		=> __( 'tbz (PHP-Archive)', 'cyan-backup' ),
-										'PHPArchiveTarDotBZ' 	=> __( 'tar.bz2 (PHP-Archive)', 'cyan-backup' ),
-								);
-
-			if( class_exists('ZipArchive') ) {
-				$archive_methods['ZipArchive'] = __('zip (ZipArchive)', 'cyan-backup');
-			}
-
-			asort( $archive_methods );
+									);
 
 			return $archive_methods;
 		}

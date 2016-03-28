@@ -1,9 +1,4 @@
 <?php
-require_once( __DIR__ . '/../../vendor/autoload.php' );
-
-use splitbrain\PHPArchive\Zip;
-use splitbrain\PHPArchive\Tar;
-
 if( !class_exists( 'CYAN_WP_Backuper' ) ) :
 
 class CYAN_Backup_Worker {
@@ -563,51 +558,10 @@ class CYAN_Backup_Worker {
 	private function OpenArchiveFile( $filename ) {
 		$handle = FALSE;
 		
-		switch( $this->option['archive_method'] ) {
-			case 'ZipArchive':
-				$zip = new ZipArchive;
-				if ( $zip->open( $filename, ZipArchive::CREATE ) === TRUE ) {
-					$handle = $zip;
-					$handle->addEmptyDir();
-				}
-				
-				break;
-			case 'PclZip':
-				if( !class_exists( 'PclZip' ) ) {
-					require_once( 'class-pclzip.php' );
-				}
+		$zip = new Zip();
+		$zip->create( $filename );
 
-				$dir_list = scandir( $this->wp_dir );
-				
-				foreach( $dir_list as $file ) {
-					if( substr( $file, 0, 7 ) == 'pclzip-' && substr( $file, -4 ) == '.tmp' ) {
-						$this->write_log_file( sprintf( __('Removing existing PclZip temp file %s...', 'cyan-backup' ), $this->wp_dir . $file ) );
-						@unlink( $this->wp_dir . $file );
-					}
-				}
-					
-				$handle = new PclZip( $filename );
-				
-				break;
-			case 'PHPArchiveZip':
-
-				$zip = new Zip();
-				$zip->create( $filename );
-
-				$handle = $zip;
-				break;
-			case 'PHPArchiveTar':
-			case 'PHPArchiveTarGZ':
-			case 'PHPArchiveTarDotGZ':
-			case 'PHPArchiveTarBZ':
-			case 'PHPArchiveTarDotBZ':
-				$tar = new Tar();
-				$tar->create( $filename );
-
-				$handle = $tar;
-				
-				break;
-		}
+		$handle = $zip;
 				
 		return $handle;
 	}
@@ -617,43 +571,11 @@ class CYAN_Backup_Worker {
 			return;
 		}
 	
-		switch( $this->option['archive_method'] ) {
-			case 'ZipArchive':
-				$handle->addFile( $file, $archive_file );
-			
-				break;
-			case 'PclZip':
-				$handle->add( $file, PCLZIP_OPT_REMOVE_PATH, $dir_to_strip );
-				break;
-			case 'PHPArchiveTar':
-			case 'PHPArchiveZip':
-			case 'PHPArchiveTarGZ':
-			case 'PHPArchiveTarDotGZ':
-			case 'PHPArchiveTarBZ':
-			case 'PHPArchiveTarDotBZ':
-				$handle->addFile( $file, $archive_file );
-				break;
-		}
+		$handle->addFile( $file, $archive_file );
 	}
 
 	private function AddArchiveDir( $handle, $dir ) {
-		if( $handle === FALSE ) {
 			return;
-		}
-	
-		switch( $this->option['archive_method'] ) {
-			case 'ZipArchive':
-			case 'PclZip':
-			case 'PHPArchiveZip':
-			case 'PHPArchiveTar':
-			case 'PHPArchiveTarGZ':
-			case 'PHPArchiveTarDotGZ':
-			case 'PHPArchiveTarBZ':
-			case 'PHPArchiveTarDotBZ':
-				// No need to add directories to Zip files.
-			
-				break;
-		}
 	}
 
 	private function CloseArchiveFile( $handle ) {
@@ -661,56 +583,13 @@ class CYAN_Backup_Worker {
 			return;
 		}
 	
-		switch( $this->option['archive_method'] ) {
-			case 'ZipArchive':
-				$handle->close();
-				
-				break;
-			case 'PclZip':
-				// PclZip doesn't require an explicit close.
-				break;
-			case 'PHPArchiveTar':
-			case 'PHPArchiveZip':
-			case 'PHPArchiveTarGZ':
-			case 'PHPArchiveTarDotGZ':
-			case 'PHPArchiveTarBZ':
-			case 'PHPArchiveTarDotBZ':
-				$handle->close();
-			
-				break;
-		}
+		$handle->close();
+
+		return;
 	}
 	
 	public function GetArchiveExtension() {
-		switch( $this->option['archive_method'] ) {
-			case 'PHPArchiveTar':
-				return '.tar';
-				
-				break;
-			case 'PHPArchiveTarGZ':
-				return '.tgz';
-				
-				break;
-			case 'PHPArchiveTarDotGZ':
-				return '.tar.gz';
-				
-				break;
-			case 'PHPArchiveTarBZ':
-				return '.tbz';
-				
-				break;
-			case 'PHPArchiveTarDotBZ':
-				return '.tar.bz2';
-				
-				break;
-			case 'ZipArchive':
-			case 'PclZip':
-			case 'PHPArchiveZip':
-			default:
-				return '.zip';
-				
-				break;
-		}
+		return '.zip';
 	}
 
 	//**************************************************************************************
@@ -738,21 +617,12 @@ class CYAN_Backup_Worker {
 		$artifical_time  = 10;
 		$artifical_wait  = 250000;
 		
-		if( $this->option['lowiomode'] ) {
-			$artifical_time = 1;
-			$artifical_wait = 2000000;
-			$this->option['artificialdelay'] = 'on';
-		}
-		
-		$artifical_wait_seconds = $artifical_wait / 1000000;
-		
-		if (!array_key_exists( $archive_method, $archive_methods) ) {
+		if( !array_key_exists( $archive_method, $archive_methods) ) {
 			$this->write_log_file( __( 'Invalid archive method!', 'cyan-backup' ) );
 			throw new Exception( __( 'Invalid archive method!', 'cyan-backup'));
 		}
 
 		try {
-			$this->write_log_file( __( 'Using ', 'cyan-backup' ) . $archive_methods[$archive_method] . '.' );
 			$this->write_log_file( __( 'Creating ', 'cyan-backup' ) . $archive_file . '.' );
 	
 			$archive = $this->OpenArchiveFile( $archive_file );
