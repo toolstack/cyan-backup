@@ -37,15 +37,14 @@ class CYAN_Backup_Worker {
 	//**************************************************************************************
 	function __construct( $archive_path = FALSE, $archive_prefix = FALSE, $wp_dir = FALSE, $excluded = FALSE, $utils = FALSE, $options = FALSE ) {
 		$this->Utils = $utils;
-
-		$this->option = $options;
+		$this->options = $options;
 		
-		if( $archive_path === FALSE && isset( $this->option['archive_path'] ) && is_dir( $this->option['archive_path'] ) ) {
-			$archive_path = $this->option['archive_path'];
+		if( $archive_path === FALSE && isset( $this->options['archive_path'] ) && is_dir( $this->options['archive_path'] ) ) {
+			$archive_path = $this->options['archive_path'];
 		}
 		
-		if( $excluded === FALSE && isset( $this->option['excluded'] ) && is_array( $this->option['excluded'] ) ) {
-			$excluded = (array)$this->option['excluded'];
+		if( $excluded === FALSE && isset( $this->options['excluded'] ) && is_array( $this->options['excluded'] ) ) {
+			$excluded = (array)$this->options['excluded'];
 		}
 
 		$this->archive_path = $this->get_archive_path( $archive_path );
@@ -61,11 +60,11 @@ class CYAN_Backup_Worker {
 										);
 
 		if( !array_key_exists( 'emaillog', $this->option ) ) { 
-			$this->option['emaillog'] = 'off'; 
+			$this->options['emaillog'] = 'off'; 
 		}
 		
-		if( $this->option['emaillog'] == 'on' ) {
-			$this->email_sendto = $this->option['sendto'];
+		if( $this->options['emaillog'] == 'on' ) {
+			$this->email_sendto = $this->options['sendto'];
 		}
 	}
 
@@ -284,7 +283,7 @@ class CYAN_Backup_Worker {
 				}
 			} 
 
-			if( $this->option['disabledbbackup'] == true ) {
+			if( $this->options['disabledbbackup'] == true ) {
 				$db_backup = FALSE;
 			}
 			
@@ -610,7 +609,7 @@ class CYAN_Backup_Worker {
 		$cur_time        = $last_time;
 		$last_count      = $this->currentcount;
 		$archive_methods = $cyan_backup->get_archive_methods();
-		$archive_method  = $this->option['archive_method'];
+		$archive_method  = $this->options['archive_method'];
 		$dir_to_strip    = dirname( $this->wp_dir );
 		$artifical_time  = 10;
 		$artifical_wait  = 250000;
@@ -632,7 +631,7 @@ class CYAN_Backup_Worker {
 					
 					$current_file = realpath( $file );
 
-					if( $this->option['artificialdelay'] ) {
+					if( $this->options['artificialdelay'] ) {
 						$cur_time = time();
 						
 						if( $cur_time - $last_time > $artifical_time || $this->currentcount - $last_count > 100) {
@@ -665,7 +664,7 @@ class CYAN_Backup_Worker {
 					if( is_array( $this->dump_file ) ) {
 						foreach( $this->dump_file as $dumpfile ) {
 							$this->AddArchiveFile( $archive, $dumpfile, basename( $dumpfile ), $dir_to_strip );
-							if( $this->option['artificialdelay'] ) {
+							if( $this->options['artificialdelay'] ) {
 								usleep( $artifical_wait );
 							}
 						}
@@ -791,16 +790,16 @@ class CYAN_Backup_Worker {
 		$artifical_time = 10;
 		$artifical_wait = 250000;
 		
-		if( $this->option['lowiomode'] ) {
+		if( $this->options['lowiomode'] ) {
 			$artifical_time = 1;
 			$artifical_wait = 1000000;
-			$this->option['artificialdelay'] = 'on';
+			$this->options['artificialdelay'] = 'on';
 		}
 		
 		$artifical_wait_seconds = $artifical_wait / 1000000;
 
 		
-		if( $this->option['splitdbbackup'] == true ) {
+		if( $this->options['splitdbbackup'] == true ) {
 			$sqlfiles = array();
 		
 			foreach( $core_tables as $table ) {
@@ -823,7 +822,7 @@ class CYAN_Backup_Worker {
 					$this->error[] = __( 'Could not open the db dump file for writing!', 'cyan-backup' );
 				}
 				
-				if( $this->option['artificialdelay'] ) {
+				if( $this->options['artificialdelay'] ) {
 					usleep( $artifical_wait );
 				}
 			}
@@ -846,7 +845,7 @@ class CYAN_Backup_Worker {
 				foreach ($core_tables as $table) {
 					$this->table_dump( $fp, $table );
 					
-					if( $this->option['artificialdelay'] ) {
+					if( $this->options['artificialdelay'] ) {
 						usleep( $artifical_wait );
 					}
 				}

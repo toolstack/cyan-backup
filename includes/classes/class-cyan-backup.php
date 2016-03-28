@@ -2,6 +2,7 @@
 if( !class_exists( 'CYAN_WP_Backup' ) ) {
 	class CYANBackup {
 		public $plugin_name = 'CYAN Backup';
+		public $archive_path;
 
 		private $plugin_basename;
 		private $plugin_dir;
@@ -65,8 +66,10 @@ if( !class_exists( 'CYAN_WP_Backup' ) ) {
 
 			$this->options = get_option( $this->option_name );
 
+			$this->archive_path = $this->get_archive_path( $this->options );
+			
 			$this->CYANBackupWorker = new CYAN_Backup_Worker(
-																$this->get_archive_path( $this->options ),
+																$this->archive_path,
 																$this->get_archive_prefix( $this->options ),
 																trailingslashit( ABSPATH, FALSE ),
 																$this->get_excluded_dir( $this->options ),
@@ -266,15 +269,15 @@ if( !class_exists( 'CYAN_WP_Backup' ) ) {
 		// get archive path
 		private function get_archive_path( $option = '' ) {
 			if( empty( $option ) || !is_array( $option ) ) {
-				$option = (array)get_option( $this->option_name );
+				$option = $this->options;
 			}
 
 			$temp_path = sys_get_temp_dir();
 
 			$archive_path = '';
 
-			if( isset( $option["archive_path"] ) && is_dir( $option["archive_path"] ) ) {
-				$archive_path = $option["archive_path"];
+			if( isset( $option['archive_path'] ) && is_dir( $option['archive_path'] ) ) {
+				$archive_path = $option['archive_path'];
 			} else {
 				$archive_path = $temp_path;
 			}
@@ -346,7 +349,7 @@ if( !class_exists( 'CYAN_WP_Backup' ) ) {
 		// write a line to the log file
 		private function write_debug_log( $text ) {
 			if( $this->debug_log == null ) {
-				$this->debug_log = fopen( $this->get_archive_path() . 'debug.txt', 'a' );
+				$this->debug_log = fopen( $this->archive_path . 'debug.txt', 'a' );
 			}
 
 			fwrite( $this->debug_log, '[' . date( 'Y-m-d H:i:s' ) . '] ' . $text . "\n" );
@@ -366,35 +369,35 @@ if( !class_exists( 'CYAN_WP_Backup' ) ) {
 		public function json_request() {
 			if( !is_user_logged_in() ) {
 				header( 'HTTP/1.0 401 Unauthorized' );
-				wp_die( __('not logged in!', 'cyan-backup' ) );
+				wp_die( __( 'not logged in!', 'cyan-backup' ) );
 			}
 
 			if( !ini_get( 'safe_mode' ) ) {
 				set_time_limit( self::TIME_LIMIT );
 			}
 
-			$method_name = get_query_var('json');
+			$method_name = get_query_var( 'json' );
 
 			check_admin_referer( $method_name, self::NONCE_NAME );
 
 			list( $userid, $username ) = $this->get_current_user();
 
 			$userid = (int)$userid;
-			$charset = get_bloginfo('charset');
+			$charset = get_bloginfo( 'charset' );
 			$content_type = 'application/json';	// $content_type = 'text/plain';
 			$result = FALSE;
 
 			switch( $method_name ) {
 				case 'backup':
-					$result = $this->json_backup($userid);
+					$result = $this->json_backup( $userid );
 					break;
 				case 'status':
-						$status = @file_get_contents( $this->get_archive_path() . 'status.log' );
+						$status = @file_get_contents( $this->archive_path . 'status.log' );
 
 						if( $status !== FALSE ) {
-							if( file_exists( $this->get_archive_path() . 'backup.active' ) ) {
-								if( time() - filemtime( $this->get_archive_path() . 'backup.active' ) > (60 * 10) ) {
-									unlink( $this->get_archive_path() . 'backup.active' );
+							if( file_exists( $this->archive_path . 'backup.active' ) ) {
+								if( time() - filemtime( $this->archive_path . 'backup.active' ) > (60 * 10) ) {
+									unlink( $this->archive_path . 'backup.active' );
 									$status = FALSE;
 								}
 							}
@@ -723,8 +726,6 @@ if( !class_exists( 'CYAN_WP_Backup' ) ) {
 				$nonces_3 .= "'{$key}':'{$val}'";
 			}
 
-			$archive_path = $this->get_archive_path( $option );
-
 			wp_register_script( 'cyan-backup-js', $this->plugin_url . 'js/backup.js' );
 			wp_enqueue_script( 'cyan-backup-js' );
 			
@@ -766,7 +767,7 @@ if( !class_exists( 'CYAN_WP_Backup' ) ) {
 				return <?php echo json_encode( $failure_img ); ?>;
 				break;
 			case 'archive_path':
-				return <?php echo json_encode( $archive_path ); ?>;
+				return <?php echo json_encode( $this->archive_path ); ?>;
 				break;
 		}
 		
@@ -868,17 +869,13 @@ if( !class_exists( 'CYAN_WP_Backup' ) ) {
 		// Clears the backup state if it's been running for more than 12 hours.
 		//**************************************************************************************
 		public function verify_status_file() {
-			$option = (array)get_option( $this->option_name );
-
-			$archive_path   = $this->get_archive_path( $option );
-
-			if( file_exists( $archive_path . 'backup.active' ) ) {
-				$state = filemtime( $archive_path . 'backup.active' );
+			if( file_exists( $this->archive_path . 'backup.active' ) ) {
+				$state = filemtime( $this->archive_path . 'backup.active' );
 
 				// Check to see if the state file is more than 12 hours stale.
 				if( time() - $state > 43200 ) {
-					@unlink( $archive_path . 'backup.active' );
-					@unlink( $archive_path . 'status.log' );
+					@unlink( $this->archive_path . 'backup.active' );
+					@unlink( $this->archive_path . 'status.log' );
 				}
 			}
 		}
