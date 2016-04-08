@@ -19,6 +19,7 @@ This software is released under the GPL v2.0, see license.txt for details.
 */
 
 require_once( __DIR__ . '/vendor/autoload.php' );
+use splitbrain\PHPArchive\Zip;
 
 include_once( 'includes/classes/class-cyan-backup-worker.php' );
 include_once( 'includes/classes/class-cyan-backup-ajax.php' );

@@ -1,4 +1,5 @@
 <?php
+
 if( !class_exists( 'CYAN_WP_Backuper' ) ) :
 
 class CYAN_Backup_Worker {
@@ -593,6 +594,83 @@ class CYAN_Backup_Worker {
 		return '.zip';
 	}
 
+	public function EstimateArchiveFileGroupSize() {
+		// Get the admin path so we can get some files to archive for an estimate.
+		$admin_path = str_replace( get_bloginfo( 'url' ) . '/', ABSPATH, get_admin_url() );
+		
+		// Use the images, css and includes directory in wp-admin.
+		$scandirs = array( 
+							'images'   => $admin_path . 'images',
+							'css'      => $admin_path . 'css',
+							'includes' => $admin_path . 'includes',
+						);
+		
+		$files = array();
+		$total = 0;
+		
+		// Loop through all the files and get all the names and file sizes.
+		foreach( $scandirs as $dir ) {
+			$dirfiles = scandir( $dir );
+
+			foreach( $dirfiles as $file ) {
+				if( $file != '.' && $file != '..' && ! is_dir( $dir . '/' . $file ) ) {
+					$files[] = $dir . '/' . $file;
+					$total += filesize( $dir . '/' . $file );
+				}
+			}
+		}
+
+		// Get a temporary file name to use.
+		$filename = tempnam( sys_get_temp_dir(), 'CBU' );
+		
+		// Start the clock.  We're using microtime() in case we're under a second.
+		$starttime = microtime( true );
+
+		// Create the zip object.
+		$zip = new Zip();
+		$zip->create( $filename );
+
+		// Add each file to the zip.
+		foreach( $files as $file ) {
+			$zip->addFile( $file, $file );
+		}
+
+		// Close the zip.
+		$zip->close();
+
+		// Stop the clock.
+		$endtime = microtime(true);
+		$elapsed = $endtime - $starttime;
+
+		// Delete the temp file.
+		unlink( $filename );
+		
+		// Get the average bytes/second.
+		$avg = round( $total / $elapsed );
+		
+		// Convert it to meg/second, round it off for later.
+		$meg_per_sec = round( $avg / 1024 / 1024 );
+		
+		// Get the max execution time for a script, note if it's zero we're probably running from the command line so use something sane like 30 seconds.
+		$max_exec_time = ini_get( 'max_execution_time' );
+		if( $max_exec_time == 0 ) { $max_exec_time = 30; }
+
+		// The estimated group size will be the half max execution times the average meg per second.
+		$group_size = $max_exec_time / 2 * $meg_per_sec;
+
+		/*
+		echo "               Start: " . $starttime . "\r\n";
+		echo "                 End: " . $endtime . "\r\n";
+		echo "             Elapsed: " . $elapsed . "\r\n";
+		echo "                Size: " . $total . "\r\n";
+		echo "              MB/Sec: " . $meg_per_sec . "\r\n";
+		echo "       Max exec time: " . $max_exec_time . "\r\n";
+		echo "Estimated group size: " . $group_size . "\r\n";
+		*/
+		
+		return $group_size;
+	}
+	
 	//**************************************************************************************
 	// WP Files Archive
 	//**************************************************************************************
