@@ -80,9 +80,9 @@ class CYANBackup {
 		}
 
 		$options = get_option( $this->option_name );
-		
+
 		// Run the upgrade code if required
-		if( $options['version'] != self::VERSION ) 
+		if( $options['version'] != self::VERSION )
 			{
 			$options['version'] = self::VERSION;
 			$options['next_backup_time'] = wp_next_scheduled('cyan_backup_hook');
@@ -90,16 +90,16 @@ class CYANBackup {
 			if( ! isset( $options['schedule']['ampm'] ) ) {
 				list( $hours, $options['schedule']['minutes'], $options['schedule']['hours'], $options['schedule']['ampm'] ) = $this->split_date_string( $schedule['tod'] );
 			}
-			
+
 			// Remove the old 'Disable ZipArchive' option, but if it was set, update the new archive_method if it hasn't already been set by the user.
-			if( array_key_exists( 'disableziparchive', $options ) && $options['disableziparchive'] ) { 
+			if( array_key_exists( 'disableziparchive', $options ) && $options['disableziparchive'] ) {
 				if( !array_key_exists( 'archive_method', $options ) ) { $options['archive_method'] = 'PclZip'; }
 				unset( $options['disableziparchive'] );
 			}
-			
+
 			update_option( $this->option_name, $options );
 			}
-		
+
 		// activation & deactivation
 		if (function_exists('register_activation_hook'))
 			register_activation_hook(__FILE__, array(&$this, 'activation'));
@@ -110,7 +110,7 @@ class CYANBackup {
 	function __destruct() {
 		$this->close_debug_log();
 	}
-	
+
 	//**************************************************************************************
 	// Plugin activation
 	//**************************************************************************************
@@ -395,7 +395,7 @@ class CYANBackup {
 	private function get_archive_path($option = '') {
 		if (empty($option) || !is_array($option))
 			$option = (array)get_option($this->option_name);
-		$archive_path = 
+		$archive_path =
 			(isset($option["archive_path"]) && is_dir($option["archive_path"]))
 			? $option["archive_path"]
 			: $this->sys_get_temp_dir() ;
@@ -414,7 +414,7 @@ class CYANBackup {
 			return basename( ABSPATH ) . '.';
 		}
 	}
-	
+
 	// get excluded dir
 	private function get_excluded_dir($option = '', $special = FALSE) {
 		if (empty($option) || !is_array($option))
@@ -448,14 +448,14 @@ class CYANBackup {
 
 		if (!$option)
 			$option = (array)get_option($this->option_name);
-		
+
 		$this->CYANWPBackup = new CYAN_WP_Backuper(
 			$this->get_archive_path($option) ,
 			$this->get_archive_prefix($option) ,
 			$this->trailingslashit(ABSPATH, FALSE) ,
 			$this->get_excluded_dir($option)
 			);
-			
+
 		return $this->CYANWPBackup;
 	}
 
@@ -499,7 +499,7 @@ class CYANBackup {
 		if( $this->debug_log == null ) {
 			$this->debug_log = fopen($this->get_archive_path() . 'debug.txt', 'a');
 		}
-		
+
 		fwrite($this->debug_log, '[' . date("Y-m-d H:i:s") . '] ' . $text . "\n");
 	}
 
@@ -509,7 +509,7 @@ class CYANBackup {
 		$this->debug_log = null;
 		}
 	}
-	
+
 	//**************************************************************************************
 	// json request
 	//**************************************************************************************
@@ -548,9 +548,9 @@ class CYANBackup {
 						}
 					}
 
-					if( $status === FALSE ) 
-						{ 
-						$result = array( 
+					if( $status === FALSE )
+						{
+						$result = array(
 							'result' => FALSE,
 							'method' => $method_name,
 							'message' => __('No backup running!', $this->textdomain),
@@ -571,7 +571,7 @@ class CYANBackup {
 
 						$result['backup_size'] = number_format((float)$result['backup_size'], 2) . ' MB';
 						}
-					
+
 				break;
 			default:
 				$result = array(
@@ -660,57 +660,57 @@ class CYANBackup {
 		$final_dir = str_replace( '%M', date('M'), $final_dir );
 		$final_dir = str_replace( '%F', date('F'), $final_dir );
 		$final_dir = $this->trailingslashit( $final_dir, FALSE );
-		
+
 		// Let's make sure we don't have a funky archive path.
 		$archive = realpath($archive);
-		
+
 		// Decrypt the password from the settings.
 		$final_password = $this->decrypt_password( $remote_settings['password'] );
-		
+
 		// Get the basename of the archive for later.
 		$filename = basename( $archive );
 
 		$rb = $this->remote_backuper();
-		
+
 		// We need to find the log file path and name.
 		$log = str_ireplace( $rb->GetArchiveExtension(), '.log', $archive );
 
 		// Find the basename of the log file.
 		$logname = basename( $log );
-		
+
 		// Do the work now.
 		switch( $remote_settings['protocol'] )
 			{
 			case 'ftpwrappers':
 				include_once( 'includes/protocol-ftpwrappers.php');
-				
+
 				break;
 			case 'ftplibrary':
 				include_once( 'includes/protocol-ftplibrary.php');
-				
+
 				break;
 			case 'ftpswrappers':
 				include_once( 'includes/protocol-ftpswrappers.php');
-				
+
 				break;
 			case 'ftpslibrary':
 				include_once( 'includes/protocol-ftpslibrary.php');
-				
+
 				break;
 			case 'sftpwrappers':
 				include_once( 'includes/protocol-sftpwrappers.php');
-				
+
 				break;
 			case 'sftplibrary':
 				include_once( 'includes/protocol-sftplibrary.php');
-				
+
 				break;
 			case 'sftpphpseclib':
 				include_once( 'includes/protocol-sftpphpseclib.php');
-				
+
 				break;
 			}
-			
+
 		// If the send of the zip file worked and we've been told to delete the local copies of the zip and log, do so now.
 		if( $result !== FALSE ) {
 			if( ( $remote_settings['deletelocalmanual'] == 'on' && $source == 'manual' ) || ( $remote_settings['deletelocalschedule'] == 'on' && $source == 'schedule' ) ) {
@@ -719,17 +719,17 @@ class CYANBackup {
 			}
 		}
 	}
-	
+
 	private function get_encrypt_key() {
 		// First determine how large of key we need.
 		$key_size = mcrypt_get_key_size(MCRYPT_RIJNDAEL_128, MCRYPT_MODE_CBC);
-	
+
 		// Use WordPress's generated constant for the key, trimming it to the length we need.
 		$key = substr( SECURE_AUTH_KEY, 0, $key_size );
-		
+
 		return $key;
 	}
-	
+
 	private function encrypt_password( $password ) {
 		// If mcrypt isn't supported or it's a blank password, don't encrypt it.
 		if( function_exists( 'mcrypt_encrypt' ) && $password != '' ) {
@@ -749,7 +749,7 @@ class CYANBackup {
 			return $password;
 		}
 	}
-	
+
 	private function decrypt_password( $password ) {
 		// If mcrypt isn't supported or it's a blank password, don't decrypt it.
 		if( function_exists( 'mcrypt_encrypt' ) && $password != '') {
@@ -758,27 +758,27 @@ class CYANBackup {
 
 			// Since we made it look nice with base64 while encrypting it, make it look messy again.
 			$password = base64_decode( $password );
-			
+
 			// Retrieves the IV from the combined string.
 			$iv_size = mcrypt_get_iv_size(MCRYPT_RIJNDAEL_128, MCRYPT_MODE_CBC);
 			$iv = substr($password, 0, $iv_size);
-			
+
 			// Retrieves the cipher text (everything except the $iv_size in the front).
 			$password = substr($password, $iv_size);
 
 			// Decrypt the password.
 			$dpassword = mcrypt_decrypt( MCRYPT_RIJNDAEL_128, $key, $password, MCRYPT_MODE_CBC, $iv );
-			
+
 			// may have to remove 00h valued characters from the end of plain text
 			$dpassword = str_replace( chr(0), '', $dpassword );
-			
+
 			return $dpassword;
 		} else {
 			return $password;
 		}
 	}
-	
-	
+
+
 	//**************************************************************************************
 	// Add setting link
 	//**************************************************************************************
@@ -802,8 +802,8 @@ class CYANBackup {
 		wp_enqueue_script('jquery-ui-core');
 		wp_enqueue_script('jquery-ui-tabs');
 		wp_enqueue_script('jquery-ui-progressbar');
-		
-		global $wp_scripts; 
+
+		global $wp_scripts;
 		wp_register_style("jquery-ui-css", plugin_dir_url(__FILE__) . "css/jquery-ui-1.10.4.custom.css");
 		wp_enqueue_style("jquery-ui-css");
 
@@ -833,7 +833,7 @@ class CYANBackup {
 				$site_url = str_ireplace( 'http://', 'https://', $site_url );
 			}
 		}
-		
+
 		$json_backup_url  = $site_url;
 		$json_status_url  = $site_url;
 		$json_backup_args = "userid:{$userid},\n";
@@ -871,7 +871,7 @@ class CYANBackup {
 		foreach ($this->get_nonces('status') as $key => $val) {
 			$nonces_3 .= "'{$key}':'{$val}',\n";
 		}
-		
+
 		$archive_path = $this->get_archive_path($option);
 
 ?>
@@ -912,13 +912,13 @@ jQuery(function($){
 	var CYANBackupInterval = null;
 
 	CYANBackupActivityCheck();
-	
+
 	function CYANBackupActivityCheck() {
 		var args = {
 <?php echo $json_status_args; ?>
 <?php echo $nonces_3; ?>
 			};
-		
+
 		$.ajax({
 			async: true,
 			cache: false,
@@ -931,9 +931,9 @@ jQuery(function($){
 					buttons_disabled(true);
 
 					$("#progressbar").progressbar("enable");
-					
+
 					if( CYANBackupInterval == null ) { CYANBackupInterval = setInterval( CYANBackupUpdater, 1000 ); }
-					
+
 					$("#progressbar").progressbar( "value", parseInt( json.percentage ) );
 					$("#progresstext").html(json.message);
 				}
@@ -942,13 +942,13 @@ jQuery(function($){
 			url: '<?php echo $json_status_url; ?>'
 		});
 	}
-		
+
 	function CYANBackupUpdater() {
 		var args = {
 <?php echo $json_status_args; ?>
 <?php echo $nonces_3; ?>
 			};
-		
+
 		$.ajax({
 			async: true,
 			cache: false,
@@ -969,9 +969,9 @@ jQuery(function($){
 						var tr = '';
 
 						log_name = log_name.replace("<?php $rb = $this->remote_backuper(); echo $rb->GetArchiveExtension();?>",".log");
-						
+
 						log_file = ' [<a href="?page=<?php echo $this->menu_base; ?>&download=' + encodeURIComponent(log_name) + '<?php echo $nonces_2; ?>' + '" title="<?php _e('log', $this->textdomain);?>"><?php _e('log', $this->textdomain);?></a>]';
-							
+
 						tr = $('<tr><td>' + backup_file + log_file + '</td>' +
 							'<td>' + json.backup_date  + '</td>' +
 							'<td>' + json.backup_size  + '</td>' +
@@ -985,7 +985,7 @@ jQuery(function($){
 
 						clearInterval( CYANBackupInterval );
 						CYANBackupInterval = null;
-						
+
 						buttons_disabled(false);
 
 						$("#progressbar").progressbar("disable");
@@ -995,7 +995,7 @@ jQuery(function($){
 					} else if( json.state == 'error' ) {
 						clearInterval( CYANBackupInterval );
 						CYANBackupInterval = null;
-						
+
 						$('img.success', wrap).remove();
 						$('img.failure', wrap).remove();
 						$('img.updating', wrap).remove();
@@ -1015,7 +1015,7 @@ jQuery(function($){
 			url: '<?php echo $json_status_url; ?>'
 		});
 	}
-	
+
 	$('input[name="backup_site"]').unbind('click').click(function(){
 		var args = {
 <?php echo $json_backup_args; ?>
@@ -1032,9 +1032,9 @@ jQuery(function($){
 		$("#progressbar").progressbar("enable");
 		$("#progresstext").html("<?php _e("Starting Backup...", $this->textdomain);?>");
 		$("#progressbar").progressbar( "value", 0 );
-		
+
 		if( CYANBackupInterval == null ) { CYANBackupInterval = setInterval( CYANBackupUpdater, 1000 ); }
-		
+
 		$.ajax({
 			async: true,
 			cache: false,
@@ -1094,7 +1094,7 @@ jQuery(function($){
 			$this->menu_base ,
 			array($this, 'site_backup')
 			);
-			
+
 		$this->option_page = add_submenu_page(
 			$this->menu_base ,
 			__('Options &gt; CYAN Backup', $this->textdomain) ,
@@ -1110,7 +1110,7 @@ jQuery(function($){
 		add_action('admin_print_styles-'.$this->option_page, array($this, 'icon_style'));
 		add_action('admin_print_styles-'.$this->option_page, array($this, 'add_admin_tabs'));
 		add_action('load-'.$this->option_page,array(&$this,'create_help_screen'));
-		
+
 		$this->about_page = add_submenu_page(
 			$this->menu_base ,
 			__('About &gt; CYAN Backup', $this->textdomain) ,
@@ -1129,14 +1129,14 @@ jQuery(function($){
 	public function create_help_screen() {
 		include_once( 'includes/help-options.php' );
 	}
-	
+
 	//**************************************************************************************
 	// About page
 	//**************************************************************************************
 	public function about_page() {
 		include_once( 'includes/page-about.php' );
 	}
-	
+
 	//**************************************************************************************
 	// Backup page
 	//**************************************************************************************
@@ -1149,12 +1149,12 @@ jQuery(function($){
 	//**************************************************************************************
 	public function verify_status_file() {
 		$option = (array)get_option($this->option_name);
-		
+
 		$archive_path   = $this->get_archive_path($option);
-		
+
 		if( file_exists( $archive_path . 'backup.active' ) ) {
 			$state = filemtime( $archive_path . 'backup.active' );
-		
+
 			// Check to see if the state file is more than 12 hours stale.
 			if( time() - $state > 43200 ) {
 				@unlink( $archive_path . 'backup.active' );
@@ -1239,13 +1239,13 @@ jQuery(function($){
 		$ampm = 'am';
 		// First, split the string at the colon.
 		list( $hours, $minutes) = explode( ':', trim($datestring) );
-	
+
 		// If there minutes is blank then there was no colon, otherwise we have a valid hour/minutes setting.
 		if( $minutes != '' )
 			{
 			// Strip out the am if we have one.
 			if( stristr( $minutes, 'am' ) ) { $minutes = str_ireplace( 'am', '', $minutes ); if( $hours == 12 ) { $hours = 0; } }
-			
+
 			// Strip out the pm if we have one and set the hours forward to represent a 24 hour clock.
 			if( stristr( $minutes, 'pm' ) ) { $minutes = str_ireplace( 'pm', '', $minutes ); if( $hours < 12 ) { $hours += 12; } }
 			}
@@ -1255,27 +1255,27 @@ jQuery(function($){
 			$minutes = $hours;
 			$hours = '';
 			}
-			
+
 		if( $hours > 11 ) { $ampm = 'pm'; }
-		
+
 		$long = $hours;
 		if( $long > 12 ) { $long -= 12; }
 		if( $long == 0 ) { $long = 12; }
 
 		return array( $hours, $minutes, $long, $ampm );
 	}
-	
+
 	//**************************************************************************************
 	// Determine when the first backup should happen based on the schedule
 	//**************************************************************************************
 	private function calculate_initial_backup( $schedule ) {
-		if( !is_array($schedule) ) 
-			{ 
+		if( !is_array($schedule) )
+			{
 			$options = (array)get_option($this->option_name);
-			
+
 			$schedule = $options['schedule'];
 			}
-		
+
 		// Get the current date/time and split it up for reference later on.
 		$now = getdate( time() );
 
@@ -1285,18 +1285,18 @@ jQuery(function($){
 		$long = '';
 		$ampm = '';
 
-		if( $schedule['tod'] != '' ) 
+		if( $schedule['tod'] != '' )
 			{
 			list( $hours, $minutes, $long, $ampm ) = $this->split_date_string( $schedule['tod'] );
 			}
-		
+
 		// Now that we've processed the hours/minutes, lets make sure they aren't blank.  If they are, set them to the current time.
 		if( $hours == '' ) { $hours = $now['hours']; }
 		if( $minutes == '' ) { $minutes = $now['minutes']; }
 
 		// We have to do some work with day names and need to be able to translate them to numbers, setup an array for later to do this.
 		$weekdays = array( 'Sunday'=>0, 'Monday'=>1, 'Tuesday'=>2, 'Wednesday'=>3, 'Thursday'=>4, 'Friday'=>5, 'Saturday'=>6 );
-		
+
 		if( $schedule['type'] == 'Once' )
 			{
 			// DOW takes precedence over DOM.
@@ -1304,13 +1304,13 @@ jQuery(function($){
 				{
 				// Convert the scheduled DOW to a number.
 				$schedule_dow = $weekdays[$schedule['dow']];
-				
+
 				// Determine if we've passed the scheduled DOW yet this week.
 				$next_dow = $schedule_dow - $now['wday'];
-				
+
 				// If we have, we need to add a week.
 				if( $next_dow < 0 ) { $next_dow += 7; }
-				
+
 				// If we're on the DOW we're scheduled to run, check to see if we've passed the scheduled time, if so, sit it to next week.
 				if( $next_dow == 0 && $now['hours'] > $hours) { $next_dow += 7; }
 				if( $next_dow == 0 && $now['hours'] == $hours && $now['minutes'] > $minutes ) { $next_dow += 7; }
@@ -1335,7 +1335,7 @@ jQuery(function($){
 			{
 			// If we've passed the current time to run it, schedule it for next hour.
 			if( $now['minutes'] > $minutes ) { $now['hours']++; }
-			
+
 			$result = mktime( $now['hours'], $minutes );
 			}
 		else if( $schedule['type'] == 'Daily' )
@@ -1354,13 +1354,13 @@ jQuery(function($){
 			// If we've already passed the TOD to run it at, add another week to it.
 			if( $now['wday'] == $schedule_dow && $now['hours'] > $hours ) { $now['mday'] += 7; }
 			if( $now['wday'] == $schedule_dow && $now['hours'] == $hours && $now['minutes'] > $minutes ) { $now['mday'] += 7; }
-			
+
 			// If we've passed the day this week to run it, add the required number of days to catch it the next week.
 			if( $now['wday'] >  $schedule_dow ) { $now['mday'] += 7 - ( $now['wday'] - $schedule_dow ); }
 
 			// If we haven't passed the day this week to run it, add the required number of days to set it.
 			if( $now['wday'] <  $schedule_dow ) { $now['mday'] += ( $schedule_dow - $now['wday'] ); }
-			
+
 			$result = mktime( $hours, $minutes, 0, $now['mon'], $now['mday'] );
 			}
 		else if( $schedule['type'] == 'Monthly' )
@@ -1371,7 +1371,7 @@ jQuery(function($){
 			// If we've already passed the TOD to run it at, add another week to it.
 			if( $now['mday'] == $schedule['dom'] && $now['hours'] > $hours ) { $now['mon'] += 1; }
 			if( $now['mday'] == $schedule['dom'] && $now['hours'] == $hours && $now['minutes'] > $minutes ) { $now['mon'] += 1; }
-			
+
 			// If we've already passed the DOM this month, set it to next month.
 			if( $now['mday'] > $schedule['dom'] ) {	$now['mon'] += 1; }
 
@@ -1395,11 +1395,11 @@ jQuery(function($){
 	// Determine when the next backup should happen based on the schedule
 	//**************************************************************************************
 	private function calculate_next_backup( $options ) {
-		if( !is_array($options) ) 
-			{ 
+		if( !is_array($options) )
+			{
 			$options = (array)get_option($this->option_name);
 			}
-		
+
 		$schedule = $options['schedule'];
 		$last_schedule = $options['next_backup_time'];
 
@@ -1436,23 +1436,23 @@ jQuery(function($){
 		if( $result !== FALSE && $result < $now ) {
 			$result = calculate_initial_backup( $schedule );
 		}
-			
+
 		return $result;
 	}
 
 	public function schedule_next_backup( $schedule ) {
 		$options = (array)get_option($this->option_name);
-			
+
 		if( $options['schedule']['enabled'] && $options['schedule']['type'] != 'Once' ) {
 			$next_backup_time = $this->calculate_next_backup( $options );
-		
+
 			wp_schedule_single_event($next_backup_time, 'cyan_backup_hook');
 
 			$options['next_backup_time'] = $next_backup_time;
 			update_option($this->option_name, $options);
 		}
-	}	
-	
+	}
+
 	//**************************************************************************************
 	// Option Page
 	//**************************************************************************************
@@ -1467,7 +1467,7 @@ jQuery(function($){
 		$backup_files = $this->backup_files_info($this->get_backup_files());
 
 		$rb = $this->remote_backuper();
-		
+
 		$ext = $rb->GetArchiveExtension();
 
 		if (count($backup_files) > $number && $number > 1) {
@@ -1484,7 +1484,7 @@ jQuery(function($){
 				}
 				$i++;
 			}
-			
+
 		return $j;
 		}
 
@@ -1504,9 +1504,9 @@ jQuery(function($){
 				check_admin_referer('backup', self::NONCE_NAME);
 
 			$getdata = $this->get_real_get_data();
-				
+
 			if (($file = realpath($getdata['download'])) !== FALSE) {
-				
+
 				if( strtolower( substr( $file, -4 ) ) == ".log" ) {
 					header("Content-Type: text/plain;");
 				} else {
@@ -1516,11 +1516,11 @@ jQuery(function($){
 
 				// The following code is in place as, while readfile() doesn't use memory to read the contents, if output buffering
 				// is enabled it will buffer our output of the file, which can cause an out of memory condition for large backups.
-				
+
 				// Default buffer is 2meg, max is 20meg.
 				$buffer_size = 2048000;
 				$max_buffer_size = 20480000;
-				
+
 				$php_limit = ini_get('memory_limit');
 
 				// The ini file might have some text like KB to indicate the size so replace it with some zeros now.
@@ -1539,7 +1539,7 @@ jQuery(function($){
 				$remaining = $php_limit - $current_usage;
 
 				$filesize = filesize( $file );
-				
+
 				// If the file size is less than the remaining memory (plus a 20% buffer ), then we can use readfile()
 				if( ( $filesize * 1.2 ) < $remaining ) {
 					readfile($file);
@@ -1556,22 +1556,22 @@ jQuery(function($){
 							$buffer_size = $remaining * .8;
 						}
 					}
-				
+
 					// Now divide the buffer size by 2 as we're going to have 2 copies of the data in memory at any
 					// givin time (one from the fread, one in the output buffer.
 					$buffer_size = $buffer_size / 2;
-				
+
 					// Open the file for reading.
 					$fh = fopen( $file, 'rb' );
-				
+
 					// Loop through.
 					while( !feof( $fh ) && $fh !== false ) {
 						// Read a chunk of the file in to memory.
 						$buffer = fread( $fh, $buffer_size );
-						
+
 						// Output the contents of the chunk.
 						print( $buffer );
-						
+
 						// Make sure we free the temporary buffer.
 						unset( $buffer );
 
@@ -1579,7 +1579,7 @@ jQuery(function($){
 						ob_flush();
 						flush();
 					}
-					
+
 					// Close the file.
 					fclose( $fh );
 				}
@@ -1602,11 +1602,11 @@ jQuery(function($){
 									'PHPArchiveTarBZ' 		=> __('tbz (PHP-Archive)', $this->textdomain),
 									'PHPArchiveTarDotBZ' 	=> __('tar.bz2 (PHP-Archive)', $this->textdomain),
 							);
-		
+
 		if( class_exists('ZipArchive') ) { $archive_methods['ZipArchive'] = __('zip (ZipArchive)', $this->textdomain); }
 
 		asort( $archive_methods );
-		
+
 		return $archive_methods;
 	}
 }
