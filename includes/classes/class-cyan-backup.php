@@ -737,8 +737,14 @@ if( !class_exists( 'CYAN_WP_Backup' ) ) {
 		}
 
 		private function get_real_post_data() {
+			// The get_magic_quotes-* functions have been removed as of PHP 8, so make sure to check if they exist.
+			$gmq_gpc = false;
+			$gmq_run = false;
+			if( function_exists( 'get_magic_quotes_gpc') ) { $gmq_gpc = get_magic_quotes_gpc(); }
+			if( function_exists( 'get_magic_quotes_runtime') ) { $gmq_run = get_magic_quotes_runtime(); }
+
 			// Processing of windows style paths is broken if magic quotes is enabled in php.ini but not enabled during runtime.
-			if( get_magic_quotes_gpc() != get_magic_quotes_runtime() ) {
+			if( $gmq_gpc != $gmq_run ) {
 
 				// So we have to get the RAW post data and do the right thing.
 				$raw_post_data = file_get_contents( 'php://input' );
@@ -750,7 +756,7 @@ if( !class_exists( 'CYAN_WP_Backup' ) ) {
 				foreach( $post_split as $entry ) {
 
 					$entry_split = explode( '=', $entry, 2 );
-					if( get_magic_quotes_runtime() == FALSE ) {
+					if( $gmq_run() == FALSE ) {
 						$postdata[urldecode( $entry_split[0] )] = urldecode( $entry_split[1] );
 					} else {
 						$postdata[urldecode( stripslashes( $entry_split[0] ) )] = urldecode( stripslashes( $entry_split[1] ) );
@@ -764,8 +770,14 @@ if( !class_exists( 'CYAN_WP_Backup' ) ) {
 		}
 
 		private function get_real_get_data() {
+			// The get_magic_quotes-* functions have been removed as of PHP 8, so make sure to check if they exist.
+			$gmq_gpc = false;
+			$gmq_run = false;
+			if( function_exists( 'get_magic_quotes_gpc') ) { $gmq_gpc = get_magic_quotes_gpc(); }
+			if( function_exists( 'get_magic_quotes_runtime') ) { $gmq_run = get_magic_quotes_runtime(); }
+
 			// Processing of windows style paths is broken if magic quotes is enabled in php.ini but not enabled during runtime.
-			if( get_magic_quotes_gpc() != get_magic_quotes_runtime() ) {
+			if( $gmq_gpc != $gmq_run ) {
 
 				// So we have to get the RAW post data and do the right thing.
 				$raw_get_data = $_SERVER['REQUEST_URI'];
@@ -777,7 +789,7 @@ if( !class_exists( 'CYAN_WP_Backup' ) ) {
 				foreach( $get_split as $entry ) {
 
 					$entry_split = explode( '=', $entry, 2 );
-					if( get_magic_quotes_runtime() == FALSE ) {
+					if( $gmq_run == FALSE ) {
 						$getdata[urldecode( $entry_split[0] )] = urldecode( $entry_split[1] );
 					} else {
 						$getdata[urldecode( stripslashes( $entry_split[0] ) )] = urldecode( stripslashes( $entry_split[1] ) );
