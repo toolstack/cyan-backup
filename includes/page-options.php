@@ -4,11 +4,11 @@
 		wp_die(__('Access denied!', $this->textdomain));
 
 	$this->verify_status_file();
-	
+
 	include_once('class-cyan-utilities.php');
-	
+
 	$CYANUtil = new CYAN_Utilities;
-		
+
 	$nonce_field = 'option_update';
 
 	$option          = (array)get_option($this->option_name);
@@ -19,7 +19,7 @@
 	$abspath  	     = $this->chg_directory_separator(ABSPATH, FALSE);
 	$admin_dir       = $this->chg_directory_separator($abspath . 'wp-admin/', FALSE);
 	$archive_methods = $this->get_archive_methods();
-	
+
 	// Create the .htaccess or WebConfig files
 	if (isset($_POST['CreateWebConfig']) || isset($_POST['Createhtaccess'])) {
 		if ( $this->wp_version_check('2.5') && function_exists('check_admin_referer') )
@@ -31,11 +31,11 @@
 				$CYANUtil->record_notes( "<strong>". __('Archive path set to WordPress root or admin folder, Web.Config not written!', $this->textdomain)."</strong>", 2);
 			} else {
 				$access_filename = $archive_path . 'Web.config';
-				
+
 				if( !file_exists( $access_filename ) )
 					{
 					$access_file = fopen( $access_filename, 'w' );
-					
+
 					fwrite( $access_file, '<?xml version="1.0" encoding="utf-8" ?>' . "\n");
 					fwrite( $access_file, '<configuration>' . "\n");
 					fwrite( $access_file, '	<system.webServer>' . "\n");
@@ -47,25 +47,25 @@
 					fwrite( $access_file, '		</security>' . "\n");
 					fwrite( $access_file, '	</system.webServer>' . "\n");
 					fwrite( $access_file, '</configuration>' . "\n");
-					
+
 					fclose( $access_file );
-					
+
 					$CYANUtil->record_notes( __('Web.Config written!', $this->textdomain), 0);
 					}
-				else 
+				else
 					{
 					$CYANUtil->record_notes( __('Web.Config already exists, please edit it manually!', $this->textdomain), 1);
 					}
 				}
 			}
-		
+
 		if( isset($_POST['Createhtaccess']) )
 			{
 			if( $abspath == $archive_path || $admin_dir == $archive_path ) {
 				$CYANUtil->record_notes( __('Archive path set to WordPress root or admin folder, .htaccess not written!', $this->textdomain), 2);
 			} else {
 				$access_filename = $archive_path . '.htaccess';
-				
+
 				if( !file_exists( $access_filename ) )
 					{
 					$access_file = fopen( $access_filename, 'w' );
@@ -74,19 +74,19 @@
 					fwrite( $access_file, '  Order Allow,Deny' . "\n" );
 					fwrite( $access_file, '  Deny from all' . "\n" );
 					fwrite( $access_file, '</FilesMatch>' . "\n" );
-					
+
 					fclose( $access_file );
 
 					$CYANUtil->record_notes( __('.htaccess written!', $this->textdomain), 0);
 					}
-				else 
+				else
 					{
 					$CYANUtil->record_notes( __('.htaccess already exists, please edit it manually!', $this->textdomain), 1);
 					}
 				}
 			}
 	}
-	
+
 	// option update
 	if (isset($_POST['options_update'])) {
 		if( $this->wp_version_check('2.5') && function_exists('check_admin_referer') )
@@ -120,7 +120,7 @@
 				$options['archive_method'] = $_POST['archive_method'];
 			}
 		}
-		
+
 		if( isset( $_POST['disabledbbackup'] ) ) {
 			$options['disabledbbackup'] = $_POST['disabledbbackup'];
 		}
@@ -132,12 +132,12 @@
 		if( isset( $_POST['artificialdelay'] ) ) {
 			$options['artificialdelay'] = $_POST['artificialdelay'];
 		}
-		
+
 		if( isset( $_POST['lowiomode'] ) ) {
 			$options['lowiomode'] = $_POST['lowiomode'];
 			$options['artificialdelay'] = $_POST['lowiomode'];
 		}
-		
+
 		$postdata = $this->get_real_post_data();
 
 		if ( isset($postdata['archive_path']) ) {
@@ -147,27 +147,27 @@
 				$realpath = $this->chg_directory_separator($realpath, FALSE);
 				if ( is_dir($realpath) )
 					$realpath = $this->trailingslashit($realpath, FALSE);
-					
+
 				if( $realpath == $abspath || $realpath == $admin_dir ) {
 					$CYANUtil->record_notes( __('Archive path set to WordPress root or admin folder, this is not a valid option!', $this->textdomain), 2);
 				} else {
 					$options['archive_path'] = $realpath;
-					
+
 					if( substr( $realpath, 0, strlen( $abspath) ) == $abspath ) {
 						$test_name = $realpath . "test.zip";
 						$test_text = "This is a test file\n";
 						$test_file = fopen( $test_name, 'w' );
-						
+
 						if( $test_file ) {
 							fwrite($test_file, $test_text);
 							fclose($test_file);
-					
+
 							$test_url = $this->wp_site_url( substr( $realpath, strlen( $abspath ) ) . 'test.zip' );
-					
+
 							$test_read = @file_get_contents($test_url);
-							
+
 							@unlink( $test_name );
-							
+
 							if( $test_read == $test_text ) {
 								$CYANUtil->record_notes( sprintf(__('Archive directory ("%s") is a subdirectory in the WordPress root and is accessible via the web, this is an insecure configuration!', $this->textdomain), $realpath), 1);
 							}
@@ -180,10 +180,10 @@
 				$CYANUtil->record_notes( sprintf(__('Archive directory ("%s") does not exist!', $this->textdomain), $realpath), 2);
 			}
 		}
-		
+
 		if ( isset($postdata['archive_prefix']) ) {
 			$temp_prefix = str_replace(DIRECTORY_SEPARATOR, '-', untrailingslashit($postdata['archive_prefix']));
-			
+
 			if( $temp_prefix != '' ) {
 				$backup_files = $this->get_backup_files();
 
@@ -195,23 +195,23 @@
 
 						$new_fname = $pinfo['dirname'] . '/' . $new_bname . '.' . $pinfo['extension'];
 						rename( $backup_file, $new_fname );
-	
+
 						$logname = $pinfo['dirname'] . '/' . $pinfo['filename'] . '.log';
 						$new_lname = $pinfo['dirname'] . '/' . $new_bname . '.log';
 						rename( $logname, $new_lname );
 					}
 				}
-				
+
 				$archive_prefix = $temp_prefix;
 				$options['archive_prefix'] = $temp_prefix;
 			}
 		}
-		
+
 		if ( isset($postdata['excluded']) ) {
 			$excluded = $excluded_dir = array();
 			$check_archive_excluded = FALSE;
 			$archive_path_found = FALSE;
-			
+
 			if( substr( $archive_path, 0, strlen( $abspath) ) == $abspath ) { $check_archive_excluded = TRUE; }
 
 			foreach ( explode("\n", $postdata['excluded']) as $dir ) {
@@ -240,14 +240,14 @@
 
 				$CYANUtil->record_notes( __('Archive path is in the WordPress directory tree but was not found in the exclusions, it has automatically been added.', $this->textdomain), 0);
 			}
-			
+
 			$options['excluded'] = $excluded;
 		}
 
 		if( isset( $_POST['emaillog'] ) ) {
 			$options['emaillog'] = $_POST['emaillog'];
 		}
-		
+
 		if( isset( $_POST['sendto'] ) ) {
 			$options['sendto'] = $_POST['sendto'];
 		}
@@ -277,7 +277,7 @@
 
 		// Remove the backup schedule if we've change it recurrence.
 		if( wp_next_scheduled('cyan_backup_hook') && ( $options['schedule']['type'] != $option['schedule']['type'] || $options['schedule']['interval'] != $option['schedule']['interval'] || $options['schedule']['tod'] != $option['schedule']['tod'] || $options['schedule']['dom'] != $option['schedule']['dom'] || $options['schedule']['dow'] != $option['schedule']['dow'] ) ) {
-		
+
 			wp_unschedule_event(wp_next_scheduled('cyan_backup_hook'), 'cyan_backup_hook');
 		}
 
@@ -295,7 +295,7 @@
 
 		// Remove the backup schedule if it does exist and is disabled.
 		if( wp_next_scheduled('cyan_backup_hook') && !$options['schedule']['enabled'] ) {
-		
+
 			wp_unschedule_event(wp_next_scheduled('cyan_backup_hook'), 'cyan_backup_hook');
 		}
 
@@ -317,7 +317,7 @@
 	// Decrypt the password for use on the form.
 	$decrypted_pw = $this->decrypt_password( $option['remote']['password'] );
 	$option['remote']['password'] = $decrypted_pw;
-	
+
 	$schedule_types = array( 'Once', 'Hourly', 'Daily', 'Weekly', 'Monthly' );
 
 	if( self::DEBUG_MODE == TRUE ) {
@@ -325,8 +325,8 @@
 	}
 
 	$display_settings = array();
-	$display_type_settings = array( 
-								'Once' => array( 
+	$display_type_settings = array(
+								'Once' => array(
 									'schedule_debug' => 'display: none;',
 									'schedule_once' => '',
 									'schedule_before' => 'display: none;',
@@ -344,7 +344,7 @@
 									'schedule_minutes' => '',
 									'schedule_ampm' => ''
 									),
-								'Hourly' => array( 
+								'Hourly' => array(
 									'schedule_debug' => 'display: none;',
 									'schedule_once' => 'display: none;',
 									'schedule_before' => '',
@@ -362,7 +362,7 @@
 									'schedule_minutes' => '',
 									'schedule_ampm' => 'display: none;'
 									),
-								'Daily' => array( 
+								'Daily' => array(
 									'schedule_debug' => 'display: none;',
 									'schedule_once' => 'display: none;',
 									'schedule_before' => '',
@@ -380,7 +380,7 @@
 									'schedule_minutes' => '',
 									'schedule_ampm' => ''
 									),
-								'Weekly' => array( 
+								'Weekly' => array(
 									'schedule_debug' => 'display: none;',
 									'schedule_once' => 'display: none;',
 									'schedule_before' => '',
@@ -398,7 +398,7 @@
 									'schedule_minutes' => '',
 									'schedule_ampm' => ''
 									),
-								'Monthly' => array( 
+								'Monthly' => array(
 									'schedule_debug' => 'display: none;',
 									'schedule_once' => 'display: none;',
 									'schedule_before' => '',
@@ -416,10 +416,10 @@
 									'schedule_minutes' => '',
 									'schedule_ampm' => ''
 									)
-								);		
-	
+								);
+
 	if( self::DEBUG_MODE == TRUE ) {
-		$display_type_settings['debug'] = array( 
+		$display_type_settings['debug'] = array(
 									'schedule_debug' => '',
 									'schedule_once' => 'display: none;',
 									'schedule_before' => 'display: none;',
@@ -438,16 +438,16 @@
 									'schedule_ampm' => 'display: none;'
 									);
 	}
-	
+
 	echo '<script type="text/javascript">//<![CDATA[' . "\n";
-	
+
 	echo 'function set_schedule_display() {' . "\n";
 	echo '        var display_type_settings = new Array() ' . "\n\n";
 
 	foreach( $display_type_settings as $key => $value ) {
 		echo '        display_type_settings[\'' . $key . '\'] = new Array();' . "\n";
 	}
-	
+
 	foreach( $display_type_settings as $key => $value ) {
 		foreach( $value as $subkey => $subvalue ) {
 			echo '        display_type_settings[\'' . $key . '\'][\'' . $subkey . '\'] = \'';
@@ -455,9 +455,9 @@
 			echo '\';' . "\n";
 		}
 	}
-	
+
 	echo "\n";
-	
+
 	echo '        var type = jQuery("#schedule_type").val();' . "\n";
 	echo "\n";
 	echo '        for( var i in display_type_settings[type] ) {' . "\n";
@@ -465,47 +465,47 @@
 	echo '        }' . "\n";
 	echo '}' . "\n";
 	echo "\n";
-	
+
 	echo 'jQuery(document).ready(function() {' . "\n";
 	echo '        jQuery("#clear_files").change(function(){' . "\n";
-	echo "\n";	
+	echo "\n";
 	echo '                if(!this.checked)' . "\n";
 	echo '                        return;' . "\n";
-	echo "\n";	
+	echo "\n";
 	echo "                var agree = confirm('" . __('Are you sure you want to delete all temporary files in the archive directory?', $this->textdomain) . "')\n";
-	echo "\n";	
+	echo "\n";
 	echo '                if(!agree)' . "\n";
 	echo '                        jQuery("#clear_files").attr("checked", false);' . "\n";
-	echo "\n";	
+	echo "\n";
 	echo '        });' . "\n";
 	echo "\n";
 	echo '        jQuery("#clear_backup").change(function(){' . "\n";
-	echo "\n";	
+	echo "\n";
 	echo '                if(!this.checked)' . "\n";
 	echo '                        return;' . "\n";
-	echo "\n";	
+	echo "\n";
 	echo "                var agree = confirm('" . __('Are you sure you want to clear the active state?', $this->textdomain) . "')\n";
-	echo "\n";	
+	echo "\n";
 	echo '                if(!agree)' . "\n";
 	echo '                        jQuery("#clear_backup").attr("checked", false);' . "\n";
-	echo "\n";	
+	echo "\n";
 	echo '        });' . "\n";
-	echo "\n";	
+	echo "\n";
 	echo '        jQuery("#tabs").tabs();' . "\n";
-	echo "\n";	
+	echo "\n";
 	echo '});' . "\n";
-	
+
 	echo '//]]></script>' . "\n";
 
 	// Find the next scheduled backup in WP Cron.
 	$next_schedule = wp_next_scheduled('cyan_backup_hook');
 	$current_time = time();
-	
+
 	// If the next scheduled backup is over an hour in the past, it's probably broken, let the user know.
 	if( ( $next_schedule < $current_time - 3600 ) && is_array( $option['schedule'] ) && array_key_exists( 'enabled', $option['schedule'] ) && $option['schedule']['enabled'] ) {
 		$CYANUtil->record_notes( __('The next scheduled backup job is in the past, WP Cron may be broken.  If it does not execute shortly, you may want to disable and then re-enable scheduled backup jobs to re-create the WP Cron entry.', $this->textdomain), 1 );
 	}
-	
+
 	echo $CYANUtil->output_notes();
 	$CYANUtil->clear_notes();
 ?>
@@ -559,23 +559,23 @@
 
 						<td>
 							<select id="archive_method" name="archive_method">
-<?php		
-		if( !array_key_exists( 'archive_method', $option ) || !array_key_exists( $option['archive_method'], $archive_methods ) ) { 
+<?php
+		if( !array_key_exists( 'archive_method', $option ) || !array_key_exists( $option['archive_method'], $archive_methods ) ) {
 			if( array_key_exists( 'ZipArchive', $archive_methods ) ) {
-				$option['archive_method'] = 'ZipArchive'; 
+				$option['archive_method'] = 'ZipArchive';
 			} else {
 				$option['archive_method'] = 'PclZip';
 			}
 		}
-		
+
 		foreach( $archive_methods as $key => $method ) {
 			echo "\t\t\t\t\t\t<option value=\"" . $key . '"';
 
 			if( $option['archive_method'] == $key ) { echo ' SELECTED'; }
-			
+
 			echo '>' . $method . '</option>' . "\r\n";
 		}
-?>		
+?>
 							</select>
 						</td>
 					</tr>
@@ -617,7 +617,7 @@
 
 					<tr>
 						<th><?php _e('Excluded dir', $this->textdomain);?></th>
-						
+
 						<td><textarea name="excluded" id="excluded" rows="5" cols="100">
 <?php
 	foreach ($excluded_dir as $dir) {
@@ -672,7 +672,7 @@
 					</tr>
 <?php if( array_key_exists( 'schedule', $option ) && array_key_exists( 'enabled', $option['schedule'] ) && $option['schedule']['enabled'] == 'on' ) { ?>
 					<tr>
-			
+
 					<td style="width: auto; text-align: right; vertical-align: top;"><span class="description"><?php _e('Next backup scheduled for', $this->textdomain);?></span>:</td><td style="width: auto; text-align: left; vertical-align: top;"><code>
 <?php
 			if( $next_schedule ) {
@@ -687,7 +687,7 @@
 <?php	}?>
 				</tbody>
 			</table>
-			
+
 			<table class="optiontable form-table" style="margin-top:0;">
 				<tbody>
 					<tr>
@@ -701,37 +701,37 @@
 
 						<td>
 							<select id="schedule_type" onChange="set_schedule_display();" name="schedule[type]">
-<?php		
+<?php
 		foreach( $schedule_types as $type ) {
 			echo "\t\t\t\t\t\t<option value=\"" . $type . '"';
 
 			if( array_key_exists( 'schedule', $option ) && array_key_exists( 'type', $option['schedule'] ) && $option['schedule']['type'] == $type ) { echo ' SELECTED'; $display_settings = $display_type_settings[$type]; }
-			
+
 			echo '>' . __($type, $this->textdomain) . '</option>';
 		}
-?>		
+?>
 							</select>
 						</td>
 					</tr>
 
 					<tr>
 						<th><?php _e('Schedule', $this->textdomain);?></th>
-						
+
 						<td>
-<?php		
+<?php
 		if( self::DEBUG_MODE == TRUE ) {
 			echo "\t\t\t\t\t\t" . '<span id="schedule_debug" style="' . $display_settings['schedule_debug'] . '">' . __('Every minute, for debugging only', $this->textdomain) . '</span>';
 		}
-?>		
+?>
 							<span id="schedule_once" style="<?php echo $display_settings['schedule_once'];?>"><?php _e('Only once', $this->textdomain);?></span>
 							<span id="schedule_before" style="<?php echo $display_settings['schedule_before'];?>"><?php _e('Run backup every', $this->textdomain);?> </span>
 <?php
 		echo "\t\t\t\t\t\t<select id=" . '"schedule_interval" name="schedule[interval]">';
-		for( $i = 1; $i < 32; $i++ ) 
-			{ 
+		for( $i = 1; $i < 32; $i++ )
+			{
 			echo '<option value="' . $i . '"';
 			if( array_key_exists( 'schedule', $option ) && array_key_exists( 'interval', $option['schedule'] ) && $i == (int)$option['schedule']['interval'] ) { echo ' SELECTED'; }
-			echo '>' . $i . '</option>'; 
+			echo '>' . $i . '</option>';
 			}
 		echo "</select>\n";
 ?>
@@ -740,52 +740,52 @@
 
 							<select id="schedule_dow" name="schedule[dow]" style="<?php echo $display_settings['schedule_dow'];?>">
 								<option value=""></option>
-<?php		
+<?php
 		$weekdays = array( 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday' );
 		foreach( $weekdays as $day ) {
 			echo "\t\t\t\t\t\t\t\t" . '<option value="' . $day . '"';
 
 			if( array_key_exists( 'schedule', $option ) && array_key_exists( 'dow', $option['schedule'] ) && $option['schedule']['dow'] == $day ) { echo' SELECTED'; }
-			
+
 			echo '>' . __($day, $this->textdomain) . '</option>';
 		}
-?>		
+?>
 							</select>
 
 							<span id="schedule_the" style="<?php echo $display_settings['schedule_the'];?>"> <?php _e('the', $this->textdomain);?></span>
-				
+
 							<select id="schedule_dom" name="schedule[dom]" style="<?php echo $display_settings['schedule_dom'];?>">
 								<option value=""></option>
-<?php		
+<?php
 		for( $i = 1; $i < 28; $i++ ) {
 			echo "\t\t\t\t\t\t\t\t" . '<option value="' . $i . '"';
 
 			if( array_key_exists( 'schedule', $option ) && array_key_exists( 'dom', $option['schedule'] ) && $option['schedule']['dom'] == $i ) { echo' SELECTED'; }
-			
+
 			echo '>' . $i . '</option>';
 		}
 ?>
 							</select>
-			
+
 							<span id="schedule_at" style="<?php echo $display_settings['schedule_at'];?>"> <?php _e('at', $this->textdomain);?></span>
 <?php
 		echo "\t\t\t\t\t\t<select id=" . '"schedule_hours" name="schedule[hours]"><option value=""></option>';
-		for( $i = 1; $i < 13; $i++ ) 
-			{ 
+		for( $i = 1; $i < 13; $i++ )
+			{
 			echo '<option value="' . $i . '"';
 			if( array_key_exists( 'schedule', $option ) && array_key_exists( 'hours', $option['schedule'] ) && $i == (int)$option['schedule']['hours'] ) { echo ' SELECTED'; }
-			echo '>' . $i . '</option>'; 
+			echo '>' . $i . '</option>';
 			}
 		echo "</select>\n";
 
 		echo "\t\t\t\t\t\t<select id=" . '"schedule_minutes" name="schedule[minutes]"><option value=""></option>';
-		for( $i = 0; $i < 60; $i++ ) 
-			{ 
+		for( $i = 0; $i < 60; $i++ )
+			{
 			echo '<option value="' . $i . '"';
 			if( array_key_exists( 'schedule', $option ) && array_key_exists( 'minutes', $option['schedule'] ) && $i == (int)$option['schedule']['minutes'] ) { echo ' SELECTED'; }
 			echo '>:';
 			if( $i < 10 ) { echo '0'; }
-			echo $i . '</option>'; 
+			echo $i . '</option>';
 			}
 		echo "</select>\n";
 ?>
@@ -801,7 +801,7 @@
 				<tbody>
 					<tr>
 						<th><?php _e('Enable backup pruning', $this->textdomain);?></th>
-						
+
 						<td><input type="checkbox" name="prune[enabled]"<?php	if( array_key_exists( 'prune', $option ) && array_key_exists( 'enabled', $option['prune'] ) && $option['prune']['enabled'] == 'on' ) { echo' CHECKED'; }?>></td>
 					</tr>
 
@@ -819,7 +819,7 @@
 				<tbody>
 					<tr>
 						<th><?php _e('Enable remote storage', $this->textdomain);?></th>
-						
+
 						<td><input type="checkbox" name="remote[enabled]"<?php	if( array_key_exists( 'remote', $option ) && array_key_exists( 'enabled', $option['remote'] ) && $option['remote']['enabled'] == 'on' ) { echo' CHECKED'; }?>></td>
 					</tr>
 
@@ -831,7 +831,7 @@
 		echo "\t\t\t\t\t\t<select id=" . '"remote_protocol" name="remote[protocol]"><option value=""></option>';
 
 		$wrappers = stream_get_wrappers();
-		
+
 		//									'dropbox' => __('DropBox', $this->textdomain),
 		if( in_array( 'ftp', $wrappers ) ) 			{ $remoteprotocols['ftpwrappers'] 	= __('FTP Wrappers', $this->textdomain); }
 		if( function_exists( 'ftp_connect' ) ) 		{ $remoteprotocols['ftplibrary'] 	= __('FTP Library', $this->textdomain); }
@@ -840,40 +840,40 @@
 		if( in_array( 'ssh2', $wrappers ) ) 		{ $remoteprotocols['sftpwrappers'] 	= __('SFTP Wrappers', $this->textdomain); }
 		if( function_exists( 'ssh2_connect' ) ) 	{ $remoteprotocols['sftplibrary'] 	= __('SFTP Library', $this->textdomain); }
 		$remoteprotocols['sftpphpseclib'] = __('SFTP phpseclib', $this->textdomain);
-								
-		foreach( $remoteprotocols as $key => $protocol ) 
-			{ 
+
+		foreach( $remoteprotocols as $key => $protocol )
+			{
 			echo '<option value="' . $key . '"';
 			if( array_key_exists( 'remote', $option ) && array_key_exists( 'protocol', $option['remote'] ) && $key == $option['remote']['protocol'] ) { echo ' SELECTED'; }
-			echo '>'. $protocol . '</option>'; 
+			echo '>'. $protocol . '</option>';
 			}
-			
+
 		echo "</select>\n";
 ?>
 						</td>
 					</tr>
-					
+
 					<tr>
 						<th><?php _e('Host', $this->textdomain);?></th>
-						
+
 						<td><input type="text" size="40" name="remote[host]" value="<?php echo $option['remote']['host'];?>"></td>
 					</tr>
 
 					<tr>
 						<th><?php _e('Username', $this->textdomain);?></th>
-						
+
 						<td><input type="text" size="20" name="remote[username]" value="<?php echo $option['remote']['username'];?>"></td>
 					</tr>
 
 					<tr>
 						<th><?php _e('Password', $this->textdomain);?></th>
-						
+
 						<td><input type="password" size="20" name="remote[password]" value="<?php echo $option['remote']['password'];?>"></td>
 					</tr>
 
 					<tr>
 						<th><?php _e('Remote path', $this->textdomain);?></th>
-						
+
 						<td>
 							<input type="text" size="40" name="remote[path]" value="<?php echo $option['remote']['path'];?>"><br>
 							<br>
@@ -883,19 +883,19 @@
 
 					<tr>
 						<th><?php _e('Include log file', $this->textdomain);?></th>
-						
+
 						<td><input type="checkbox" name="remote[sendlog]"<?php	if( array_key_exists( 'remote', $option ) && array_key_exists( 'sendlog', $option['remote'] ) && $option['remote']['sendlog'] == 'on' ) { echo' CHECKED'; }?>></td>
 					</tr>
 
 					<tr>
 						<th><?php _e('Delete local copy during scheduled backup', $this->textdomain);?></th>
-						
+
 						<td><input type="checkbox" name="remote[deletelocalschedule]"<?php	if( array_key_exists( 'remote', $option ) && array_key_exists( 'deletelocalschedule', $option['remote'] ) && $option['remote']['deletelocalschedule'] == 'on' ) { echo' CHECKED'; }?>></td>
 					</tr>
-					
+
 					<tr>
 						<th><?php _e('Delete local copy during manual backup', $this->textdomain);?></th>
-						
+
 						<td><input type="checkbox" name="remote[deletelocalmanual]"<?php	if( array_key_exists( 'remote', $option ) && array_key_exists( 'deletelocalmanual', $option['remote'] ) && $option['remote']['deletelocalmanual'] == 'on' ) { echo' CHECKED'; }?>></td>
 					</tr>
 
