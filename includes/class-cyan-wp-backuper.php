@@ -42,7 +42,7 @@ class CYAN_WP_Backuper {
 	//**************************************************************************************
 	function __construct($archive_path = FALSE, $archive_prefix = FALSE, $wp_dir = FALSE, $excluded = FALSE){
 		$this->option = (array)get_option(self::OPTION_NAME);
-		$archive_path = 
+		$archive_path =
 			($archive_path === FALSE && isset($this->option["archive_path"]) && is_dir($this->option["archive_path"]))
 			? $this->option["archive_path"]
 			: $archive_path ;
@@ -64,7 +64,7 @@ class CYAN_WP_Backuper {
 			);
 
 		if( !array_key_exists( 'emaillog', $this->option ) ) { $this->option['emaillog'] = 'off'; }
-		
+
 		if( $this->option['emaillog'] == 'on' ) {
 			$this->email_sendto = $this->option['sendto'];
 		}
@@ -76,11 +76,11 @@ class CYAN_WP_Backuper {
 
 	// sys get temp dir
 	private function sys_get_temp_dir() {
-		if (isset($_ENV['TMP']) && !empty($_ENV['TMP'])) 
+		if (isset($_ENV['TMP']) && !empty($_ENV['TMP']))
 			return realpath($_ENV['TMP']);
-		if (isset($_ENV['TMPDIR']) && !empty($_ENV['TMPDIR'])) 
+		if (isset($_ENV['TMPDIR']) && !empty($_ENV['TMPDIR']))
 			return realpath($_ENV['TMPDIR']);
-		if (isset($_ENV['TEMP']) && !empty($_ENV['TEMP'])) 
+		if (isset($_ENV['TEMP']) && !empty($_ENV['TEMP']))
 			return realpath($_ENV['TEMP']);
 		$tempfile = tempnam(__FILE__,'');
 		if (file_exists($tempfile)) {
@@ -240,16 +240,16 @@ class CYAN_WP_Backuper {
 	private function email_log_file( $addresses, $filename, $status ) {
 		$blogname = get_bloginfo('name');
 		$blogemail = get_bloginfo('admin_email');
-		
+
 		if( trim($addresses) == '' ) { $addresses = $blogemail; }
-		
+
 		$headers[] = "From: $blogname <$blogemail>";
 		$headers[] = "MIME-Version: 1.0";
 		$headers[] = "Content-type: text/html; charset=utf-8";
-		
+
 		$body  = __('Please find attached the backup log file for your reference.') . "\r\n";
 		$body .= "\r\n";
-		
+
 		if( is_array( $status ) ) {
 			foreach( $status as $key => $value ) {
 				$body .= "\t$key: $value\r\n";
@@ -260,13 +260,13 @@ class CYAN_WP_Backuper {
 
 		wp_mail( $addresses, __('CYAN Backup Log', $this->textdomain), $body, $headers, $filename );
 	}
-	
+
 	//**************************************************************************************
 	// Get the total number of rows in the WordPress tables we're going to backup.
 	//**************************************************************************************
 	private function get_sql_row_count() {
 		global $wpdb;
-		
+
 		// get core tables
 		$core_tables = $this->get_core_tables();
 		$row_count = 0;
@@ -275,13 +275,13 @@ class CYAN_WP_Backuper {
 		foreach( $core_tables as $table ) {
 			$row_count += $wpdb->get_var("SELECT count(*) FROM `{$table}`" );
 		}
-		
+
 		return $row_count;
 	}
 
 	private function write_status_file( $percentage, $message, $state = 'active') {
 		if( $this->statuslogfile == null ) { return; }
-	
+
 		$status_file = fopen( $this->statuslogfile, "w" );
 
 		if( $status_file !== FALSE ) {
@@ -289,7 +289,7 @@ class CYAN_WP_Backuper {
 			fwrite( $status_file, $message . "\n" );
 			fwrite( $status_file, $state . "\n" );
 			fwrite( $status_file, realpath( $this->archive_file ). "\n" );
-			
+
 			if( $state == 'complete' ) {
 				fwrite( $status_file, $this->get_filemtime($this->archive_file) . "\n" );
 				fwrite( $status_file, ( filesize($this->archive_file) / 1024 / 1024 ) . "\n");
@@ -297,8 +297,8 @@ class CYAN_WP_Backuper {
 				fwrite( $status_file, date("Y-m-d H:i:s", time() ) );
 				fwrite( $status_file, "0" );
 			}
-			
-			fclose( $status_file );	
+
+			fclose( $status_file );
 		}
 	}
 
@@ -307,13 +307,13 @@ class CYAN_WP_Backuper {
 			$this->logfile = fopen($name, 'a');
 		}
 	}
-	
+
 	private function write_log_file( $message ) {
 		if( $this->logfile != null ) {
 			fwrite($this->logfile, '[' . date("Y-m-d H:i:s") . '] ' . $message . "\n");
 		}
 	}
-	
+
 	private function close_log_file() {
 		if( $this->logfile != null ) {
 			fclose($this->logfile);
@@ -327,7 +327,7 @@ class CYAN_WP_Backuper {
 	public function wp_backup($db_backup = TRUE) {
 
 	    $this->set_transient(self::EXCLUSION_KEY, TRUE);
-		
+
 		if ($this->get_transient(self::EXCLUSION_KEY) === false) {
 			$this->error[] = __('Could not set transient!', $this->textdomain);
 			return array(
@@ -358,7 +358,7 @@ class CYAN_WP_Backuper {
 			$active_filename = $archive_path . 'backup.active';
 			if( file_exists( $active_filename ) ) {
 				$active_filetime = strtotime( $this->get_filemtime($active_filename) );
-				
+
 				// Check to see if the active state is stale ( >30 minutes old )
 				if( time() - $active_filetime > (60 * 10) ) {
 					unlink( $active_filename );
@@ -369,16 +369,16 @@ class CYAN_WP_Backuper {
 						'errors'    => $this->error ,
 						);
 				}
-			} 
+			}
 
-			if( $this->option['disabledbbackup'] == true ) 
+			if( $this->option['disabledbbackup'] == true )
 				$db_backup = FALSE;
-			
+
 			// Create a semaphore file to indicate we're active.
 			$active_backup = fopen( $active_filename, 'w' );
 			fwrite( $active_backup, "placeholder\n" );
 			fclose( $active_backup );
-			
+
 			$this->statuslogfile = $archive_path . 'status.log';
 			$this->write_status_file( 0, __('Calculating backup size...', $this->textdomain) );
 
@@ -390,14 +390,14 @@ class CYAN_WP_Backuper {
 			// get SQL rows.
 			if( $db_backup )
 				$sqlrowcount = $this->get_sql_row_count();
-			
+
 			// get files
 			$this->files = $files = $this->get_files($this->wp_dir, $this->excluded);
 			$filecount = count( $files );
-			
+
 			// Total count is the sqlrowcount + once through the file tree
 			$total_count = $sqlrowcount + $filecount;
-			
+
 			$this->increment = 100 / $total_count;
 
 			$this->write_status_file( 0, __('Backup started, processing SQL tables...', $this->textdomain));
@@ -436,7 +436,7 @@ class CYAN_WP_Backuper {
 					unlink($this->dump_file);
 				}
 			}
-			
+
 			$this->delete_transient(self::EXCLUSION_KEY);
 
 			$backup_elapsed = time() - $backup_start;
@@ -448,15 +448,15 @@ class CYAN_WP_Backuper {
 				$backup_elapsed = round( $backup_elapsed / 3600, 1 );
 				$backup_quantum = __('hours', $this->textdomain);
 			}
-			
+
 			$this->write_log_file( __('Elapsed Time', $this->textdomain ) . ': ' . $backup_elapsed . ' ' . $backup_quantum );
-			
+
 			if( count( $this->error ) > 0 )
 				{
 				$this->write_status_file( 100, __('ERROR:', $this->textdomain ) . implode( '<br>', $this->error ), 'error' );
 				$this->write_log_file( __('ERROR:', $this->textdomain ) . implode( ' - ', $this->error ) );
 				$this->statuslogfile = null;
-				
+
 				$this->close_log_file();
 
 				if( $this->email_sendto !== null ) { $this->email_log_file( $this->email_sendto, $archive_path . $filename . '.log', $this->error ); }
@@ -472,9 +472,9 @@ class CYAN_WP_Backuper {
 
 				if( $this->email_sendto !== null ) { $this->email_log_file( $this->email_sendto, $archive_path . $filename . '.log', __('Backup complete!', $this->textdomain) ); }
 				}
-			
+
 			unlink( $active_filename );
-			
+
 			return array(
 				'backup'    => ($backup && file_exists($backup)) ? $this->archive_file : FALSE ,
 				'db_backup' => $db_backup ? TRUE : FALSE ,
@@ -541,7 +541,7 @@ class CYAN_WP_Backuper {
 			$this->write_log_file(__('Could not backup!', $this->textdomain));
 			throw new Exception(__('Could not backup!', $this->textdomain));
 		}
-		
+
 		try {
 			$dest_dir = trailingslashit($dest_dir);
 			if ( file_exists($this->dump_file) )
@@ -551,25 +551,25 @@ class CYAN_WP_Backuper {
 			$dest_dir = $this->chg_directory_separator($dest_dir);
 			if ( !file_exists($dest_dir) )
 				mkdir($dest_dir, 0700);
-				
+
 			if (!is_writable($dest_dir)) {
 				$this->write_log_file(__('Could not open the destination directory for writing!', $this->textdomain));
 				throw new Exception(__('Could not open the destination directory for writing!', $this->textdomain));
 			}
-			
+
 			$source_dir = $this->chg_directory_separator(trailingslashit($source_dir));
 
 			foreach ($files as $file) {
 				$this->currentcount++;
 				$this->percentage += $this->increment;
-				
+
 				if( round( $this->percentage ) > $this->last_percentage ) {
 					$this->last_percentage = round( $this->percentage );
 					$this->write_status_file( $this->last_percentage, sprintf( __("Copying %s...", $this->textdomain), realpath($file) ) );
 				}
 
 				$this->write_log_file( sprintf( __("Copying %s...", $this->textdomain), realpath($file) ) );
-				
+
 				if ( is_dir($source_dir.$file) ) {
 					if ( !file_exists($dest_dir.$file) )
 						mkdir($dest_dir.$file);
@@ -592,22 +592,22 @@ class CYAN_WP_Backuper {
 				if ($file != "." && $file != "..")
 					$this->recursive_rmdir($dir . DIRECTORY_SEPARATOR . $file);
 			}
-			
+
 			$this->currentcount++;
 			$this->percentage += $this->increment;
-			
+
 			if( round( $this->percentage ) > $this->last_percentage ) {
 				$this->last_percentage = round( $this->percentage );
 				$this->write_status_file( $this->last_percentage, sprintf( __("Deleting %s...", $this->textdomain), realpath($dir) ) );
 			}
 
 			$this->write_log_file( sprintf( __("Deleting %s...", $this->textdomain), realpath($dir) ) );
-			
+
 			rmdir($dir);
 		} else if (file_exists($dir)) {
 			$this->currentcount++;
 			$this->percentage += $this->increment;
-			
+
 			if( round( $this->percentage ) > $this->last_percentage ) {
 				$this->last_percentage = round( $this->percentage );
 				$this->write_status_file( $this->last_percentage, sprintf( __("Deleting %s...", $this->textdomain), realpath($dir) ) );
@@ -616,11 +616,11 @@ class CYAN_WP_Backuper {
 			$this->write_log_file( sprintf( __("Deleting %s...", $this->textdomain), realpath($dir) ) );
 			unlink($dir);
 		}
-	} 
-	
+	}
+
 	private function OpenArchiveFile( $filename ) {
 		$handle = FALSE;
-		
+
 		switch( $this->option['archive_method'] ) {
 			case 'ZipArchive':
 				$zip = new ZipArchive;
@@ -628,23 +628,23 @@ class CYAN_WP_Backuper {
 					$handle = $zip;
 					//$handle->addEmptyDir();
 				}
-				
+
 				break;
 			case 'PclZip':
 				if (!class_exists('PclZip'))
 					require_once( 'class-pclzip.php' );
 
 				$dir_list = scandir($this->wp_dir);
-				
+
 				foreach( $dir_list as $file ) {
 					if( substr( $file, 0, 7 ) == 'pclzip-' && substr( $file, -4 ) == '.tmp' ) {
 						$this->write_log_file( sprintf(__('Removing existing PclZip temp file %s...', $this->textdomain), $this->wp_dir.$file ) );
 						@unlink( $this->wp_dir . $file );
 					}
 				}
-					
+
 				$handle = new PclZip($filename);
-				
+
 				break;
 			case 'PHPArchiveZip':
 
@@ -662,22 +662,22 @@ class CYAN_WP_Backuper {
 				$tar->create($filename);
 
 				$handle = $tar;
-				
+
 				break;
 		}
-				
+
 		return $handle;
 	}
-	
+
 	private function AddArchiveFile( $handle, $file, $archive_file = null, $dir_to_strip = null) {
 		if( $handle === FALSE ) {
 			return;
 		}
-	
+
 		switch( $this->option['archive_method'] ) {
 			case 'ZipArchive':
 				$handle->addFile( $file, $archive_file );
-			
+
 				break;
 			case 'PclZip':
 				$handle->add( $file, PCLZIP_OPT_REMOVE_PATH, $dir_to_strip );
@@ -697,7 +697,7 @@ class CYAN_WP_Backuper {
 		if( $handle === FALSE ) {
 			return;
 		}
-	
+
 		switch( $this->option['archive_method'] ) {
 			case 'ZipArchive':
 			case 'PclZip':
@@ -708,7 +708,7 @@ class CYAN_WP_Backuper {
 			case 'PHPArchiveTarBZ':
 			case 'PHPArchiveTarDotBZ':
 				// No need to add directories to Zip files.
-			
+
 				break;
 		}
 	}
@@ -717,11 +717,11 @@ class CYAN_WP_Backuper {
 		if( $handle === FALSE ) {
 			return;
 		}
-	
+
 		switch( $this->option['archive_method'] ) {
 			case 'ZipArchive':
 				$handle->close();
-				
+
 				break;
 			case 'PclZip':
 				// PclZip doesn't require an explicit close.
@@ -733,11 +733,11 @@ class CYAN_WP_Backuper {
 			case 'PHPArchiveTarBZ':
 			case 'PHPArchiveTarDotBZ':
 				$handle->close();
-			
+
 				break;
 		}
 	}
-	
+
 	public function GetArchiveExtension() {
 		if( is_array( $this->option ) &&
 			array_key_exists( 'archive_method', $this->option ) &&
@@ -782,7 +782,7 @@ class CYAN_WP_Backuper {
 	//**************************************************************************************
 	private function files_archive($source_dir, $files, $archive_file) {
 		GLOBAL $cyan_backup;
-		
+
 		if (!$this->can_user_backup()) {
 			$this->write_log_file(__('Could not backup!', $this->textdomain));
 			throw new Exception(__('Could not backup!', $this->textdomain));
@@ -798,18 +798,18 @@ class CYAN_WP_Backuper {
 		$archive_methods = $cyan_backup->get_archive_methods();
 		$archive_method = $this->option['archive_method'];
 		$dir_to_strip = dirname($this->wp_dir);
-		
+
 		$artifical_time = 10;
 		$artifical_wait = 250000;
-		
+
 		if( $this->option['lowiomode'] ) {
 			$artifical_time = 1;
 			$artifical_wait = 2000000;
 			$this->option['artificialdelay'] = 'on';
 		}
-		
+
 		$artifical_wait_seconds = $artifical_wait / 1000000;
-		
+
 		if (!array_key_exists( $archive_method, $archive_methods) ) {
 			$this->write_log_file(__('Invalid archive method!', $this->textdomain));
 			throw new Exception(__('Invalid archive method!', $this->textdomain));
@@ -818,13 +818,13 @@ class CYAN_WP_Backuper {
 		try {
 			$this->write_log_file( __('Using ', $this->textdomain) . $archive_methods[$archive_method] . '.' );
 			$this->write_log_file( __('Creating ', $this->textdomain) . $archive_file . '.' );
-	
+
 			$archive = $this->OpenArchiveFile( $archive_file );
 			if ( $archive !== FALSE ) {
 				foreach ($files as $file) {
 					$this->currentcount++;
 					$this->percentage += $this->increment;
-					
+
 					$current_file = realpath( $file );
 
 					if( $this->option['artificialdelay'] ) {
@@ -836,14 +836,14 @@ class CYAN_WP_Backuper {
 							usleep($artifical_wait);
 						}
 					}
-				
+
 					if( round( $this->percentage ) > $this->last_percentage ) {
 						$this->last_percentage = round( $this->percentage );
 						$this->write_status_file( $this->last_percentage, sprintf( __("Archiving %s...", $this->textdomain), $current_file ) );
 					}
-				
+
 					$this->write_log_file( sprintf( __("Archiving %s...", $this->textdomain), $current_file ) );
-				
+
 					if ( is_dir($current_file) ) {
 						$this->AddArchiveDir( $archive, $current_file );
 					}
@@ -852,7 +852,7 @@ class CYAN_WP_Backuper {
 					}
 				}
 
-				if ( ( !is_array( $this->dump_file ) && file_exists($this->dump_file) ) 
+				if ( ( !is_array( $this->dump_file ) && file_exists($this->dump_file) )
 					|| ( is_array( $this->dump_file ) && file_exists($this->dump_file[0]) ) ) {
 					$this->write_log_file( __("Archiving SQL dump...", $this->textdomain) );
 					$this->write_status_file( $this->last_percentage, __("Archiving SQL dump...", $this->textdomain) );
@@ -883,7 +883,7 @@ class CYAN_WP_Backuper {
 			$this->write_log_file( __('Updating permission on archive file.', $this->textdomain) );
 
 			chmod($archive_file, 0600);
-			
+
 			return $archive_file;
 		} else {
 			$this->write_log_file(__('Archive file does not exist after the backup is complete!', $this->textdomain));
@@ -899,7 +899,7 @@ class CYAN_WP_Backuper {
 		if ($is_like) $a_string = str_replace('\\', '\\\\\\\\', $a_string);
 		else $a_string = str_replace('\\', '\\\\', $a_string);
 		return str_replace('\'', '\\\'', $a_string);
-	} 
+	}
 
 	//**************************************************************************************
 	// Add backquotes to tables and db-names in
@@ -910,7 +910,7 @@ class CYAN_WP_Backuper {
 			if (is_array($a_name)) {
 				$result = array();
 				reset($a_name);
-				while(list($key, $val) = each($a_name)) 
+				while(list($key, $val) = each($a_name))
 					$result[$key] = '`' . $val . '`';
 				return $result;
 			} else {
@@ -919,7 +919,7 @@ class CYAN_WP_Backuper {
 		} else {
 			return $a_name;
 		}
-	} 
+	}
 
 	//**************************************************************************************
 	// Get WP core tables
@@ -962,30 +962,30 @@ class CYAN_WP_Backuper {
 
 		$artifical_time = 10;
 		$artifical_wait = 250000;
-		
+
 		if( $this->option['lowiomode'] ) {
 			$artifical_time = 1;
 			$artifical_wait = 1000000;
 			$this->option['artificialdelay'] = 'on';
 		}
-		
+
 		$artifical_wait_seconds = $artifical_wait / 1000000;
 
-		
+
 		if( $this->option['splitdbbackup'] == true ) {
 			$sqlfiles = array();
-		
+
 			foreach ($core_tables as $table) {
 				$file_name = $file_path . $this->chg_directory_separator(  $file_prefix . $table . '.' . date('Ymd.His') . '.sql', FALSE );
-				
+
 				$fp = @fopen($file_name, 'w');
 				if($fp) {
 					//Begin new backup of MySql
 					$this->sql_export_headers( $fp );
-					
+
 					// backup table
 					$this->table_dump($fp, $table);
-					
+
 					fclose($fp);
 
 					chmod($file_name, 0600);
@@ -993,12 +993,12 @@ class CYAN_WP_Backuper {
 				} else {
 					$this->error[] = __('Could not open the db dump file for writing!', $this->textdomain);
 				}
-				
+
 				if( $this->option['artificialdelay'] ) {
 					usleep($artifical_wait);
 				}
 			}
-			
+
 			return $sqlfiles;
 		} else {
 			// get dump file name
@@ -1006,21 +1006,21 @@ class CYAN_WP_Backuper {
 
 			if (!is_writable($file_path))
 				return FALSE;
-			
+
 			$fp = @fopen($file_name, 'w');
 			if($fp) {
 				//Begin new backup of MySql
 				$this->sql_export_headers( $fp );
-				
+
 				// backup tables
 				foreach ($core_tables as $table) {
 					$this->table_dump($fp, $table);
-					
+
 					if( $this->option['artificialdelay'] ) {
 						usleep($artifical_wait);
 					}
 				}
-				
+
 				fclose($fp);
 			} else {
 				$this->error[] = __('Could not open the db dump file for writing!', $this->textdomain);
@@ -1029,9 +1029,9 @@ class CYAN_WP_Backuper {
 			if (file_exists($file_name)) {
 				chmod($file_name, 0600);
 				return $file_name;
-			} 
+			}
 		}
-		
+
 	return FALSE;
 	}
 
@@ -1043,7 +1043,7 @@ class CYAN_WP_Backuper {
 		$this->fwrite($fp, "# " . sprintf(__('Database: %s', $this->textdomain),  $this->backquote(DB_NAME)) . "\n");
 		$this->fwrite($fp, "# --------------------------------------------------------\n");
 	}
-	
+
 	//**************************************************************************************
 	// Write to the dump file
 	//**************************************************************************************
@@ -1154,11 +1154,11 @@ class CYAN_WP_Backuper {
 				$replace = array('\0', '\n', '\r', '\Z');
 
 				if( count($table_data) > 0 ) {
-					$entries = 'INSERT INTO ' . $this->backquote($table) . ' VALUES (';	
+					$entries = 'INSERT INTO ' . $this->backquote($table) . ' VALUES (';
 					foreach ($table_data as $row) {
 						$this->currentcount++;
 						$this->percentage += $this->increment;
-						
+
 						if( round( $this->percentage ) > $this->last_percentage ) {
 							$this->last_percentage = round( $this->percentage );
 							$this->write_status_file( $this->last_percentage, sprintf( __("Processing %s...", $this->textdomain), $table ) );
@@ -1225,7 +1225,7 @@ class CYAN_WP_Backuper {
 						: '?download=' . rawurlencode($backup_file) . $nonces ;
 					$url = sprintf(
 						'<a href="%1$s" title="%2$s">%2$s</a>' ,
-						(is_admin() ? '' : trailingslashit(function_exists('home_url') ? home_url() : get_option('home'))) . $query, 
+						(is_admin() ? '' : trailingslashit(function_exists('home_url') ? home_url() : get_option('home'))) . $query,
 						esc_html(basename($backup_file))
 						);
 					$filesize = (int)sprintf('%u', filesize($backup_file)) / 1024 / 1024;
@@ -1238,13 +1238,13 @@ class CYAN_WP_Backuper {
 							: '?download=' . rawurlencode($log_file) . $nonces ;
 						$logurl = sprintf(
 							'<a href="%1$s" title="log">log</a>' ,
-							(is_admin() ? '' : trailingslashit(function_exists('home_url') ? home_url() : get_option('home'))) . $logquery, 
+							(is_admin() ? '' : trailingslashit(function_exists('home_url') ? home_url() : get_option('home'))) . $logquery,
 							esc_html(basename($log_file))
 							);
 					} else {
 						$logurl = '';
 					}
-					
+
 					$backup_files_info[] = array(
 						'filename'  => $backup_file ,
 						'filemtime' => $filemtime ,
