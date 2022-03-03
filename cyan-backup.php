@@ -82,7 +82,7 @@ class CYANBackup {
 		$options = get_option( $this->option_name );
 
 		// Run the upgrade code if required
-		if( $options['version'] != self::VERSION )
+		if( array_key_exists( 'version', $options ) && $options['version'] != self::VERSION )
 			{
 			$options['version'] = self::VERSION;
 			$options['next_backup_time'] = wp_next_scheduled('cyan_backup_hook');
