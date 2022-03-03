@@ -282,7 +282,7 @@
 		}
 
 		// Add the backup schedule if it doesn't exist and is enabled.
-		if( !wp_next_scheduled('cyan_backup_hook') && $options['schedule']['enabled'] ) {
+		if( !wp_next_scheduled('cyan_backup_hook') && array_key_exists('enabled', $options['schedule'] ) && $options['schedule']['enabled'] ) {
 			$next_backup_time = $this->calculate_initial_backup( $options['schedule'] );
 
 			if( $next_backup_time > time() ) {
