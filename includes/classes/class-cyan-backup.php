@@ -756,7 +756,7 @@ if( !class_exists( 'CYAN_WP_Backup' ) ) {
 				foreach( $post_split as $entry ) {
 
 					$entry_split = explode( '=', $entry, 2 );
-					if( $gmq_run() == FALSE ) {
+					if( $gmq_run == FALSE ) {
 						$postdata[urldecode( $entry_split[0] )] = urldecode( $entry_split[1] );
 					} else {
 						$postdata[urldecode( stripslashes( $entry_split[0] ) )] = urldecode( stripslashes( $entry_split[1] ) );
