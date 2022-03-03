@@ -739,35 +739,42 @@ class CYAN_WP_Backuper {
 	}
 	
 	public function GetArchiveExtension() {
-		switch( $this->option['archive_method'] ) {
-			case 'PHPArchiveTar':
-				return '.tar';
-				
-				break;
-			case 'PHPArchiveTarGZ':
-				return '.tgz';
-				
-				break;
-			case 'PHPArchiveTarDotGZ':
-				return '.tar.gz';
-				
-				break;
-			case 'PHPArchiveTarBZ':
-				return '.tbz';
-				
-				break;
-			case 'PHPArchiveTarDotBZ':
-				return '.tar.bz2';
-				
-				break;
-			case 'ZipArchive':
-			case 'PclZip':
-			case 'PHPArchiveZip':
-			default:
-				return '.zip';
-				
-				break;
+		if( is_array( $this->option ) &&
+			array_key_exists( 'archive_method', $this->option ) &&
+			is_array( $this->option['archive_method'] ) ) {
+
+			switch( $this->option['archive_method'] ) {
+				case 'PHPArchiveTar':
+					return '.tar';
+
+					break;
+				case 'PHPArchiveTarGZ':
+					return '.tgz';
+
+					break;
+				case 'PHPArchiveTarDotGZ':
+					return '.tar.gz';
+
+					break;
+				case 'PHPArchiveTarBZ':
+					return '.tbz';
+
+					break;
+				case 'PHPArchiveTarDotBZ':
+					return '.tar.bz2';
+
+					break;
+				case 'ZipArchive':
+				case 'PclZip':
+				case 'PHPArchiveZip':
+				default:
+					return '.zip';
+
+					break;
+			}
 		}
+
+		return '.zip';
 	}
 
 	//**************************************************************************************
