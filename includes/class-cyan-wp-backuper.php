@@ -626,7 +626,7 @@ class CYAN_WP_Backuper {
 				$zip = new ZipArchive;
 				if ( $zip->open($filename, ZipArchive::CREATE) === TRUE ) {
 					$handle = $zip;
-					$handle->addEmptyDir();
+					//$handle->addEmptyDir();
 				}
 				
 				break;
