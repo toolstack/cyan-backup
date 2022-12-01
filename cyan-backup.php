@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: CYAN Backup
-Version: 2.3
+Version: 2.4
 Plugin URI: http://toolstack.com/cyan-backup
 Description: Backup your entire WordPress site and its database into an archive file on a schedule.
 Author: Greg Ross
