@@ -15,6 +15,7 @@ namespace splitbrain\PHPArchive;
  */
 class Zip extends Archive
 {
+    const LOCAL_FILE_HEADER_CRC_OFFSET = 14;
 
     protected $file = '';
     protected $fh;
@@ -34,10 +35,13 @@ class Zip extends Archive
      *
      * @param int $level Compression level (0 to 9)
      * @param int $type  Type of compression to use ignored for ZIP
-     * @return mixed
+     * @throws ArchiveIllegalCompressionException
      */
     public function setCompression($level = 9, $type = Archive::COMPRESS_AUTO)
     {
+        if ($level < -1 || $level > 9) {
+            throw new ArchiveIllegalCompressionException('Compression level should be between -1 and 9');
+        }
         $this->complevel = $level;
     }
 
@@ -70,11 +74,28 @@ class Zip extends Archive
      */
     public function contents()
     {
+        $result = array();
+
+        foreach ($this->yieldContents() as $fileinfo) {
+            $result[] = $fileinfo;
+        }
+
+        return $result;
+    }
+
+    /**
+     * Read the contents of a ZIP archive and return each entry using yield
+     * for memory efficiency.
+     *
+     * @see contents()
+     * @throws ArchiveIOException
+     * @return FileInfo[]
+     */
+    public function yieldContents()
+    {
         if ($this->closed || !$this->file) {
             throw new ArchiveIOException('Can not read from a closed archive');
         }
-
-        $result = array();
 
         $centd = $this->readCentralDir();
 
@@ -82,11 +103,10 @@ class Zip extends Archive
         @fseek($this->fh, $centd['offset']);
 
         for ($i = 0; $i < $centd['entries']; $i++) {
-            $result[] = $this->header2fileinfo($this->readCentralFileHeader());
+            yield $this->header2fileinfo($this->readCentralFileHeader());
         }
 
         $this->close();
-        return $result;
     }
 
     /**
@@ -111,7 +131,7 @@ class Zip extends Archive
      * @throws ArchiveIOException
      * @return FileInfo[]
      */
-    function extract($outdir, $strip = '', $exclude = '', $include = '')
+    public function extract($outdir, $strip = '', $exclude = '', $include = '')
     {
         if ($this->closed || !$this->file) {
             throw new ArchiveIOException('Can not read from a closed archive');
@@ -139,7 +159,7 @@ class Zip extends Archive
             $fileinfo->strip($strip);
 
             // skip unwanted files
-            if (!strlen($fileinfo->getPath()) || !$fileinfo->match($include, $exclude)) {
+            if (!strlen($fileinfo->getPath()) || !$fileinfo->matchExpression($include, $exclude)) {
                 continue;
             }
 
@@ -152,6 +172,9 @@ class Zip extends Archive
 
             // nothing more to do for directories
             if ($fileinfo->getIsdir()) {
+                if(is_callable($this->callback)) {
+                    call_user_func($this->callback, $fileinfo);
+                }
                 continue;
             }
 
@@ -163,7 +186,7 @@ class Zip extends Archive
             }
 
             // open file for writing
-            $fp = fopen($extractto, "wb");
+            $fp = @fopen($extractto, "wb");
             if (!$fp) {
                 throw new ArchiveIOException('Could not open file for writing: '.$extractto);
             }
@@ -223,10 +246,14 @@ class Zip extends Archive
                 }
                 fclose($fp);
                 gzclose($gzp);
+                unlink($extractto); // remove temporary gz file
             }
 
-            touch($output, $fileinfo->getMtime());
+            @touch($output, $fileinfo->getMtime());
             //FIXME what about permissions?
+            if(is_callable($this->callback)) {
+                call_user_func($this->callback, $fileinfo);
+            }
         }
 
         $this->close();
@@ -270,9 +297,10 @@ class Zip extends Archive
     /**
      * Add a file to the current archive using an existing file in the filesystem
      *
-     * @param string          $file     path to the original file
-     * @param string|FileInfo $fileinfo either the name to us in archive (string) or a FileInfo oject with all meta data, empty to take from original
+     * @param string $file path to the original file
+     * @param string|FileInfo $fileinfo either the name to use in archive (string) or a FileInfo oject with all meta data, empty to take from original
      * @throws ArchiveIOException
+     * @throws FileInfoException
      */
     public function addFile($file, $fileinfo = '')
     {
@@ -284,17 +312,92 @@ class Zip extends Archive
             throw new ArchiveIOException('Archive has been closed, files can no longer be added');
         }
 
-        $data = @file_get_contents($file);
-        if ($data === false) {
+        $fp = @fopen($file, 'rb');
+        if ($fp === false) {
             throw new ArchiveIOException('Could not open file for reading: '.$file);
         }
 
-        // FIXME could we stream writing compressed data? gzwrite on a fopen handle?
-        $this->addData($fileinfo, $data);
+        $offset = $this->dataOffset();
+        $name   = $fileinfo->getPath();
+        $time   = $fileinfo->getMtime();
+
+        // write local file header (temporary CRC and size)
+        $this->writebytes($this->makeLocalFileHeader(
+            $time,
+            0,
+            0,
+            0,
+            $name,
+            (bool) $this->complevel
+        ));
+
+        // we store no encryption header
+
+        // prepare info, compress and write data to archive
+        $deflate_context = deflate_init(ZLIB_ENCODING_DEFLATE, ['level' => $this->complevel]);
+        $crc_context = hash_init('crc32b');
+        $size = $csize = 0;
+
+        while (!feof($fp)) {
+            $block = fread($fp, 512);
+
+            if ($this->complevel) {
+                $is_first_block = $size === 0;
+                $is_last_block = feof($fp);
+
+                if ($is_last_block) {
+                    $c_block = deflate_add($deflate_context, $block, ZLIB_FINISH);
+                    // get rid of the compression footer
+                    $c_block = substr($c_block, 0, -4);
+                } else {
+                    $c_block = deflate_add($deflate_context, $block, ZLIB_NO_FLUSH);
+                }
+
+                // get rid of the compression header
+                if ($is_first_block) {
+                    $c_block = substr($c_block, 2);
+                }
+
+                $csize += strlen($c_block);
+                $this->writebytes($c_block);
+            } else {
+                $this->writebytes($block);
+            }
+
+            $size += strlen($block);
+            hash_update($crc_context, $block);
+        }
+        fclose($fp);
+
+        // update the local file header with the computed CRC and size
+        $crc = hexdec(hash_final($crc_context));
+        $csize = $this->complevel ? $csize : $size;
+        $this->writebytesAt($this->makeCrcAndSize(
+            $crc,
+            $size,
+            $csize
+        ), $offset + self::LOCAL_FILE_HEADER_CRC_OFFSET);
+
+        // we store no data descriptor
+
+        // add info to central file directory
+        $this->ctrl_dir[] = $this->makeCentralFileRecord(
+            $offset,
+            $time,
+            $crc,
+            $size,
+            $csize,
+            $name,
+            (bool) $this->complevel
+        );
+
+        if(is_callable($this->callback)) {
+            call_user_func($this->callback, $fileinfo);
+        }
     }
 
     /**
-     * Add a file to the current TAR archive using the given $data as content
+     * Add a file to the current Zip archive using the given $data as content
      *
      * @param string|FileInfo $fileinfo either the name to us in archive (string) or a FileInfo oject with all meta data
      * @param string          $data     binary content of the file to add
@@ -349,6 +452,10 @@ class Zip extends Archive
             $name,
             (bool) $this->complevel
         );
+
+        if(is_callable($this->callback)) {
+            call_user_func($this->callback, $fileinfo);
+        }
     }
 
     /**
@@ -356,6 +463,7 @@ class Zip extends Archive
      *
      * After a call to this function no more data can be added to the archive, for
      * read access no reading is allowed anymore
+     * @throws ArchiveIOException
      */
     public function close()
     {
@@ -399,6 +507,7 @@ class Zip extends Archive
      * Returns the created in-memory archive data
      *
      * This implicitly calls close() on the Archive
+     * @throws ArchiveIOException
      */
     public function getArchive()
     {
@@ -418,7 +527,7 @@ class Zip extends Archive
      */
     public function save($file)
     {
-        if (!file_put_contents($file, $this->getArchive())) {
+        if (!@file_put_contents($file, $this->getArchive())) {
             throw new ArchiveIOException('Could not write to file: '.$file);
         }
     }
@@ -494,8 +603,10 @@ class Zip extends Archive
 
         if ($header['extra_len'] != 0) {
             $header['extra'] = fread($this->fh, $header['extra_len']);
+            $header['extradata'] = $this->parseExtra($header['extra']);
         } else {
             $header['extra'] = '';
+            $header['extradata'] = array();
         }
 
         if ($header['comment_len'] != 0) {
@@ -535,8 +646,10 @@ class Zip extends Archive
         $header['filename'] = fread($this->fh, $data['filename_len']);
         if ($data['extra_len'] != 0) {
             $header['extra'] = fread($this->fh, $data['extra_len']);
+            $header['extradata'] = array_merge($header['extradata'],  $this->parseExtra($header['extra']));
         } else {
             $header['extra'] = '';
+            $header['extradata'] = array();
         }
 
         $header['compression'] = $data['compression'];
@@ -559,6 +672,35 @@ class Zip extends Archive
     }
 
     /**
+     * Parse the extra headers into fields
+     *
+     * @param string $header
+     * @return array
+     */
+    protected function parseExtra($header)
+    {
+        $extra = array();
+        // parse all extra fields as raw values
+        while (strlen($header) !== 0) {
+            $set = unpack('vid/vlen', $header);
+            $header = substr($header, 4);
+            $value = substr($header, 0, $set['len']);
+            $header = substr($header, $set['len']);
+            $extra[$set['id']] = $value;
+        }
+
+        // handle known ones
+        if(isset($extra[0x6375])) {
+            $extra['utf8comment'] = substr($extra[0x7075], 5); // strip version and crc
+        }
+        if(isset($extra[0x7075])) {
+            $extra['utf8path'] = substr($extra[0x7075], 5); // strip version and crc
+        }
+
+        return $extra;
+    }
+
+    /**
      * Create fileinfo object from header data
      *
      * @param $header
@@ -567,14 +709,76 @@ class Zip extends Archive
     protected function header2fileinfo($header)
     {
         $fileinfo = new FileInfo();
-        $fileinfo->setPath($header['filename']);
         $fileinfo->setSize($header['size']);
         $fileinfo->setCompressedSize($header['compressed_size']);
         $fileinfo->setMtime($header['mtime']);
         $fileinfo->setComment($header['comment']);
         $fileinfo->setIsdir($header['external'] == 0x41FF0010 || $header['external'] == 16);
+
+        if(isset($header['extradata']['utf8path'])) {
+            $fileinfo->setPath($header['extradata']['utf8path']);
+        } else {
+            $fileinfo->setPath($this->cpToUtf8($header['filename']));
+        }
+
+        if(isset($header['extradata']['utf8comment'])) {
+            $fileinfo->setComment($header['extradata']['utf8comment']);
+        } else {
+            $fileinfo->setComment($this->cpToUtf8($header['comment']));
+        }
+
         return $fileinfo;
     }
+
+    /**
+     * Convert the given CP437 encoded string to UTF-8
+     *
+     * Tries iconv with the correct encoding first, falls back to mbstring with CP850 which is
+     * similar enough. CP437 seems not to be available in mbstring. Lastly falls back to keeping the
+     * string as is, which is still better than nothing.
+     *
+     * On some systems iconv is available, but the codepage is not. We also check for that.
+     *
+     * @param $string
+     * @return string
+     */
+    protected function cpToUtf8($string)
+    {
+        if (function_exists('iconv') && @iconv_strlen('', 'CP437') !== false) {
+            return iconv('CP437', 'UTF-8', $string);
+        } elseif (function_exists('mb_convert_encoding')) {
+            return mb_convert_encoding($string, 'UTF-8', 'CP850');
+        } else {
+            return $string;
+        }
+    }
+
+    /**
+     * Convert the given UTF-8 encoded string to CP437
+     *
+     * Same caveats as for cpToUtf8() apply
+     *
+     * @param $string
+     * @return string
+     */
+    protected function utf8ToCp($string)
+    {
+        // try iconv first
+        if (function_exists('iconv')) {
+            $conv = @iconv('UTF-8', 'CP437//IGNORE', $string);
+            if($conv) return $conv; // it worked
+        }
+
+        // still here? iconv failed to convert the string. Try another method
+        // see http://php.net/manual/en/function.iconv.php#108643
+
+        if (function_exists('mb_convert_encoding')) {
+            return mb_convert_encoding($string, 'CP850', 'UTF-8');
+        } else {
+            return $string;
+        }
+    }
+
 
     /**
      * Write to the open filepointer or memory
@@ -590,6 +794,29 @@ class Zip extends Archive
             $written = strlen($data);
         } else {
             $written = @fwrite($this->fh, $data);
+        }
+        if ($written === false) {
+            throw new ArchiveIOException('Failed to write to archive stream');
+        }
+        return $written;
+    }
+
+    /**
+     * Write to the open filepointer or memory at the specified offset
+     *
+     * @param string $data
+     * @param int $offset
+     * @throws ArchiveIOException
+     * @return int number of bytes written
+     */
+    protected function writebytesAt($data, $offset) {
+        if (!$this->file) {
+            $this->memory .= substr_replace($this->memory, $data, $offset);
+            $written = strlen($data);
+        } else {
+            @fseek($this->fh, $offset);
+            $written = @fwrite($this->fh, $data);
+            @fseek($this->fh, 0, SEEK_END);
         }
         if ($written === false) {
             throw new ArchiveIOException('Failed to write to archive stream');
@@ -683,6 +910,8 @@ class Zip extends Archive
         $comp = $comp ? 8 : 0;
         $dtime = dechex($this->makeDosTime($ts));
 
+        list($name, $extra) = $this->encodeFilename($name);
+
         $header = "\x50\x4b\x01\x02"; // central file header signature
         $header .= pack('v', 14); // version made by - VFAT
         $header .= pack('v', 20); // version needed to extract - 2.0
@@ -699,13 +928,14 @@ class Zip extends Archive
         $header .= pack('V', $clen); // compressed size
         $header .= pack('V', $len); // uncompressed size
         $header .= pack('v', strlen($name)); // file name length
-        $header .= pack('v', 0); // extra field length
+        $header .= pack('v', strlen($extra)); // extra field length
         $header .= pack('v', 0); // file comment length
         $header .= pack('v', 0); // disk number start
         $header .= pack('v', 0); // internal file attributes
         $header .= pack('V', 0); // external file attributes  @todo was 0x32!?
         $header .= pack('V', $offset); // relative offset of local header
         $header .= $name; // file name
+        $header .= $extra; // extra (utf-8 filename)
 
         return $header;
     }
@@ -727,6 +957,8 @@ class Zip extends Archive
         $comp = $comp ? 8 : 0;
         $dtime = dechex($this->makeDosTime($ts));
 
+        list($name, $extra) = $this->encodeFilename($name);
+
         $header = "\x50\x4b\x03\x04"; //  local file header signature
         $header .= pack('v', 20); // version needed to extract - 2.0
         $header .= pack('v', 0); // general purpose flag - no flags set
@@ -742,8 +974,53 @@ class Zip extends Archive
         $header .= pack('V', $clen); // compressed size
         $header .= pack('V', $len); // uncompressed size
         $header .= pack('v', strlen($name)); // file name length
-        $header .= pack('v', 0); // extra field length
-        $header .= $name;
+        $header .= pack('v', strlen($extra)); // extra field length
+        $header .= $name; // file name
+        $header .= $extra; // extra (utf-8 filename)
         return $header;
+    }
+
+    /**
+     * Returns only a part of the local file header containing the CRC, size and compressed size.
+     * Used to update these fields for an already written header.
+     *
+     * @param int $crc CRC32 checksum of the uncompressed data
+     * @param int $len length of the uncompressed data
+     * @param int $clen length of the compressed data
+     * @return string
+     */
+    protected function makeCrcAndSize($crc, $len, $clen) {
+        $header  = pack('V', $crc); // crc-32
+        $header .= pack('V', $clen); // compressed size
+        $header .= pack('V', $len); // uncompressed size
+        return $header;
+    }
+
+    /**
+     * Returns an allowed filename and an extra field header
+     *
+     * When encoding stuff outside the 7bit ASCII range it needs to be placed in a separate
+     * extra field
+     *
+     * @param $original
+     * @return array($filename, $extra)
+     */
+    protected function encodeFilename($original)
+    {
+        $cp437 = $this->utf8ToCp($original);
+        if ($cp437 === $original) {
+            return array($original, '');
+        }
+
+        $extra = pack(
+            'vvCV',
+            0x7075, // tag
+            strlen($original) + 5, // length of file + version + crc
+            1, // version
+            crc32($original) // crc
+        );
+        $extra .= $original;
+
+        return array($cp437, $extra);
     }
 }

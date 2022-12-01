@@ -6,8 +6,6 @@ needed for compression). It can create new files or extract existing ones.
 
 To keep things simple, the modification (adding or removing files) of existing archives is not supported.
 
-[![Build Status](https://travis-ci.org/splitbrain/php-archive.svg)](https://travis-ci.org/splitbrain/php-archive)
-
 Install
 -------
 
@@ -19,8 +17,11 @@ Usage
 -----
 
 The usage for the Zip and Tar classes are basically the same. Here are some
-examples for working with TARs to get you started. Check the source code
-comments for more info
+examples for working with TARs to get you started.
+
+Check the [API docs](https://splitbrain.github.io/php-archive/) for more
+info.
+
 
 ```php
 require_once 'vendor/autoload.php';
@@ -51,12 +52,13 @@ $tar->close();
 // To create a TAR archive directly in memory, create() it, add*()
 // files and then either save() or getArchive() it:
 $tar = new Tar();
+$tar->setCompression(9, Archive::COMPRESS_BZIP);
 $tar->create();
 $tar->addFile(...);
 $tar->addData(...);
 ...
-$tar->save('myfile.tgz'); // compresses and saves it
-echo $tar->getArchive(Archive::COMPRESS_GZIP); // compresses and returns it
+$tar->save('myfile.tbz'); // compresses and saves it
+echo $tar->getArchive(); // compresses and returns it
 ```
 
 Differences between Tar and Zip: Tars are compressed as a whole, while Zips compress each file individually. Therefore
