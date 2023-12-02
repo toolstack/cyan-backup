@@ -4,8 +4,8 @@ Plugin URI: http://toolstack.com/cyan-backup
 Author URI: http://toolstack.com
 Tags: Backup, Schedule, FTP, SFTP, SCP, FTPS, remote storage
 Requires at least: 2.9
-Tested up to: 6.1.1
-Stable tag: 2.4
+Tested up to: 6.4.1
+Stable tag: 2.5
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -50,7 +50,7 @@ Backing up your site can take a while, you will want to ensure your PHP and webs
 
 Once a backup is complete you can download the backup files from the links in Backup page.  You can delete old backup files by checking one or more boxes in the backup list and then clicking the Delete button.
 
-The backup file of DB is included in the zip file as {the directory name of WordPress}.yyyymmdd.hhmmss.sql. 
+The backup file of DB is included in the zip file as {the directory name of WordPress}.yyyymmdd.hhmmss.sql.
 
 == Installation ==
 
@@ -86,10 +86,11 @@ Also the remote server MUST be on the same class 'C' subnet as your web server. 
 4. About page.
 
 == Upgrade Notice ==
-= 2.4 =
-* None at this time.
+= 2.5 =
+* Release date: December 2, 2023
+* Fixed: Autoloader issue.
 
-== Changelog == 
+== Changelog ==
 = 2.4 =
 * Release date: December 1, 2022
 * Fixed: PHP 8 Compatibility.
@@ -244,7 +245,7 @@ Also the remote server MUST be on the same class 'C' subnet as your web server. 
 
 = 1.0 =
 * Release date: February 14, 2014
-* Updated: Upgrade function now updates the schedule between V0.5 and V0.6 style configuration settings. 
+* Updated: Upgrade function now updates the schedule between V0.5 and V0.6 style configuration settings.
 
 = 0.7 =
 * Release date: February 13, 2014
