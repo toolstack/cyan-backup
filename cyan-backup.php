@@ -79,7 +79,7 @@ class CYANBackup {
 			add_action('init', array(&$this, 'file_download'));
 		}
 
-		$options = get_option( $this->option_name );
+		$options = get_option( $this->option_name, array() );
 
 		// Run the upgrade code if required
 		if( array_key_exists( 'version', $options ) && $options['version'] != self::VERSION )
