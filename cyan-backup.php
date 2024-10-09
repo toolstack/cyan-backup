@@ -271,10 +271,9 @@ class CYANBackup {
 			return array($userid, $username);
 
 		if ( is_user_logged_in() ) {
-			global $current_user;
-			get_currentuserinfo();
-			$username = $current_user->display_name;
-			$userid   = $current_user->ID;
+			$user = wp_get_current_user();
+			$username = $user->display_name;
+			$userid   = $user->ID;
 		}
 		return array($userid, $username);
 	}
