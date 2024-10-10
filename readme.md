@@ -4,8 +4,8 @@
 **Author URI:** http://toolstack.com  
 **Tags:** Backup, Schedule, FTP, SFTP, SCP, FTPS, remote storage  
 **Requires at least:** 2.9  
-**Tested up to:** 6.4  
-**Stable tag:** 2.5.2  
+**Tested up to:** 6.6  
+**Stable tag:** 2.5.3  
 **License:** GPLv2 or later  
 **License URI:** http://www.gnu.org/licenses/gpl-2.0.html  
 
@@ -94,6 +94,11 @@ Also the remote server MUST be on the same class 'C' subnet as your web server. 
 
 
 ## Upgrade Notice ##
+### 2.5.3 ###
+* Release date: October 9, 2024
+* Fixed: Deprecated	get_currentuserinfo() warning.
+* Fixed: Escape options properly.
+
 ### 2.5.2 ###
 * Release date: January 26, 2024
 * Fixed: Fix error when settings don't exist yet.
