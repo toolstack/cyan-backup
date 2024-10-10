@@ -215,7 +215,7 @@
 			if( substr( $archive_path, 0, strlen( $abspath) ) == $abspath ) { $check_archive_excluded = TRUE; }
 
 			foreach ( explode("\n", $postdata['excluded']) as $dir ) {
-				$dir = trim($dir);
+				$dir = esc_textarea(trim($dir));
 				if ( !empty($dir) ) {
 					if ( ($realpath = realpath($dir)) !== FALSE) {
 						$realpath = $this->chg_directory_separator($realpath, FALSE);
@@ -597,7 +597,7 @@
 						<th><?php _e('Archive prefix', $this->textdomain);?></th>
 
 						<td>
-							<input type="text" name="archive_prefix" id="archive_prefix" size="20" value="<?php echo htmlentities($archive_prefix);?>" /><br><br>
+							<input type="text" name="archive_prefix" id="archive_prefix" size="20" value="<?php echo esc_attr($archive_prefix);?>" /><br><br>
 							<?php _e( 'Remember to include a separator at the end of the prefix (like a period or a dash) to make your filenames look nice!', $this->textdomain );?><br><br>
 							<?php _e( 'Note: Existing backups will be renamed to the new prefix.', $this->textdomain );?>
 						</td>
@@ -606,7 +606,7 @@
 						<th><?php _e('Archive path', $this->textdomain);?></th>
 
 						<td>
-							<input type="text" name="archive_path" id="archive_path" size="100" value="<?php echo htmlentities($archive_path);?>" /><br><br>
+							<input type="text" name="archive_path" id="archive_path" size="100" value="<?php echo esc_attr($archive_path);?>" /><br><br>
 <?php GLOBAL $is_iis; if( !$is_iis ) {?>
 							<input class="button" id="Createhtaccess" name="Createhtaccess" type="submit" value="<?php _e('Create .htaccess File', $this->textdomain);?>">
 <?php } else {?>
@@ -621,7 +621,7 @@
 						<td><textarea name="excluded" id="excluded" rows="5" cols="100">
 <?php
 	foreach ($excluded_dir as $dir) {
-		echo htmlentities($this->chg_directory_separator($abspath.$dir,FALSE)) . "\n";
+		echo esc_textarea($this->chg_directory_separator($abspath.$dir,FALSE)) . "\n";
 	}
 ?></textarea><br><br>
 
@@ -651,7 +651,7 @@
 						<th><?php _e('Send to addresses', $this->textdomain);?></th>
 
 						<td>
-							<input type="input" size="60" id="emaillog_sendto" name="sendto" value="<?php echo $option['sendto'];?>"><br>
+							<input type="input" size="60" id="emaillog_sendto" name="sendto" value="<?php echo array_key_exists( 'sendto', $option ) ? esc_attr( $option['sendto'] ) : "";?>"><br>
 							<br>
 							<?php _e('This is a comma separated list of e-mail addresses to send the log file to, if blank it will be sent to the WordPress admin user.', $this->textdomain);?>
 						</td>
@@ -808,7 +808,7 @@
 					<tr>
 						<th><?php _e('Number of backups to keep', $this->textdomain);?></th>
 
-						<td><input type="text" name="prune[number]" size="5" value="<?php echo $option['prune']['number'];?>"></td>
+						<td><input type="text" name="prune[number]" size="5" value="<?php echo intval( $option['prune']['number'] );?>"></td>
 					</tr>
 				</tbody>
 			</table>
@@ -856,26 +856,26 @@
 					<tr>
 						<th><?php _e('Host', $this->textdomain);?></th>
 
-						<td><input type="text" size="40" name="remote[host]" value="<?php echo $option['remote']['host'];?>"></td>
+						<td><input type="text" size="40" name="remote[host]" value="<?php echo esc_attr( $option['remote']['host'] );?>"></td>
 					</tr>
 
 					<tr>
 						<th><?php _e('Username', $this->textdomain);?></th>
 
-						<td><input type="text" size="20" name="remote[username]" value="<?php echo $option['remote']['username'];?>"></td>
+						<td><input type="text" size="20" name="remote[username]" value="<?php echo esc_attr( $option['remote']['username'] );?>"></td>
 					</tr>
 
 					<tr>
 						<th><?php _e('Password', $this->textdomain);?></th>
 
-						<td><input type="password" size="20" name="remote[password]" value="<?php echo $option['remote']['password'];?>"></td>
+						<td><input type="password" size="20" name="remote[password]" value="<?php echo esc_attr( $option['remote']['password'] );?>"></td>
 					</tr>
 
 					<tr>
 						<th><?php _e('Remote path', $this->textdomain);?></th>
 
 						<td>
-							<input type="text" size="40" name="remote[path]" value="<?php echo $option['remote']['path'];?>"><br>
+							<input type="text" size="40" name="remote[path]" value="<?php echo esc_attr( $option['remote']['path'] );?>"><br>
 							<br>
 							<?php _e( "You many use the follow place holders: %m = month (01-12), %d = day (01-31), %Y = year (XXXX), %M = month (Jan...Dec), %F = month (January...December)" );?>
 						</td>
