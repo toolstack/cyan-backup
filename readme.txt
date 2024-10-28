@@ -5,7 +5,7 @@ Author URI: http://toolstack.com
 Tags: Backup, Schedule, FTP, SFTP, SCP, FTPS, remote storage
 Requires at least: 2.9
 Tested up to: 6.6
-Stable tag: 2.5.3
+Stable tag: 2.5.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -86,6 +86,13 @@ Also the remote server MUST be on the same class 'C' subnet as your web server. 
 4. About page.
 
 == Upgrade Notice ==
+None at this time.
+
+== Changelog ==
+= 2.5.4 =
+* Release date: October 28, 2024
+* Fixed: Only allow downloading of files from the archive directory and that are log/archive files.
+
 = 2.5.3 =
 * Release date: October 9, 2024
 * Fixed: Deprecated	get_currentuserinfo() warning.
@@ -103,7 +110,6 @@ Also the remote server MUST be on the same class 'C' subnet as your web server. 
 * Release date: December 2, 2023
 * Fixed: Autoloader issue.
 
-== Changelog ==
 = 2.4 =
 * Release date: December 1, 2022
 * Fixed: PHP 8 Compatibility.
