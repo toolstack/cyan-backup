@@ -1504,7 +1504,22 @@ jQuery(function($){
 
 			$getdata = $this->get_real_get_data();
 
-			if (($file = realpath($getdata['download'])) !== FALSE) {
+			// Grab the archive path so we can chcek to make sure the download request is in the
+			// archive folder.
+			$archive_path = realpath( $this->get_archive_path() );
+
+			// Get the realpath of the file.
+			$file = realpath($getdata['download']);
+
+			// Double check to make sure the download file being requested is in the archive
+			// folder, if not set it to false so the not found error is thrown later in the else
+			// case of the next if.
+			if ( $archive_path !== substr($file, 0, strlen($archive_path))) {
+				$file = FALSE;
+			}
+
+			// If either the archive path or the file we're requesting isn't real, bail out.
+			if ($file !== FALSE && $archive_path !== FALSE) {
 
 				if( strtolower( substr( $file, -4 ) ) == ".log" ) {
 					header("Content-Type: text/plain;");
