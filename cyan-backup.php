@@ -414,6 +414,13 @@ class CYANBackup {
 		}
 	}
 
+	// get archive extension
+	private function get_archive_extension($option = '') {
+		$remote_backuper = $this->remote_backuper();
+
+		return $remote_backuper->GetArchiveExtension();
+	}
+
 	// get excluded dir
 	private function get_excluded_dir($option = '', $special = FALSE) {
 		if (empty($option) || !is_array($option))
@@ -1518,10 +1525,18 @@ jQuery(function($){
 				$file = FALSE;
 			}
 
+			// Double check to make sure the download file being requested is either an archive
+			// or a log file.
+			$archive_extension = $this->get_archive_extension();
+			$archive_extension_len = strlen( $archive_extension );
+			if ( strtolower( substr( $file, -4 ) ) != '.log' && strtolower( substr( $file, - $archive_extension_len ) ) != $archive_extension) {
+				$file = FALSE;
+			}
+
 			// If either the archive path or the file we're requesting isn't real, bail out.
 			if ($file !== FALSE && $archive_path !== FALSE) {
 
-				if( strtolower( substr( $file, -4 ) ) == ".log" ) {
+				if( strtolower( substr( $file, -4 ) ) == '.log' ) {
 					header("Content-Type: text/plain;");
 				} else {
 					header("Content-Type: application/octet-stream;");
