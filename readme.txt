@@ -4,8 +4,8 @@ Plugin URI: http://toolstack.com/cyan-backup
 Author URI: http://toolstack.com
 Tags: Backup, Schedule, FTP, SFTP, SCP, FTPS, remote storage
 Requires at least: 2.9
-Tested up to: 6.6
-Stable tag: 2.5.4
+Tested up to: 6.8
+Stable tag: 2.5.5
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -89,6 +89,11 @@ Also the remote server MUST be on the same class 'C' subnet as your web server. 
 None at this time.
 
 == Changelog ==
+= 2.5.5 =
+* Release date: November 4, 2025
+* Fixed: Security issues associated with deleting backups, thanks Wordfence for the report.
+* Updated: Upgrade to version 1.4.1 of php-archive.
+
 = 2.5.4 =
 * Release date: October 28, 2024
 * Fixed: Only allow downloading of files from the archive directory and that are log/archive files.
