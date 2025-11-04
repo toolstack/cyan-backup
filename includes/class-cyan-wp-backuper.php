@@ -11,6 +11,7 @@ class CYAN_WP_Backuper {
 	private $archive_path;
 	private $archive_pre;
 	private $archive_file;
+	private $excluded;
 	private $default_excluded = array(
 	    'wp-content/cache/',
 	    'wp-content/tmp/',
