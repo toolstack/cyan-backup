@@ -2,9 +2,10 @@
 
 	if( !is_admin() )
 		wp_die(__('Access denied!', $this->textdomain));
-		
+
 	$this->verify_status_file();
-		
+	$backup_files = $this->backup_files_info($this->get_backup_files());
+
 	$notes = array();
 	$nonce_field = 'backup';
 
@@ -20,12 +21,24 @@
 				else { $file = $postdata['remove[' . $index . ']']; }
 
 				if (($file = realpath($file)) !== FALSE) {
-					$logfile = str_ireplace( '.zip', '.log', $file );
+					$backupfile_found = false;
 
-					if (@unlink($file) === FALSE)
-						$notes[] = "<strong>".sprintf(__('ERROR: Failed to delete backup file: %s', $this->textdomain),$file)."</strong>";
-						
-					@unlink($logfile);
+					foreach($backup_files as $backup_file) {
+						if($backup_file['filename'] == $file) {
+							$backupfile_found = true;
+						}
+					}
+
+					if($backupfile_found) {
+						$logfile = str_ireplace( '.zip', '.log', $file );
+
+						if (@unlink($file) === FALSE)
+							$notes[] = "<strong>".sprintf(__('ERROR: Failed to delete backup file: %s', $this->textdomain),$file)."</strong>";
+
+						@unlink($logfile);
+
+						$backup_files = $this->backup_files_info($this->get_backup_files());
+					}
 				}
 			}
 		}
@@ -37,7 +50,7 @@
 		echo "\n";
 	}
 
-	
+
 	$nonces =
 		( $this->wp_version_check('2.5') && function_exists('wp_nonce_field') )
 		? wp_nonce_field($nonce_field, self::NONCE_NAME, true, false)
@@ -62,7 +75,7 @@
 	<div id="progressbar"></div>
 	<br>
 	<div id="progresstext" style="margin-left: 13px;">&nbsp;</div>
-	
+
 	<h3><?php _e('Backup Files', $this->textdomain);?></h3>
 
 	<form method="post" action="<?php echo $this->admin_action; ?>">
@@ -88,7 +101,6 @@
 
 			<tbody>
 <?php
-		$backup_files = $this->backup_files_info($this->get_backup_files());
 		$alternate = ' class="alternate"';
 		if (count($backup_files) > 0) {
 			$i = 0;
